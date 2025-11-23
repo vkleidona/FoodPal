@@ -20,7 +20,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 @SpringBootApplication
-@EntityScan(basePackages = { "commons", "server" })
+@EntityScan(basePackages = {"commons", "server", "recipes"})
 public class Main {
 
     public static void main(String[] args) {
