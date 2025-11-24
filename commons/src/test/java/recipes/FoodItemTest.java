@@ -12,14 +12,11 @@ class FoodItemTest {
 
 
     private FoodItem f;
-    private Nutrition n;
     private List<Ingredient> i;
 
     @BeforeEach
     public void setup () {
-        f = new FoodItem("cheese");
-        n = new Nutrition(100, 20, 30, 40);
-        f.setNutritionalValues(n);
+        f = new FoodItem("cheese", 100, 20, 30, 40);
         i = new ArrayList<>();
         f.setIngredientsWithFoodItem(i);
     }
@@ -35,14 +32,28 @@ class FoodItemTest {
     }
 
     @Test
-    void getNutritionalValues() {
-        assertEquals(n, f.getNutritionalValues());
+    void testGetKcal() {
+        assertEquals(100, f.getKcal());
+    }
+
+    @Test
+    void testGetCarbs() {
+        assertEquals(20, f.getCarbs());
+    }
+
+    @Test
+    void testGetProteins() {
+        assertEquals(30, f.getProteins());
+    }
+
+    @Test
+    void testGetFats() {
+        assertEquals(40, f.getFats());
     }
 
     @Test
     void testEqualsHash() {
-        FoodItem f2 = new FoodItem("cheese");
-        f2.setNutritionalValues(n);
+        FoodItem f2 = new FoodItem("cheese", 100, 20, 30, 40);
         f2.setIngredientsWithFoodItem(i);
         assertEquals(f, f2);
         assertEquals(f.hashCode(), f2.hashCode());
@@ -50,15 +61,13 @@ class FoodItemTest {
 
     @Test
     void testEqualsHashIngredients() {
-        FoodItem f2 = new FoodItem("cheese");
-        f2.setNutritionalValues(n);
+        FoodItem f2 = new FoodItem("cheese", 100, 20, 30, 40);
         Ingredient i1 = new Ingredient(20, "ml");
         i.add(i1);
         f2.setIngredientsWithFoodItem(i);
         i.remove(i1);
 
-        FoodItem f3 = new FoodItem("cheese");
-        f3.setNutritionalValues(n);
+        FoodItem f3 = new FoodItem("cheese", 100, 20, 30, 40);
         Ingredient i2 = new Ingredient(20, "ml");
         i.add(i2);
         f3.setIngredientsWithFoodItem(i);
@@ -67,18 +76,13 @@ class FoodItemTest {
         assertEquals(f3.hashCode(), f2.hashCode());
     }
 
-    @Test
-    void testUpdateNutritionalValues() {
-        FoodItem f2 = new FoodItem("cheese");
-        f2.setNutritionalValues(n);
-        f2.setNutritionalValues(n);
-        assertEquals(f2, n.getCorrespondingFoodItem());
-    }
 
     @Test
     void testToString() {
         String fStr = f.toString();
-        assertTrue(fStr.contains("name"));
+        assertTrue(fStr.contains("name") && fStr.contains("carbs"));
+        assertTrue(fStr.contains("proteins") && fStr.contains("fats"));
+        assertTrue(fStr.contains("kcal"));
         assertTrue(fStr.contains("FoodItem"));
         assertTrue(fStr.contains("\n"));
     }
