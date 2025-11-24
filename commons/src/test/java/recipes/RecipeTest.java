@@ -15,8 +15,7 @@ class RecipeTest {
 
     @BeforeEach
     public void setup() {
-        List <String> instr = new ArrayList<>();
-        r = new Recipe("bryndzové halušky", instr);
+        r = new Recipe("bryndzové halušky");
         i = new ArrayList<>();
         r.setIngredients(i);
     }
@@ -39,8 +38,7 @@ class RecipeTest {
 
     @Test
     void testEquals() {
-        List <String> instr = new ArrayList<>();
-        Recipe r2 = new Recipe("bryndzové halušky", instr);
+        Recipe r2 = new Recipe("bryndzové halušky");
         r2.setIngredients(i);
         assertEquals(r2, r);
         assertEquals(r2.hashCode(), r.hashCode());
@@ -48,8 +46,7 @@ class RecipeTest {
 
     @Test
     void testNotEquals() {
-        List <String> instr = new ArrayList<>();
-        Recipe r2 = new Recipe("bryndzové halusky", instr);
+        Recipe r2 = new Recipe("bryndzové halusky");
         r2.setIngredients(i);
         assertNotEquals(r2, r);
         assertNotEquals(r2.hashCode(), r.hashCode());

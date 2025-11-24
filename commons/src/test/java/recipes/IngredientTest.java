@@ -3,9 +3,6 @@ package recipes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class IngredientTest {
@@ -16,8 +13,7 @@ class IngredientTest {
 
     @BeforeEach
     public void setup () {
-        List<String> instr = new ArrayList<>();
-        r = new Recipe ("bryndzové halušky", instr);
+        r = new Recipe ("bryndzové halušky");
         f = new FoodItem("slanina");
         ingredient = new Ingredient(20, "g");
         ingredient.setRecipe(r);
@@ -70,9 +66,8 @@ class IngredientTest {
 
     @Test
     void testRecipeUpdate() {
-        List<String> instr = new ArrayList<>();
         Ingredient ingredient2 = new Ingredient(30, "g");
-        Recipe r2 = new Recipe("Knedliky", instr);
+        Recipe r2 = new Recipe("Knedliky");
         r.setId(2L);
         r2.setId(42L);
         ingredient2.setRecipe(r2);

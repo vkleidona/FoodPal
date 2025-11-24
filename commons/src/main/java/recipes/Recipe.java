@@ -2,6 +2,7 @@ package recipes;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -15,7 +16,7 @@ public class Recipe {
     @GeneratedValue (strategy = GenerationType.AUTO)
     private long id;
 
-    @Column(unique = true)
+    @Column
     private String name;
 
     @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL)
@@ -32,18 +33,17 @@ public class Recipe {
     /**
      * A constructor for the ObjectMapper (for conversions to JSON)
      */
-    private Recipe () {
+    private Recipe() {
 
     }
 
     /**
      * A constructor for the Recipe class
      * @param name - a String which represents the name of the Recipe
-     * @param instructions - a List <String> which contains all instructions to prepare the recipe
      */
-    public Recipe(String name, List<String> instructions) {
+    public Recipe(String name) {
         this.name = name;
-        this.instructions = instructions;
+        this.instructions = new ArrayList<>();
     }
 
     public long getId() {
