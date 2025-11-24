@@ -16,7 +16,6 @@ public class Recipe {
     @GeneratedValue (strategy = GenerationType.AUTO)
     private long id;
 
-    @Column
     private String name;
 
     @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL)

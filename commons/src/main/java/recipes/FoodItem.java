@@ -11,7 +11,6 @@ import java.util.Objects;
 @Entity
 public class FoodItem {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     private String name;
 
     @OneToMany(mappedBy = "foodType", cascade = CascadeType.ALL)
