@@ -17,8 +17,10 @@ public class FoodItem {
     @OneToMany(mappedBy = "foodType", cascade = CascadeType.ALL)
     private List<Ingredient> ingredientsWithFoodItem;
 
-    @OneToOne(mappedBy = "correspondingFoodItem")
-    private Nutrition nutritionalValues;
+    private int kcal;
+    private int carbs;
+    private int proteins;
+    private int fats;
 
     /*
     Do we want to store which food is in which recipe?
@@ -32,9 +34,17 @@ public class FoodItem {
     /**
      * Constructor for the FoodItem entity
      * @param name - the name of the FoodItem
+     * @param kcal - the number of kilocalories this FoodItem contains per unit
+     * @param carbs - the grams of carbohydrates this FoodItem contains per unit
+     * @param proteins - the grams of proteins this FoodItem contains per unit
+     * @param fats - the grams of fats this FoodItem contains per unit
      */
-    public FoodItem(String name) {
+    public FoodItem(String name, int kcal, int carbs, int proteins, int fats) {
         this.name = name;
+        this.kcal = kcal;
+        this.carbs = carbs;
+        this.proteins = proteins;
+        this.fats = fats;
     }
 
     /**
@@ -52,19 +62,24 @@ public class FoodItem {
         return ingredientsWithFoodItem;
     }
 
-    public Nutrition getNutritionalValues() {
-        return nutritionalValues;
-    }
-
-    public void setNutritionalValues(Nutrition nutritionalValues) {
-        this.nutritionalValues = nutritionalValues;
-       if (nutritionalValues.getCorrespondingFoodItem()!=this) {
-           nutritionalValues.setCorrespondingFoodItem(this);
-        }
-    }
-
     public void setIngredientsWithFoodItem(List<Ingredient> ingredientsWithFoodItem) {
         this.ingredientsWithFoodItem = ingredientsWithFoodItem;
+    }
+
+    public int getKcal() {
+        return kcal;
+    }
+
+    public int getCarbs() {
+        return carbs;
+    }
+
+    public int getProteins() {
+        return proteins;
+    }
+
+    public int getFats() {
+        return fats;
     }
 
     /**
@@ -83,7 +98,7 @@ public class FoodItem {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(name);
+        return Objects.hash(name, kcal, carbs, proteins, fats);
     }
 
     /**

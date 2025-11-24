@@ -14,7 +14,7 @@ class IngredientTest {
     @BeforeEach
     public void setup () {
         r = new Recipe ("bryndzové halušky");
-        f = new FoodItem("slanina");
+        f = new FoodItem("slanina", 100, 20, 30, 40);
         ingredient = new Ingredient(20, "g");
         ingredient.setRecipe(r);
         ingredient.setFoodType(f);
