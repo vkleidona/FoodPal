@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package server.api;
+package server.api.controllers;
 
 import java.util.LinkedList;
 import java.util.List;

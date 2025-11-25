@@ -5,6 +5,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -14,7 +15,8 @@ public class FoodItem {
     private String name;
 
     @OneToMany(mappedBy = "foodType", cascade = CascadeType.ALL)
-    private List<Ingredient> ingredientsWithFoodItem;
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private List<Ingredient> ingredientsWithFoodItem = new ArrayList<>();
 
     private int kcal;
     private int carbs;

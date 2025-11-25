@@ -4,18 +4,32 @@ import jakarta.persistence.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.Objects;
+
+/*
+I removed the recipeId field, because to define the relationship, we do not need
+a separate field, having a Recipe object reference in the
+Ingredient class is enough.
+Also, by having multiple Ids, Jpa expects a composite key, which is
+not needed here.
+ */
+
 
 @Entity
 public class Ingredient {
     @Id
     @GeneratedValue (strategy = GenerationType.AUTO)
     private long IngredientID;
-
-    @Id
+/*
+    here was an @Id, I remove it
     private long recipeID;
+ */
 
+    /*
+    Jpa automatically adds a foreign key column called recipeId to
+    the Ingredient table
+     */
     @ManyToOne
     @JoinColumn(name = "foodType", referencedColumnName = "name")
     private FoodItem foodType;
@@ -25,9 +39,10 @@ public class Ingredient {
     @Column(name = "measurement_type")
     private String measurement;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @MapsId("recipeID")
-    @PrimaryKeyJoinColumn(name = "recipeID", referencedColumnName = "id")
+    @ManyToOne(cascade = CascadeType.ALL, optional = false)
+    @JoinColumn(name = "RECIPE_ID", referencedColumnName = "ID")
+
+    @com.fasterxml.jackson.annotation.JsonBackReference
     private Recipe recipe;
 
     /**
@@ -47,9 +62,11 @@ public class Ingredient {
         this.measurement = measurement;
     }
 
-    public long getRecipeID() {
+   /*
+      public long getRecipeID() {
         return recipeID;
     }
+    */
 
     public FoodItem getFoodType() {
         return foodType;
@@ -71,15 +88,18 @@ public class Ingredient {
         this.foodType = foodType;
     }
 
-    public void setRecipeID(long id) {
+   /* public void setRecipeID(long id) {
         this.recipeID = id;
     }
+    */
 
     public void setRecipe(Recipe recipe) {
         this.recipe = recipe;
+        /*
         if(this.recipeID!=this.getRecipe().getId()) {
             this.setRecipeID(this.getRecipe().getId());
         }
+        */
     }
 
 
