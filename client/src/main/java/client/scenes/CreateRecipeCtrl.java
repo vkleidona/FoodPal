@@ -223,7 +223,7 @@ TO DO: implement these buttons, delete from the database
      * @param ingredientQuantities list
      * @param ingredientUnits list
      * @param instructions list
-     * @return
+     * @return recipe
      */
     public Recipe buildRecipe(
             String name,
