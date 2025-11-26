@@ -1,13 +1,11 @@
-/*
-package server.api;
+package server.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import recipes.Ingredient;
 
-public interface IngredientRepository extends JpaRepository<Ingredient, Long> {
-}
-*/
+import java.util.Optional;
 
-/*
-review Ingredient class
- */
+public interface IngredientRepository extends JpaRepository<Ingredient, Long> {
+    Optional<Ingredient> findById (long i);
+}
+

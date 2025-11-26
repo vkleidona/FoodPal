@@ -68,6 +68,10 @@ public class Ingredient {
     }
     */
 
+    public long getIngredientID() {
+        return IngredientID;
+    }
+
     public FoodItem getFoodType() {
         return foodType;
     }

@@ -1,4 +1,4 @@
-package server.api.repositories;
+package server.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import recipes.Recipe;

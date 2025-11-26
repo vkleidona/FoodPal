@@ -4,8 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import recipes.*;
-import server.api.repositories.FoodItemRepository;
-import server.api.repositories.RecipeRepository;
+import server.repositories.FoodItemRepository;
+import server.repositories.RecipeRepository;
 
 import java.util.Optional;
 

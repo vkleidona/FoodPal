@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 
 import commons.Person;
 import commons.Quote;
-import server.api.repositoriesTests.TestQuoteRepository;
+import server.repositories.TestQuoteRepository;
 import server.api.controllers.QuoteController;
 
 public class QuoteControllerTest {
