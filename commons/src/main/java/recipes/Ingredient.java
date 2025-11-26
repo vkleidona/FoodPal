@@ -54,10 +54,12 @@ public class Ingredient {
 
     /**
      * A Constructor for the Ingredient class
+     * @param foodType - provides the foodType of an Ingredient
      * @param quantity - used to determine the quantity of an Ingredient
      * @param measurement - provides the measurement of an Ingredient
      */
-    public Ingredient(double quantity, String measurement) {
+    public Ingredient(FoodItem foodType, double quantity, String measurement) {
+        this.foodType = foodType;
         this.quantity = quantity;
         this.measurement = measurement;
     }

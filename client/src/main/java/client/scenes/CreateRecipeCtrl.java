@@ -72,8 +72,7 @@ public class CreateRecipeCtrl {
                 String unit = unitField.getText().trim();
 
                 FoodItem foodItem = new FoodItem(ingName, 0, 0, 0, 0); // placeholder nutrition
-                Ingredient ingredient = new Ingredient(quantity, unit);
-                ingredient.setFoodType(foodItem);
+                Ingredient ingredient = new Ingredient(foodItem,quantity, unit);
                 ingredient.setRecipe(recipe);
                 ingredients.add(ingredient);
             }
@@ -237,8 +236,7 @@ TO DO: implement these buttons, delete from the database
         List<Ingredient> ingredients = new ArrayList<>();
         for (int i = 0; i < ingredientNames.size(); i++) {
             FoodItem foodItem = new FoodItem(ingredientNames.get(i), 0, 0, 0, 0); // placeholder nutrition
-            Ingredient ingredient = new Ingredient(ingredientQuantities.get(i), ingredientUnits.get(i));
-            ingredient.setFoodType(foodItem);
+            Ingredient ingredient = new Ingredient(foodItem, ingredientQuantities.get(i), ingredientUnits.get(i));
             ingredient.setRecipe(recipe);
             ingredients.add(ingredient);
         }
