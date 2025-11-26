@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.Objects;
 
 /*
@@ -20,7 +19,7 @@ not needed here.
 public class Ingredient {
     @Id
     @GeneratedValue (strategy = GenerationType.AUTO)
-    private long IngredientID;
+    private long ingredientID;
 /*
     here was an @Id, I remove it
     private long recipeID;
@@ -69,7 +68,7 @@ public class Ingredient {
     */
 
     public long getIngredientID() {
-        return IngredientID;
+        return ingredientID;
     }
 
     public FoodItem getFoodType() {
