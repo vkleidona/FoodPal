@@ -19,8 +19,24 @@ public class Recipe {
     private String name;
 
     @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL)
-    private List <Ingredient> ingredients;
-    private List <String> instructions;
+    @com.fasterxml.jackson.annotation.JsonManagedReference
+    private List <Ingredient> ingredients = new ArrayList<>();
+
+    /*
+    new table, recipe and its instructions
+     */
+    @ElementCollection
+    @CollectionTable(name = "RECIPE_INSTRUCTIONS", joinColumns =
+    @JoinColumn(name = "RECIPE_ID"))
+    @Column(name = "instruction")
+    private List<String> instructions = new ArrayList<>();
+
+
+
+    public void setInstructions(List<String> instructions) {
+        this.instructions = instructions;
+    }
+
 
     /*
     To be implemented at a later date. We will probably use a specific
