@@ -32,6 +32,7 @@ import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.GenericType;
+import recipes.Recipe;
 
 public class ServerUtils {
 
@@ -74,4 +75,14 @@ public class ServerUtils {
 		}
 		return true;
 	}
+
+    // In client.utils.ServerUtils
+
+    public Recipe updateRecipe(Recipe recipe) {
+        return ClientBuilder.newClient(new ClientConfig()) // Ensure ClientConfig is imported or remove the arg
+                // FIX 1 & 2: Use '+' to join strings and use '.id' instead of .getId()
+                .target(SERVER + "api/recipes/" + recipe.getId())
+                .request(APPLICATION_JSON)
+                .put(Entity.entity(recipe, APPLICATION_JSON), Recipe.class);
+    }
 }

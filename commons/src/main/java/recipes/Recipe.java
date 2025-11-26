@@ -32,7 +32,7 @@ public class Recipe {
     /**
      * A constructor for the ObjectMapper (for conversions to JSON)
      */
-    private Recipe() {
+    public Recipe() {
 
     }
 
@@ -59,6 +59,10 @@ public class Recipe {
 
     public List<String> getInstructions() {
         return instructions;
+    }
+
+    public void setInstructions(List<String> instructions) {
+        this.instructions = instructions;
     }
 
     public void setIngredients(List<Ingredient> ingredients) {
