@@ -33,7 +33,7 @@ public class Ingredient {
     @JoinColumn(name = "foodType", referencedColumnName = "name")
     private FoodItem foodType;
 
-    private int quantity;
+    private double quantity;
 
     @Column(name = "measurement_type")
     private String measurement;
@@ -56,7 +56,7 @@ public class Ingredient {
      * @param quantity - used to determine the quantity of an Ingredient
      * @param measurement - provides the measurement of an Ingredient
      */
-    public Ingredient(int quantity, String measurement) {
+    public Ingredient(double quantity, String measurement) {
         this.quantity = quantity;
         this.measurement = measurement;
     }
@@ -75,7 +75,7 @@ public class Ingredient {
         return foodType;
     }
 
-    public int getQuantity() {
+    public double getQuantity() {
         return quantity;
     }
 
