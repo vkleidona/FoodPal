@@ -16,19 +16,20 @@ import java.util.Optional;
 
 public class EditInstructionsCtrl {
 
-    // UI Elements defined in your FXML
     @FXML
-    private ListView<String> instructionList;
-
-    // Data structures
+    public ListView<String> instructionList;
     private ObservableList<String> steps;
     private Recipe currentRecipe;
 
-    // Injected ServerUtils to communicate with the backend
-    // (Assuming you have a class named ServerUtils in client.utils)
+    // ServerUtils to communicate with the backend
     private final client.utils.ServerUtils server;
     private final MainCtrl mainCtrl;
 
+    /**
+     * Constructor
+     * @param server
+     * @param mainCtrl
+     */
     @Inject
     public EditInstructionsCtrl(client.utils.ServerUtils server, MainCtrl mainCtrl) {
         this.server = server;
@@ -36,12 +37,13 @@ public class EditInstructionsCtrl {
     }
 
     /**
-     * INITIALIZATION
-     * This method is called by MainCtrl when you switch to this screen.
+     * TO DO: Modify MainCtrl so that it calls the following method when the user switches to the edit instructions screen
      * It loads the existing instructions into the list.
+     * @param recipe : the recipe we are currently working on
      */
+
     public void initData(Recipe recipe) {
-        this.currentRecipe = recipe;
+        currentRecipe = recipe;
 
         // Handle case where instructions list is null in the database
         List<String> existingInstructions = recipe.getInstructions();
@@ -49,13 +51,16 @@ public class EditInstructionsCtrl {
             existingInstructions = new ArrayList<>();
         }
 
-        // Create an ObservableList so the UI updates automatically
-        this.steps = FXCollections.observableArrayList(existingInstructions);
+        // Pass the steps from the existing instructions to the Observable List so that the screen updates automatically
+        steps = FXCollections.observableArrayList(existingInstructions);
         instructionList.setItems(steps);
     }
 
-    // --- BUTTON ACTIONS ---
+    //Button actions
 
+    /**
+     * The method behind the add button
+     */
     @FXML
     public void addInstruction() {
         TextInputDialog dialog = new TextInputDialog();
@@ -71,15 +76,18 @@ public class EditInstructionsCtrl {
         });
     }
 
+    /**
+     * The method behind the edit button
+     */
     @FXML
     public void editInstruction() {
-        int selectedIdx = instructionList.getSelectionModel().getSelectedIndex();
+        int selectedIdx = instructionList.getSelectionModel().getSelectedIndex(); //get the row number selected
         if (selectedIdx < 0) {
             showAlert("No Selection", "Please select a step to edit.");
             return;
         }
 
-        String currentStep = steps.get(selectedIdx);
+        String currentStep = steps.get(selectedIdx); //get the row
         TextInputDialog dialog = new TextInputDialog(currentStep);
         dialog.setTitle("Edit Instruction");
         dialog.setHeaderText("Edit the selected step:");
@@ -87,35 +95,37 @@ public class EditInstructionsCtrl {
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(newStep -> {
             if (!newStep.trim().isEmpty()) {
-                steps.set(selectedIdx, newStep.trim());
+                steps.set(selectedIdx, newStep.trim()); //set the new row
             }
         });
     }
 
+    /**
+     * The method behind the delete button
+     */
     @FXML
     public void deleteInstruction() {
-        int selectedIdx = instructionList.getSelectionModel().getSelectedIndex();
+        int selectedIdx = instructionList.getSelectionModel().getSelectedIndex(); //get the row number selected
         if (selectedIdx >= 0) {
-            steps.remove(selectedIdx);
+            steps.remove(selectedIdx);  //remove the selected row from the steps
         } else {
             showAlert("No Selection", "Please select a step to delete.");
         }
     }
 
+    /**
+     * The method behind the save changes button
+     */
     @FXML
     public void saveChanges() {
         try {
-            // 1. Update the local recipe object with the new list
-            // We convert ObservableList back to a regular List
+            // Convert ObservableList back to a regular List and save it to the recipe object
             currentRecipe.setInstructions(new ArrayList<>(steps));
-            // 2. Send the updated recipe to the server
-            // Note: You need to implement 'updateRecipe' in your ServerUtils
+            // Send the updated recipe to the server
             server.updateRecipe(currentRecipe);
 
-            // 3. Close the window or go back
-            // Assuming this is a popup/secondary stage, we close it
-            // Or use mainCtrl.showRecipeDetails(currentRecipe);
-            closeWindow();
+            // TO DO: Close the window OR go back to the main screen
+            // closeWindow();
 
         } catch (Exception e) {
             showAlert("Error", "Failed to save instructions: " + e.getMessage());
@@ -123,17 +133,27 @@ public class EditInstructionsCtrl {
         }
     }
 
+    // TO DO:
+
+    /**
+     * The method behind the cancel button
+     */
     @FXML
     public void cancel() {
-        closeWindow();
+         closeWindow();
     }
 
+    /**
+     * This method is used to close the edit instructions screen
+     */
     private void closeWindow() {
-        // Gets the stage (window) this scene is on and closes it
-        Stage stage = (Stage) instructionList.getScene().getWindow();
-        stage.close();
     }
 
+    /**
+     *
+     * @param title
+     * @param content
+     */
     private void showAlert(String title, String content) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle(title);

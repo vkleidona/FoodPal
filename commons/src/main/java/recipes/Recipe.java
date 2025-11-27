@@ -32,12 +32,6 @@ public class Recipe {
     private List<String> instructions = new ArrayList<>();
 
 
-
-    public void setInstructions(List<String> instructions) {
-        this.instructions = instructions;
-    }
-
-
     /*
     To be implemented at a later date. We will probably use a specific
     built-in class for languages, not String
