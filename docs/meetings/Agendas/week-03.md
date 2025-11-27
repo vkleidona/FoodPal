@@ -1,11 +1,11 @@
-| Key            | Value                                                                                           |
-|----------------|-------------------------------------------------------------------------------------------------|
-| Date :         | 28-11-2025                                                                                      |
-| Time :         | 14:45-15:30                                                                                     |
-| Location :     | DW Hall 2                                                                                       |
-| Chair :        | T. Corlateanu                                                                                   |
-| Minute Taker : | V. Kleidona                                                                                     |
-| Attendees :    | M. Tinkelenberg, P. Gruca, K. Kadrieh, A. Kiliev, V. Kleidona,  M. Tinkelenberg, E. Tskhay (TA) |
+| Key            | Value                                                                                       |
+|----------------|---------------------------------------------------------------------------------------------|
+| Date :         | 28-11-2025                                                                                  |
+| Time :         | 14:45-15:30                                                                                 |
+| Location :     | DW Hall 2                                                                                   |
+| Chair :        | T. Corlateanu                                                                               |
+| Minute Taker : | V. Kleidona                                                                                 |
+| Attendees :    | M. Tinkelenberg, P. Gruca, K. Kadrieh, A. Iliev, V. Kleidona, T. Corlateanu, E. Tskhay (TA) |
 Agenda Items :
 - Opening by chair (1 min)
 - Check-in : (2 min)
