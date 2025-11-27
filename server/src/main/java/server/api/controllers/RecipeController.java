@@ -8,10 +8,9 @@ import server.repositories.FoodItemRepository;
 import server.repositories.RecipeRepository;
 
 import java.util.Optional;
+import java.util.List;
 
 @RestController
-// /recipes: endpoint, prepares it
-// to handle all requests sent to "/recipes"
 @RequestMapping("/recipes")
 public class RecipeController {
 
@@ -22,7 +21,6 @@ public class RecipeController {
     private FoodItemRepository foodItemRepository;
 
     @PostMapping(consumes = "application/json")
-    // @RequestBody: the JSON format is turned into a Java object
     public ResponseEntity<Long> saveRecipe(@RequestBody Recipe recipe) {
         for (Ingredient ingredient : recipe.getIngredients()) {
 
@@ -34,7 +32,7 @@ public class RecipeController {
                 foodItem = match.get();
             } else {
                 foodItem = incoming;
-                foodItemRepository.save(foodItem); // save new FoodItem
+                foodItemRepository.save(foodItem);
             }
 
             ingredient.setFoodType(foodItem);
@@ -43,5 +41,21 @@ public class RecipeController {
 
         Recipe saved = recipeRepository.save(recipe);
         return ResponseEntity.ok(saved.getId());
+    }
+
+    @GetMapping
+    public List<Recipe> getAllRecipes() {
+        return recipeRepository.findAll();
+    }
+
+    // ✅ New: Delete a recipe by ID
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteRecipe(@PathVariable Long id) {
+        if (recipeRepository.existsById(id)) {
+            recipeRepository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 }
