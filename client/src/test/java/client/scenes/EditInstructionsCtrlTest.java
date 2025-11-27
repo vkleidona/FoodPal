@@ -20,6 +20,11 @@ public class EditInstructionsCtrlTest {
 
     @Test
     void initDataLoadsRecipeInstructionsCorrectly() {
+        // If running on the server (no screen), stop so that it doesnt crash
+        if (java.awt.GraphicsEnvironment.isHeadless()) {
+            return;
+        }
+
         EditInstructionsCtrl ctrl = new EditInstructionsCtrl(null, null);
 
         ctrl.instructionList = new ListView<>();
