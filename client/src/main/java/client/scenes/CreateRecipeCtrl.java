@@ -236,8 +236,10 @@ TO DO: implement these buttons, delete from the database
 
         List<Ingredient> ingredients = new ArrayList<>();
         for (int i = 0; i < ingredientNames.size(); i++) {
-            FoodItem foodItem = new FoodItem(ingredientNames.get(i), 0, 0, 0, 0); // placeholder nutrition
-            Ingredient ingredient = new Ingredient(ingredientQuantities.get(i), ingredientUnits.get(i));
+            FoodItem foodItem = new FoodItem(ingredientNames.get(i),
+                    0, 0, 0, 0); // placeholder nutrition
+            Ingredient ingredient = new Ingredient(ingredientQuantities.get(i),
+                    ingredientUnits.get(i));
             ingredient.setFoodType(foodItem);
             ingredient.setRecipe(recipe);
             ingredients.add(ingredient);
