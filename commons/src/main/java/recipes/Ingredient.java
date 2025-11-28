@@ -93,6 +93,14 @@ public class Ingredient {
         this.foodType = foodType;
     }
 
+    public void setQuantity(double quantity) {
+        this.quantity = quantity;
+    }
+
+    public void setMeasurement(String measurement) {
+        this.measurement = measurement;
+    }
+
    /* public void setRecipeID(long id) {
         this.recipeID = id;
     }
@@ -107,6 +115,9 @@ public class Ingredient {
         */
     }
 
+    public String getFoodName(){
+        return foodType.getName();
+    }
 
     /**
      * An implementation of the equals method for the Ingredient class
