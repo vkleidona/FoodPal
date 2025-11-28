@@ -47,6 +47,22 @@ public class RecipeController {
         return ResponseEntity.ok(saved.getId());
     }
 
+    @GetMapping
+    public List<Recipe> getAllRecipes() {
+        return recipeRepository.findAll();
+    }
+
+    //Delete a recipe by ID
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteRecipe(@PathVariable Long id) {
+        if (recipeRepository.existsById(id)) {
+            recipeRepository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @GetMapping("/get/{id}")
     public ResponseEntity<Recipe> getById(@PathVariable("id") long id) {
         if(id < 0 || !recipeRepository.existsById(id)){
@@ -78,21 +94,5 @@ public class RecipeController {
         Recipe saved = recipeRepository.save(currentRecipe);
 
         return ResponseEntity.ok(saved);
-    }
-
-    @GetMapping
-    public List<Recipe> getAllRecipes() {
-        return recipeRepository.findAll();
-    }
-
-    //Delete a recipe by ID
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteRecipe(@PathVariable Long id) {
-        if (recipeRepository.existsById(id)) {
-            recipeRepository.deleteById(id);
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
     }
 }
