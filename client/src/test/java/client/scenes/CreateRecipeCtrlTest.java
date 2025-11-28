@@ -5,14 +5,22 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
 import recipes.Recipe;
 import static org.junit.jupiter.api.Assertions.*;
 
-//@Disabled("UI TestFX tests do not run in CI, run locally only")
 public class CreateRecipeCtrlTest extends ApplicationTest {
+
+    @BeforeAll
+    static void skipInCiWithoutDisplay() {
+        String display = System.getenv("DISPLAY");
+        Assumptions.assumeTrue(display != null && !display.isEmpty(),
+                "Skipping JavaFX UI tests because DISPLAY is not available (CI)");
+    }
 
     private CreateRecipeCtrl controller;
 
