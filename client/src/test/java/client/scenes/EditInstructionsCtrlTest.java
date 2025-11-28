@@ -14,6 +14,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class EditInstructionsCtrlTest {
 
+    /*
+     I used AI for the following method because I was not sure how I can
+     test with JavaFx components but I understand it
+     */
     @BeforeAll
     static void initJFX() {
         // Check if there is no screen

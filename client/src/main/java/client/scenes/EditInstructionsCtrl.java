@@ -137,6 +137,7 @@ public class EditInstructionsCtrl {
 
     /**
      * The method behind the cancel button
+     *
      */
     @FXML
     public void cancel() {
@@ -145,6 +146,7 @@ public class EditInstructionsCtrl {
 
     /**
      * This method is used to close the edit instructions screen
+     * TO DO: make it change to the main ui and not close everything
      */
     private void closeWindow() {
     }
