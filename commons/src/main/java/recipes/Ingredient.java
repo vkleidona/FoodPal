@@ -64,6 +64,11 @@ public class Ingredient {
         this.measurement = measurement;
     }
 
+    public Ingredient(double quantity, String measurement) {
+        this.quantity = quantity;
+        this.measurement = measurement;
+    }
+
    /*
       public long getRecipeID() {
         return recipeID;
