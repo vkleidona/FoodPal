@@ -5,11 +5,13 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
 import recipes.Recipe;
 import static org.junit.jupiter.api.Assertions.*;
 
+//@Disabled("UI TestFX tests do not run in CI, run locally only")
 public class CreateRecipeCtrlTest extends ApplicationTest {
 
     private CreateRecipeCtrl controller;
@@ -49,6 +51,14 @@ public class CreateRecipeCtrlTest extends ApplicationTest {
 
         // click Add
         clickOn("#addIngredientButton");
+
+        // wait for JavaFX to process UI events
+        javafx.application.Platform.runLater(() -> {}); // schedule a no-op
+        try {
+            Thread.sleep(200); // small pause to let UI update
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
 
         // verify row added
         assertEquals(1, ingredientsBox.getChildren().size());
