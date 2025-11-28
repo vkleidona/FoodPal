@@ -95,6 +95,7 @@ public class Recipe {
         if(ingredient == null || this.ingredients.contains(ingredient)){
             return false;
         } else {
+            ingredient.setRecipe(this);
             return this.ingredients.add(ingredient);
         }
     }
