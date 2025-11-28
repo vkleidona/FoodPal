@@ -36,8 +36,16 @@ public class CreateRecipeCtrl {
     @FXML
     private TextField nameTextField;
 
-    // the client cannot call server methods directly
-    private final Client client = ClientBuilder.newClient();
+    private ServerService serverService;
+
+    public CreateRecipeCtrl() {
+        this.serverService = new RealServerService();
+    }
+
+    public void setServerService(ServerService serverService) {
+        this.serverService = serverService;
+    }
+
     private final String recipeEndpointUrl = "http://localhost:8080/recipes";
 
     /**
@@ -98,9 +106,7 @@ public class CreateRecipeCtrl {
             // Recipe is automatically turned into JSON text, this text is sent
             // to the server's /recipes URL via POST
             // the server reconstructs the Recipe Object and saves it in the database
-            client.target(recipeEndpointUrl)
-                    .request("application/json")
-                    .post(Entity.entity(recipe, "application/json"));
+            serverService.sendRecipe(recipe);
             goToMainUI();
 
         } catch (Exception e) {
@@ -149,16 +155,6 @@ public class CreateRecipeCtrl {
         }
     }
 
-/*
-TO DO: implement these buttons, delete from the database
- */
-    public void handleDeleteIngredient(){
-
-    }
-
-    public void handleDeletePreparation(){
-
-    }
 
     /**
      * when the add button is pressed, '+', near 'Preparation:' a new step

@@ -107,22 +107,12 @@
                   <Font size="14.0" />
                </font>
             </Button>
-            <Button fx:id="deleteIngredientButton" layoutX="208.0" layoutY="59.0" mnemonicParsing="false" onAction="#handleDeleteIngredient" text="x" textFill="#131212">
-               <font>
-                  <Font size="14.0" />
-               </font>
-            </Button>
             <Label layoutX="27.0" layoutY="240.0" text="Preparation:">
                <font>
                   <Font size="18.0" />
                </font>
             </Label>
             <Button fx:id="addPreparationButton" layoutX="141.0" layoutY="239.0" mnemonicParsing="false" onAction="#handleAddPreparation" text="+">
-               <font>
-                  <Font size="14.0" />
-               </font>
-            </Button>
-            <Button fx:id="deletePreparationButton" layoutX="208.0" layoutY="239.0" mnemonicParsing="false" onAction="#handleDeletePreparation" text="x" textFill="#131212">
                <font>
                   <Font size="14.0" />
                </font>
