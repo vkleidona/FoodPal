@@ -64,7 +64,7 @@ public class Main extends Application {
 @Override
 public void start(Stage primaryStage) throws Exception {
 	Parent root = FXMLLoader.load(getClass()
-			.getResource("/client/scenes/creatingRecipe.fxml")); // Adjust path if needed
+			.getResource("/client/scenes/MainUI.fxml")); // Adjust path if needed
 	primaryStage.setTitle("Create Recipe");
 	primaryStage.setScene(new Scene(root));
 	primaryStage.show();
