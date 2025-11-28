@@ -18,7 +18,7 @@ public class Recipe {
 
     private String name;
 
-    @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL, orphanRemoval = true)
     @com.fasterxml.jackson.annotation.JsonManagedReference
     private List <Ingredient> ingredients = new ArrayList<>();
 
@@ -32,12 +32,6 @@ public class Recipe {
     private List<String> instructions = new ArrayList<>();
 
 
-
-    public void setInstructions(List<String> instructions) {
-        this.instructions = instructions;
-    }
-
-
     /*
     To be implemented at a later date. We will probably use a specific
     built-in class for languages, not String
@@ -48,7 +42,7 @@ public class Recipe {
     /**
      * A constructor for the ObjectMapper (for conversions to JSON)
      */
-    private Recipe() {
+    public Recipe() {
 
     }
 
@@ -75,6 +69,10 @@ public class Recipe {
 
     public List<String> getInstructions() {
         return instructions;
+    }
+
+    public void setInstructions(List<String> instructions) {
+        this.instructions = instructions;
     }
 
     public void setIngredients(List<Ingredient> ingredients) {

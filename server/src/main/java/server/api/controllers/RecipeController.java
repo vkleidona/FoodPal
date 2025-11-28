@@ -4,9 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import recipes.*;
-import server.api.repositories.IngredientRepository;
-import server.api.repositories.FoodItemRepository;
-import server.api.repositories.RecipeRepository;
+import server.repositories.FoodItemRepository;
+import server.repositories.RecipeRepository;
+import server.repositories.IngredientRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,7 @@ public class RecipeController {
                 foodItem = match.get();
             } else {
                 foodItem = incoming;
-                foodItemRepository.save(foodItem); // save new FoodItem
+                foodItemRepository.save(foodItem);
             }
 
             ingredient.setFoodType(foodItem);
@@ -48,6 +48,22 @@ public class RecipeController {
 
         Recipe saved = recipeRepository.save(recipe);
         return ResponseEntity.ok(saved.getId());
+    }
+
+    @GetMapping
+    public List<Recipe> getAllRecipes() {
+        return recipeRepository.findAll();
+    }
+
+    //Delete a recipe by ID
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteRecipe(@PathVariable Long id) {
+        if (recipeRepository.existsById(id)) {
+            recipeRepository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/get/{id}")

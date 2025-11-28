@@ -36,8 +36,16 @@ public class CreateRecipeCtrl {
     @FXML
     private TextField nameTextField;
 
-    // the client cannot call server methods directly
-    private final Client client = ClientBuilder.newClient();
+    private ServerService serverService;
+
+    public CreateRecipeCtrl() {
+        this.serverService = new RealServerService();
+    }
+
+    public void setServerService(ServerService serverService) {
+        this.serverService = serverService;
+    }
+
     private final String recipeEndpointUrl = "http://localhost:8080/recipes";
 
     /**
@@ -72,7 +80,8 @@ public class CreateRecipeCtrl {
                 String unit = unitField.getText().trim();
 
                 FoodItem foodItem = new FoodItem(ingName, 0, 0, 0, 0); // placeholder nutrition
-                Ingredient ingredient = new Ingredient(foodItem,quantity, unit);
+                Ingredient ingredient = new Ingredient(quantity, unit);
+                ingredient.setFoodType(foodItem);
                 ingredient.setRecipe(recipe);
                 ingredients.add(ingredient);
             }
@@ -97,9 +106,7 @@ public class CreateRecipeCtrl {
             // Recipe is automatically turned into JSON text, this text is sent
             // to the server's /recipes URL via POST
             // the server reconstructs the Recipe Object and saves it in the database
-            client.target(recipeEndpointUrl)
-                    .request("application/json")
-                    .post(Entity.entity(recipe, "application/json"));
+            serverService.sendRecipe(recipe);
             goToMainUI();
 
         } catch (Exception e) {
@@ -148,16 +155,6 @@ public class CreateRecipeCtrl {
         }
     }
 
-/*
-TO DO: implement these buttons, delete from the database
- */
-    public void handleDeleteIngredient(){
-
-    }
-
-    public void handleDeletePreparation(){
-
-    }
 
     /**
      * when the add button is pressed, '+', near 'Preparation:' a new step
@@ -235,8 +232,11 @@ TO DO: implement these buttons, delete from the database
 
         List<Ingredient> ingredients = new ArrayList<>();
         for (int i = 0; i < ingredientNames.size(); i++) {
-            FoodItem foodItem = new FoodItem(ingredientNames.get(i), 0, 0, 0, 0); // placeholder nutrition
-            Ingredient ingredient = new Ingredient(foodItem, ingredientQuantities.get(i), ingredientUnits.get(i));
+            FoodItem foodItem = new FoodItem(ingredientNames.get(i),
+                    0, 0, 0, 0); // placeholder nutrition
+            Ingredient ingredient = new Ingredient(ingredientQuantities.get(i),
+                    ingredientUnits.get(i));
+            ingredient.setFoodType(foodItem);
             ingredient.setRecipe(recipe);
             ingredients.add(ingredient);
         }
