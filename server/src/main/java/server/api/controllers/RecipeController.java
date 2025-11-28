@@ -48,7 +48,7 @@ public class RecipeController {
         return recipeRepository.findAll();
     }
 
-    // ✅ New: Delete a recipe by ID
+    //Delete a recipe by ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteRecipe(@PathVariable Long id) {
         if (recipeRepository.existsById(id)) {
