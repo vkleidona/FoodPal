@@ -1,5 +1,6 @@
 package recipes;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -15,7 +16,7 @@ Also, by having multiple Ids, Jpa expects a composite key, which is
 not needed here.
  */
 
-
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Entity
 public class Ingredient {
     @Id
