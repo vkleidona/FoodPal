@@ -51,8 +51,8 @@ public class RecipeControllerTest {
     void testSaveRecipe() throws Exception {
         // arrange: build Recipe with Ingredient and FoodItem
         Recipe recipe = new Recipe("TestRecipe");
-        Ingredient ingredient = new Ingredient(100, "g");
         FoodItem foodItem = new FoodItem("Apple", 50, 14, 0, 0);
+        Ingredient ingredient = new Ingredient(foodItem, 100, "g");
         ingredient.setFoodType(foodItem);
         ingredient.setRecipe(recipe);
         List<Ingredient> ingredients = new ArrayList<>();
