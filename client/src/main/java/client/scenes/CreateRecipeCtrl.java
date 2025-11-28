@@ -155,6 +155,16 @@ public class CreateRecipeCtrl {
         }
     }
 
+/*
+TO DO: implement these buttons, delete from the database
+ */
+    public void handleDeleteIngredient(){
+
+    }
+
+    public void handleDeletePreparation(){
+
+    }
 
     /**
      * when the add button is pressed, '+', near 'Preparation:' a new step
