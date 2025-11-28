@@ -4,17 +4,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import recipes.*;
-import server.api.repositories.IngredientRepository;
-import server.api.repositories.FoodItemRepository;
-import server.api.repositories.RecipeRepository;
+import server.repositories.FoodItemRepository;
+import server.repositories.RecipeRepository;
+import server.repositories.IngredientRepository;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
-// /recipes: endpoint, prepares it
-// to handle all requests sent to "/recipes"
 @RequestMapping("/recipes")
 public class RecipeController {
 
@@ -27,7 +25,6 @@ public class RecipeController {
     private IngredientRepository ingredientRepository;
 
     @PostMapping(consumes = "application/json")
-    // @RequestBody: the JSON format is turned into a Java object
     public ResponseEntity<Long> saveRecipe(@RequestBody Recipe recipe) {
         for (Ingredient ingredient : recipe.getIngredients()) {
 
@@ -39,7 +36,7 @@ public class RecipeController {
                 foodItem = match.get();
             } else {
                 foodItem = incoming;
-                foodItemRepository.save(foodItem); // save new FoodItem
+                foodItemRepository.save(foodItem);
             }
 
             ingredient.setFoodType(foodItem);
@@ -81,5 +78,21 @@ public class RecipeController {
         Recipe saved = recipeRepository.save(currentRecipe);
 
         return ResponseEntity.ok(saved);
+    }
+
+    @GetMapping
+    public List<Recipe> getAllRecipes() {
+        return recipeRepository.findAll();
+    }
+
+    //Delete a recipe by ID
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteRecipe(@PathVariable Long id) {
+        if (recipeRepository.existsById(id)) {
+            recipeRepository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

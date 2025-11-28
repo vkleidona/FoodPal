@@ -11,8 +11,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import recipes.FoodItem;
 import recipes.Ingredient;
 import recipes.Recipe;
-import server.api.repositories.FoodItemRepository;
-import server.api.repositories.RecipeRepository;
+import server.repositories.FoodItemRepository;
+import server.repositories.RecipeRepository;
 
 import java.util.ArrayList;
 import java.util.List;
