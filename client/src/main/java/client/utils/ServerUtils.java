@@ -32,6 +32,7 @@ import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.GenericType;
+import recipes.Recipe;
 
 public class ServerUtils {
 
@@ -74,4 +75,11 @@ public class ServerUtils {
 		}
 		return true;
 	}
+
+    public Recipe updateRecipe(Recipe recipe) {
+        return ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER + "api/recipes/" + recipe.getId())
+                .request(APPLICATION_JSON)
+                .put(Entity.entity(recipe, APPLICATION_JSON), Recipe.class);
+    }
 }
