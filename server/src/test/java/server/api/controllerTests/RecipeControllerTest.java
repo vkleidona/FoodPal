@@ -52,12 +52,14 @@ public class RecipeControllerTest {
         // arrange: build Recipe with Ingredient and FoodItem
         Recipe recipe = new Recipe("TestRecipe");
         Ingredient ingredient = new Ingredient(100, "g");
-        FoodItem foodItem = new FoodItem("Apple", 50, 14, 0, 0);
+        FoodItem foodItem = foodItemRepository.findByName("Apple").
+                orElseGet(() -> foodItemRepository.save(new FoodItem("Apple", 50, 14, 0, 0)));
         ingredient.setFoodType(foodItem);
         ingredient.setRecipe(recipe);
         List<Ingredient> ingredients = new ArrayList<>();
         ingredients.add(ingredient);
         recipe.setIngredients(ingredients);
+        recipe.setId(null);
 
         // convert to JSON format
         String json = objectMapper.writeValueAsString(recipe);

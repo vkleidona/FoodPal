@@ -79,7 +79,7 @@ public class Recipe {
         this.ingredients = ingredients;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

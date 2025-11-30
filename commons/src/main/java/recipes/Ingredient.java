@@ -30,7 +30,7 @@ public class Ingredient {
     Jpa automatically adds a foreign key column called recipeId to
     the Ingredient table
      */
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "foodType", referencedColumnName = "name")
     private FoodItem foodType;
 
