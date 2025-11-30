@@ -4,12 +4,16 @@ import com.google.inject.Inject;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextInputDialog;
 import javafx.stage.Stage;
 import recipes.Recipe;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -124,8 +128,8 @@ public class EditInstructionsCtrl {
             // Send the updated recipe to the server
             server.updateRecipe(currentRecipe);
 
-            // TO DO: Close the window OR go back to the main screen
-            // closeWindow();
+
+            returnToMainUI();
 
         } catch (Exception e) {
             showAlert("Error", "Failed to save instructions: " + e.getMessage());
@@ -133,22 +137,30 @@ public class EditInstructionsCtrl {
         }
     }
 
-    // TO DO:
-
-    /**
-     * The method behind the cancel button
-     *
-     */
     @FXML
     public void cancel() {
-         closeWindow();
+        returnToMainUI();
     }
 
     /**
      * This method is used to close the edit instructions screen
      * TO DO: make it change to the main ui and not close everything
      */
-    private void closeWindow() {
+    private void returnToMainUI() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/resources/client.scenes/MainUI.fxml"));
+
+            // this builds the UI, meaning any previous user input will be reset
+            Parent mainRoot = loader.load();
+
+            Stage stage = (Stage) instructionList.getScene().getWindow();
+            Scene mainScene = new Scene(mainRoot);
+
+            // the current scene is replaced with the new one
+            stage.setScene(mainScene);
+            stage.show();
+        } catch (IOException e){
+        }
     }
 
     /**
