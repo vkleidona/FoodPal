@@ -46,7 +46,7 @@ public class EditInstructionsCtrl {
      * @param recipe : the recipe we are currently working on
      */
 
-    public void initData(Recipe recipe) {
+    public void initializeData(Recipe recipe) {
         currentRecipe = recipe;
 
         // Handle case where instructions list is null in the database
@@ -137,30 +137,10 @@ public class EditInstructionsCtrl {
         }
     }
 
+
     @FXML
-    public void cancel() {
-        returnToMainUI();
-    }
-
-    /**
-     * This method is used to close the edit instructions screen
-     * TO DO: make it change to the main ui and not close everything
-     */
     private void returnToMainUI() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/resources/client.scenes/MainUI.fxml"));
-
-            // this builds the UI, meaning any previous user input will be reset
-            Parent mainRoot = loader.load();
-
-            Stage stage = (Stage) instructionList.getScene().getWindow();
-            Scene mainScene = new Scene(mainRoot);
-
-            // the current scene is replaced with the new one
-            stage.setScene(mainScene);
-            stage.show();
-        } catch (IOException e){
-        }
+        mainCtrl.showMainMenu();
     }
 
     /**

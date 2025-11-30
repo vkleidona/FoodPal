@@ -42,7 +42,7 @@
          <children>
             <Button fx:id="saveChanges" mnemonicParsing="false" onAction="#saveChanges" text="Save Changes" />
             <Region prefHeight="11.0" prefWidth="418.0" />
-            <Button mnemonicParsing="false" onAction="#cancel" text="Cancel" />
+            <Button mnemonicParsing="false" onAction="#returnToMainUI" text="Cancel" />
          </children>
       </HBox>
    </children>
