@@ -21,6 +21,13 @@ class RecipeTest {
     }
 
     @Test
+    void getSetId() {
+        r.setId(4L);
+        assertNotEquals(null, r.getId());
+        assertEquals(4L, r.getId());
+    }
+
+    @Test
     void getName() {
         assertEquals("bryndzové halušky", r.getName());
     }
@@ -34,6 +41,15 @@ class RecipeTest {
     void getInstructions() {
         List <String> instr = new ArrayList<>();
         assertEquals(instr, r.getInstructions());
+    }
+
+    @Test
+    void setInstructionsTest() {
+        List <String> instr = new ArrayList<>();
+        instr.add("Bake");
+        r.setInstructions(instr);
+        List <String> empty = new ArrayList<>();
+        assertNotEquals(empty, r.getInstructions());
     }
 
     @Test
