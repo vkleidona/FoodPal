@@ -20,11 +20,9 @@ import static com.google.inject.Guice.createInjector;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
+import client.scenes.*;
 import com.google.inject.Injector;
 
-import client.scenes.AddQuoteCtrl;
-import client.scenes.MainCtrl;
-import client.scenes.QuoteOverviewCtrl;
 import client.utils.ServerUtils;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -42,7 +40,7 @@ public class Main extends Application {
     public static void main(String[] args) throws URISyntaxException, IOException {
 		launch();
 	}
-/**
+
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 
@@ -56,11 +54,16 @@ public class Main extends Application {
 		var overview = FXML.load(QuoteOverviewCtrl.class, "client", "scenes", "QuoteOverview.fxml");
 		var add = FXML.load(AddQuoteCtrl.class, "client", "scenes", "AddQuote.fxml");
 
-		var mainCtrl = INJECTOR.getInstance(MainCtrl.class);
-		mainCtrl.initialize(primaryStage, overview, add);
-	}
-	**/
+        var mainUI = FXML.load(MainUICtrl.class, "client", "scenes", "MainUI.fxml");
+        var editInstructions = FXML.load(EditInstructionsCtrl.class, "client", "scenes", "EditInstructions.fxml");
+        var createRecipe = FXML.load(CreateRecipeCtrl.class, "client", "scenes", "creatingRecipe.fxml");
+        var addFoodItem = FXML.load(AddFoodItemCTRL.class, "client", "scenes", "AddFoodItem.fxml");
+        var foodItemMain = FXML.load(FoodItemMainCTRL.class, "client", "scenes", "FoodItemMain.fxml");
 
+		var mainCtrl = INJECTOR.getInstance(MainCtrl.class);
+        mainCtrl.initialize(primaryStage, overview, add,mainUI, editInstructions, createRecipe, addFoodItem, foodItemMain);
+	}
+/*
 @Override
 public void start(Stage primaryStage) throws Exception {
 	Parent root = FXMLLoader.load(getClass()
@@ -69,5 +72,6 @@ public void start(Stage primaryStage) throws Exception {
 	primaryStage.setScene(new Scene(root));
 	primaryStage.show();
 }
+ */
 
 }

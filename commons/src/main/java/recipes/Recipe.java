@@ -39,14 +39,7 @@ public class Recipe {
      */
 
 
-    /**
-     * A constructor for the ObjectMapper (for conversions to JSON)
-     */
-    public Recipe() {
-
-    }
-
-    /**
+     /**
      * A constructor for the Recipe class
      * @param name - a String which represents the name of the Recipe
      */
