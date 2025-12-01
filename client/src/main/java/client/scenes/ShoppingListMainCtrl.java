@@ -3,6 +3,7 @@ package client.scenes;
 import client.utils.ServerUtils;
 import jakarta.inject.Inject;
 import javafx.beans.InvalidationListener;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -81,6 +82,8 @@ public class ShoppingListMainCtrl {
 
         //TODO: Replace with permanent custom buttons
         dialogBox.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        Button okButton = (Button) dialogBox.getDialogPane().lookupButton(ButtonType.OK);
+        okButton.setDisable(true);
 
         TextField quantityField = new TextField();
         quantityField.setPromptText("Enter quantity:");
@@ -98,13 +101,47 @@ public class ShoppingListMainCtrl {
         ingredientInput.getChildren().addAll(foodItemField, quantityField, unitField);
         dialogBox.getDialogPane().setContent(ingredientInput);
 
+        ChangeListener <String> inputValidator = (obs, oldVal, newVal) -> {
+            String foodText = foodItemField.getText().trim();
+            String quantityText = quantityField.getText().trim();
+            String measurementText = unitField.getText().trim();
+            boolean condition = !foodText.isEmpty() && !quantityText.isEmpty() && !measurementText.isEmpty();
+
+            okButton.setDisable(!condition);
+        };
+
+        foodItemField.textProperty().addListener(inputValidator);
+        quantityField.textProperty().addListener(inputValidator);
+        unitField.textProperty().addListener(inputValidator);
+
         dialogBox.setResultConverter(button -> {
             if (button == ButtonType.OK) {
-                String enteredFoodType = foodItemField.getText().trim();
-                FoodItem foodItem = server.searchForFoodItem(enteredFoodType);
 
-                //TODO: Error management
-                double quantity = Double.parseDouble(quantityField.getText());
+                String input = foodItemField.getText().trim();
+                FoodItem foodItem = server.searchForFoodItem(input);
+
+                if (foodItem == null) {
+                    Alert nonExistentItemAlert = new Alert(Alert.AlertType.ERROR);
+                    nonExistentItemAlert.setTitle("Food item not found.");
+                    nonExistentItemAlert.setContentText("Food Item does not exist in the database.");
+                    nonExistentItemAlert.showAndWait();
+                    foodItemField.clear();
+                    foodItemField.setPromptText("Enter food type:");
+                    return null;
+                }
+
+                double quantity = 0;
+                try {
+                    quantity = Double.parseDouble(quantityField.getText());
+                }catch (NumberFormatException e) {
+                    Alert wrongNumberInput = new Alert(Alert.AlertType.ERROR);
+                    wrongNumberInput.setTitle("Wrong input");
+                    wrongNumberInput.setContentText("Food Item does not exist in the database.");
+                    wrongNumberInput.showAndWait();
+                    quantityField.clear();
+                    quantityField.setPromptText("Enter quantity");
+                    return null;
+                }
 
                 String measurementType = unitField.getText();
                 return new Ingredient(foodItem, quantity, measurementType);
@@ -116,8 +153,6 @@ public class ShoppingListMainCtrl {
             if (result != null) {
                 s.addIngredient(result);
                 ingredientsObservableList.add(result);
-            }else{
-                mainCtrl.showMainMenu();
             }
         });
 
@@ -129,12 +164,5 @@ public class ShoppingListMainCtrl {
     @FXML
     public void returnToMain () {
         mainCtrl.showMainMenu();
-    }
-
-    /**
-     * Sends a request to the server
-     */
-    public void searchForFoodItem () {
-
     }
 }

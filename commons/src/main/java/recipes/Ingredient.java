@@ -55,7 +55,7 @@ public class Ingredient {
     /**
      * A Constructor for the ObjectMapper to use
      */
-    private Ingredient () {
+    public Ingredient () {
 
     }
 
@@ -166,11 +166,12 @@ public class Ingredient {
     }
 
     /**
-     * An implementation of the toString method for the Ingredient class
-     * @return String - returns a String translation of the Ingredient
-     * in a human-readable format
+     * A custom implementation of the toString method for the Ingredient class
+     * @return String - returns a custom translation, as that will be presented
+     * to the user in the ShoppingList
      */
     public String toString () {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+        return this.getFoodName() + " (" +
+                this.getQuantity() + " " + this.getMeasurement() + ")";
     }
 }

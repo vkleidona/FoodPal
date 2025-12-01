@@ -94,20 +94,6 @@ public class ServerUtils {
      * @return FoodItem - the corresponding FoodItem
      */
     public FoodItem searchForFoodItem (String foodType) {
-
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            FoodItem apple = new FoodItem("Apple", 52, 14, 0.3, 0.2);
-            String json = null;
-            json = mapper.writeValueAsString(apple);
-            System.out.println(json);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-
-
-
-
         return ClientBuilder.newClient(new ClientConfig()).
                 target(SERVER).path("api/food_items").
                 queryParam("name", foodType).
