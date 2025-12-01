@@ -14,7 +14,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 public class Recipe {
     @Id
     @GeneratedValue (strategy = GenerationType.AUTO)
-    private long id;
+    private Long id;
 
     private String name;
 
@@ -51,7 +51,7 @@ public class Recipe {
         this.instructions = new ArrayList<>();
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
@@ -75,7 +75,7 @@ public class Recipe {
         this.ingredients = ingredients;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

@@ -20,9 +20,9 @@ public class FoodItem {
     private List<Ingredient> ingredientsWithFoodItem = new ArrayList<>();
 
     private int kcal;
-    private int carbs;
-    private int proteins;
-    private int fats;
+    private double carbs;
+    private double proteins;
+    private double fats;
 
     /*
     Do we want to store which food is in which recipe?
@@ -41,7 +41,7 @@ public class FoodItem {
      * @param proteins - the grams of proteins this FoodItem contains per unit
      * @param fats - the grams of fats this FoodItem contains per unit
      */
-    public FoodItem(String name, int kcal, int carbs, int proteins, int fats) {
+    public FoodItem(String name, int kcal, double carbs, double proteins, double fats) {
         this.name = name;
         this.kcal = kcal;
         this.carbs = carbs;
@@ -80,15 +80,15 @@ public class FoodItem {
         return kcal;
     }
 
-    public int getCarbs() {
+    public double getCarbs() {
         return carbs;
     }
 
-    public int getProteins() {
+    public double getProteins() {
         return proteins;
     }
 
-    public int getFats() {
+    public double getFats() {
         return fats;
     }
 
@@ -100,15 +100,15 @@ public class FoodItem {
         this.kcal = kcal;
     }
 
-    public void setCarbs(int carbs) {
+    public void setCarbs(double carbs) {
         this.carbs = carbs;
     }
 
-    public void setProteins(int proteins) {
+    public void setProteins(double proteins) {
         this.proteins = proteins;
     }
 
-    public void setFats(int fats) {
+    public void setFats(double fats) {
         this.fats = fats;
     }
 

@@ -20,17 +20,18 @@ not needed here.
 public class Ingredient {
     @Id
     @GeneratedValue (strategy = GenerationType.AUTO)
-    private long ingredientID;
-/*
-    here was an @Id, I remove it
-    private long recipeID;
- */
+    /*
+    I am converting the long into Long, so data has null values instead of 0
+    That way, we can test ingredientID in the database and locally,
+    IDs won't be the same (all 0)
+     */
+    private Long ingredientID;
 
     /*
     Jpa automatically adds a foreign key column called recipeId to
     the Ingredient table
      */
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "foodType", referencedColumnName = "name")
     private FoodItem foodType;
 
@@ -103,13 +104,7 @@ public class Ingredient {
         this.measurement = measurement;
     }
 
-   /*
-      public long getRecipeID() {
-        return recipeID;
-    }
-    */
-
-    public long getIngredientID() {
+    public Long getIngredientID() {
         return ingredientID;
     }
 
@@ -141,18 +136,12 @@ public class Ingredient {
         this.measurement = measurement;
     }
 
-   /* public void setRecipeID(long id) {
-        this.recipeID = id;
-    }
-    */
-
     public void setRecipe(Recipe recipe) {
         this.recipe = recipe;
-        /*
-        if(this.recipeID!=this.getRecipe().getId()) {
-            this.setRecipeID(this.getRecipe().getId());
-        }
-        */
+    }
+
+    public void setIngredientID(Long ingredientID) {
+        this.ingredientID = ingredientID;
     }
 
     public String getFoodName(){

@@ -51,13 +51,15 @@ public class RecipeControllerTest {
     void testSaveRecipe() throws Exception {
         // arrange: build Recipe with Ingredient and FoodItem
         Recipe recipe = new Recipe("TestRecipe");
-        FoodItem foodItem = new FoodItem("Apple", 50, 14, 0, 0);
-        Ingredient ingredient = new Ingredient(foodItem, 100, "g");
+        Ingredient ingredient = new Ingredient(100, "g");
+        FoodItem foodItem = foodItemRepository.findByName("Apple").
+                orElseGet(() -> foodItemRepository.save(new FoodItem("Apple", 50, 14, 0, 0)));
         ingredient.setFoodType(foodItem);
         ingredient.setRecipe(recipe);
         List<Ingredient> ingredients = new ArrayList<>();
         ingredients.add(ingredient);
         recipe.setIngredients(ingredients);
+        recipe.setId(null);
 
         // convert to JSON format
         String json = objectMapper.writeValueAsString(recipe);

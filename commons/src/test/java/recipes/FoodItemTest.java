@@ -22,8 +22,9 @@ class FoodItemTest {
     }
 
     @Test
-    void getName() {
-        assertEquals("cheese", f.getName());
+    void getSetName() {
+        f.setName("sirene");
+        assertNotEquals("cheese", f.getName());
     }
 
     @Test
@@ -32,23 +33,27 @@ class FoodItemTest {
     }
 
     @Test
-    void testGetKcal() {
-        assertEquals(100, f.getKcal());
+    void testSetGetKcal() {
+        f.setKcal(80);
+        assertEquals(80, f.getKcal());
     }
 
     @Test
-    void testGetCarbs() {
-        assertEquals(20, f.getCarbs());
+    void testSetGetCarbs() {
+        f.setCarbs(40.2);
+        assertEquals(40.2, f.getCarbs());
     }
 
     @Test
-    void testGetProteins() {
-        assertEquals(30, f.getProteins());
+    void testSetGetProteins() {
+        f.setProteins(20.7);
+        assertEquals(20.7, f.getProteins());
     }
 
     @Test
-    void testGetFats() {
-        assertEquals(40, f.getFats());
+    void testSetGetFats() {
+        f.setFats(30.8);
+        assertEquals(30.8, f.getFats());
     }
 
     @Test

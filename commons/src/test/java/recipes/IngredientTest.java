@@ -19,13 +19,12 @@ class IngredientTest {
         ingredient.setRecipe(r);
     }
 
-/*
     @Test
-    void getRecipeIDTest() {
-        assertEquals(r.getId(), ingredient.getRecipeID());
+    void getSetIngredientIDTest() {
+        ingredient.setIngredientID(3L);
+        assertNotEquals(null, ingredient.getIngredientID());
     }
 
- */
 
     @Test
     void getFoodTypeTest() {
