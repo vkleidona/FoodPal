@@ -2,19 +2,14 @@ package client.scenes;
 
 import client.utils.ServerUtils;
 import jakarta.inject.Inject;
-import javafx.beans.InvalidationListener;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
-import javafx.stage.Stage;
-import javafx.util.Pair;
 import recipes.FoodItem;
 import recipes.Ingredient;
 import shopping.ShoppingList;
@@ -53,12 +48,37 @@ public class ShoppingListMainCtrl {
 
     public void initialize() {
         s = ShoppingList.getShoppingList();
-        List <Ingredient> ingredientList = s.getIngredients();
-        if (ingredientList==null) {
-           ingredientList = new ArrayList<>();
+        List<Ingredient> ingredientList = s.getIngredients();
+        if (ingredientList == null) {
+            ingredientList = new ArrayList<>();
         }
         ingredientsObservableList = FXCollections.observableArrayList(ingredientList);
         ingredientsListView.setItems(ingredientsObservableList);
+
+        ingredientsListView.setCellFactory(view -> new ListCell<>() {
+            @Override
+            protected void updateItem(Ingredient ingredient, boolean empty) {
+                super.updateItem(ingredient, empty);
+
+                if (empty || ingredient == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    Label nameLabel = new Label(ingredient.toString());
+
+                    Button editButton = new Button("Edit");
+                    Button deleteButton = new Button("Delete");
+
+                    editButton.setOnAction(e -> editIngredient(ingredient));
+                    deleteButton.setOnAction(e -> deleteIngredient(ingredient));
+
+                    HBox container = new HBox(10, nameLabel, editButton, deleteButton);
+                    container.setAlignment(Pos.CENTER_LEFT);
+
+                    setGraphic(container);
+                }
+            }
+        });
     }
 
     @FXML
@@ -79,8 +99,6 @@ public class ShoppingListMainCtrl {
         Dialog <Ingredient> dialogBox = new Dialog<>();
         dialogBox.setTitle("Add ingredient");
 
-
-        //TODO: Replace with permanent custom buttons
         dialogBox.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
         Button okButton = (Button) dialogBox.getDialogPane().lookupButton(ButtonType.OK);
         okButton.setDisable(true);
@@ -150,10 +168,8 @@ public class ShoppingListMainCtrl {
         });
 
         dialogBox.showAndWait().ifPresent(result -> {
-            if (result != null) {
-                s.addIngredient(result);
-                ingredientsObservableList.add(result);
-            }
+            s.addIngredient(result);
+            refreshDisplay(result);
         });
 
     }
@@ -164,5 +180,22 @@ public class ShoppingListMainCtrl {
     @FXML
     public void returnToMain () {
         mainCtrl.showMainMenu();
+    }
+
+    /**
+     * Adds new ingredient to the list, as well as the options to remove / edit it.
+     * @param ingredient - Ingredient to be added
+     */
+    public void refreshDisplay (Ingredient ingredient) {
+        ingredientsObservableList.add(ingredient);
+
+    }
+
+    public void editIngredient(Ingredient ingredient) {
+
+    }
+
+    public void deleteIngredient(Ingredient ingredient) {
+
     }
 }
