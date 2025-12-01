@@ -80,6 +80,21 @@ public class Recipe {
     }
 
     /**
+     * Adds the given ingredient to the list of ingredients in this recipe.
+     * Cannot add Null or duplicate Ingredients.
+     * @param ingredient - Ingredient to be added to the recipe
+     * @return - True if the Ingredient was successfully added, otherwise False
+     */
+    public boolean addIngredient(Ingredient ingredient) {
+        if(ingredient == null || this.ingredients.contains(ingredient)){
+            return false;
+        } else {
+            ingredient.setRecipe(this);
+            return this.ingredients.add(ingredient);
+        }
+    }
+
+    /**
      * An implementation of the equals method for the Recipe class
      * @param o - the reference object with which to compare.
      * @return boolean - returns whether the two Objects are equal or not

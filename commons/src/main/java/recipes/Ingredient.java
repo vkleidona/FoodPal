@@ -1,5 +1,6 @@
 package recipes;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -14,7 +15,7 @@ Also, by having multiple Ids, Jpa expects a composite key, which is
 not needed here.
  */
 
-
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Entity
 public class Ingredient {
     @Id
@@ -87,9 +88,16 @@ public class Ingredient {
 
     /**
      * A Constructor for the Ingredient class
+     * @param foodType - provides the foodType of an Ingredient
      * @param quantity - used to determine the quantity of an Ingredient
      * @param measurement - provides the measurement of an Ingredient
      */
+    public Ingredient(FoodItem foodType, double quantity, String measurement) {
+        this.foodType = foodType;
+        this.quantity = quantity;
+        this.measurement = measurement;
+    }
+
     public Ingredient(double quantity, String measurement) {
         this.quantity = quantity;
         this.measurement = measurement;
@@ -125,6 +133,14 @@ public class Ingredient {
         this.foodType = foodType;
     }
 
+    public void setQuantity(double quantity) {
+        this.quantity = quantity;
+    }
+
+    public void setMeasurement(String measurement) {
+        this.measurement = measurement;
+    }
+
    /* public void setRecipeID(long id) {
         this.recipeID = id;
     }
@@ -139,6 +155,9 @@ public class Ingredient {
         */
     }
 
+    public String getFoodName(){
+        return foodType.getName();
+    }
 
     /**
      * An implementation of the equals method for the Ingredient class

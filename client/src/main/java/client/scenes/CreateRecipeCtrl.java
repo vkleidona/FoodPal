@@ -324,7 +324,6 @@ public class CreateRecipeCtrl {
         }
     }
 
-
     /**
      * when the add button is pressed, '+', near 'Preparation:' a new step
      * of the recipe will be added.
