@@ -67,15 +67,13 @@ class FoodItemTest {
     @Test
     void testEqualsHashIngredients() {
         FoodItem f2 = new FoodItem("cheese", 100, 20, 30, 40);
-        Ingredient i1 = new Ingredient(20, "ml");
+        Ingredient i1 = new Ingredient(f2, 20, "ml");
         i.add(i1);
-        f2.setIngredientsWithFoodItem(i);
         i.remove(i1);
 
         FoodItem f3 = new FoodItem("cheese", 100, 20, 30, 40);
-        Ingredient i2 = new Ingredient(20, "ml");
+        Ingredient i2 = new Ingredient(f3, 20, "ml");
         i.add(i2);
-        f3.setIngredientsWithFoodItem(i);
 
         assertEquals(f3, f2);
         assertEquals(f3.hashCode(), f2.hashCode());

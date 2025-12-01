@@ -8,6 +8,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Entity
 public class FoodItem {
@@ -46,6 +47,14 @@ public class FoodItem {
         this.carbs = carbs;
         this.proteins = proteins;
         this.fats = fats;
+    }
+
+    /**
+     * Secondary constructor for the FoodItem entity that does not require the nutritional values.
+     * @param name - the name of the FoodItem
+     */
+    public FoodItem(String name) {
+        this.name = name;
     }
 
     /**

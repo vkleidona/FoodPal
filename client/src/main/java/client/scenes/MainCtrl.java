@@ -19,6 +19,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.util.Pair;
+import recipes.Recipe;
 
 public class MainCtrl {
 
@@ -30,8 +31,30 @@ public class MainCtrl {
     private AddQuoteCtrl addCtrl;
     private Scene add;
 
+    //screen 1
+    private MainUICtrl mainUICtrl;
+    private Scene mainMenu;
+
+    //screen 2
+    private EditInstructionsCtrl editInstructionsCtrl;
+    private Scene editInstructions;
+
+    //screen 3
+    private CreateRecipeCtrl createRecipeCtrl;
+    private Scene createRecipe;
+
+    //screen 4
+    private AddFoodItemCTRL addFoodItemCtrl;
+    private Scene addFoodItem;
+
+    //screen 5
+    private FoodItemMainCTRL foodItemMainCtrl;
+    private Scene foodItemMain;
+
     public void initialize(Stage primaryStage, Pair<QuoteOverviewCtrl, Parent> overview,
-            Pair<AddQuoteCtrl, Parent> add) {
+                           Pair<AddQuoteCtrl, Parent> add, Pair<MainUICtrl, Parent> mainMenu, Pair<EditInstructionsCtrl, Parent>
+                                   editInstructions, Pair<CreateRecipeCtrl, Parent> createRecipe, Pair<AddFoodItemCTRL, Parent>
+                                   addFoodItem, Pair<FoodItemMainCTRL, Parent> foodItemMain) {
         this.primaryStage = primaryStage;
         this.overviewCtrl = overview.getKey();
         this.overview = new Scene(overview.getValue());
@@ -39,7 +62,22 @@ public class MainCtrl {
         this.addCtrl = add.getKey();
         this.add = new Scene(add.getValue());
 
-        showOverview();
+        this.mainUICtrl = mainMenu.getKey();
+        this.mainMenu = new Scene(mainMenu.getValue());
+
+        this.editInstructionsCtrl = editInstructions.getKey();
+        this.editInstructions = new Scene(editInstructions.getValue());
+
+        this.createRecipeCtrl = createRecipe.getKey();
+        this.createRecipe = new Scene(createRecipe.getValue());
+
+        this.addFoodItemCtrl = addFoodItem.getKey();
+        this.addFoodItem = new Scene(addFoodItem.getValue());
+
+        this.foodItemMainCtrl = foodItemMain.getKey();
+        this.foodItemMain = new Scene(foodItemMain.getValue());
+
+        showMainMenu();
         primaryStage.show();
     }
 
@@ -53,5 +91,31 @@ public class MainCtrl {
         primaryStage.setTitle("Quotes: Adding Quote");
         primaryStage.setScene(add);
         add.setOnKeyPressed(e -> addCtrl.keyPressed(e));
+    }
+
+    public void showMainMenu() {
+        primaryStage.setTitle("FoodPal: Main Menu");
+        primaryStage.setScene(mainMenu);
+    }
+
+    public void showEditInstructions(Recipe recipe) {
+        editInstructionsCtrl.initializeData(recipe);
+        primaryStage.setTitle("Edit Instructions");
+        primaryStage.setScene(editInstructions);
+    }
+
+    public void showCreateRecipe() {
+        primaryStage.setTitle("Create Recipe");
+        primaryStage.setScene(createRecipe);
+    }
+
+    public void showAddFoodItem() {
+        primaryStage.setTitle("Add Food Item");
+        primaryStage.setScene(addFoodItem);
+    }
+
+    public void showFoodItemMain() {
+        primaryStage.setTitle("Food Item Main");
+        primaryStage.setScene(foodItemMain);
     }
 }

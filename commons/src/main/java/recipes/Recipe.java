@@ -38,15 +38,11 @@ public class Recipe {
     private String language;
      */
 
-
-    /**
-     * A constructor for the ObjectMapper (for conversions to JSON)
-     */
-    public Recipe() {
-
+    private Recipe() {
     }
 
-    /**
+
+     /**
      * A constructor for the Recipe class
      * @param name - a String which represents the name of the Recipe
      */
@@ -81,6 +77,21 @@ public class Recipe {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    /**
+     * Adds the given ingredient to the list of ingredients in this recipe.
+     * Cannot add Null or duplicate Ingredients.
+     * @param ingredient - Ingredient to be added to the recipe
+     * @return - True if the Ingredient was successfully added, otherwise False
+     */
+    public boolean addIngredient(Ingredient ingredient) {
+        if(ingredient == null || this.ingredients.contains(ingredient)){
+            return false;
+        } else {
+            ingredient.setRecipe(this);
+            return this.ingredients.add(ingredient);
+        }
     }
 
     /**

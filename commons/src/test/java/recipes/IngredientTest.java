@@ -15,9 +15,8 @@ class IngredientTest {
     public void setup () {
         r = new Recipe ("bryndzové halušky");
         f = new FoodItem("slanina", 100, 20, 30, 40);
-        ingredient = new Ingredient(20, "g");
+        ingredient = new Ingredient(f, 20, "g");
         ingredient.setRecipe(r);
-        ingredient.setFoodType(f);
     }
 
     @Test
@@ -49,30 +48,27 @@ class IngredientTest {
 
     @Test
     void testEqualsHash() {
-        Ingredient ingredient2 = new Ingredient(20, "g");
+        Ingredient ingredient2 = new Ingredient(f, 20, "g");
         ingredient2.setRecipe(r);
-        ingredient2.setFoodType(f);
         assertEquals(ingredient, ingredient2);
         assertEquals(ingredient.hashCode(), ingredient2.hashCode());
     }
 
     @Test
     void testNotEqualsHash() {
-        Ingredient ingredient2 = new Ingredient(30, "g");
+        Ingredient ingredient2 = new Ingredient(f, 30, "g");
         ingredient2.setRecipe(r);
-        ingredient2.setFoodType(f);
         assertNotEquals(ingredient, ingredient2);
         assertNotEquals(ingredient.hashCode(), ingredient2.hashCode());
     }
 
     @Test
     void testRecipeUpdate() {
-        Ingredient ingredient2 = new Ingredient(30, "g");
+        Ingredient ingredient2 = new Ingredient(f, 30, "g");
         Recipe r2 = new Recipe("Knedliky");
         r.setId(2L);
         r2.setId(42L);
         ingredient2.setRecipe(r2);
-        ingredient2.setFoodType(f);
        // assertEquals(ingredient2.getRecipeID(), r2.getId());
     }
 

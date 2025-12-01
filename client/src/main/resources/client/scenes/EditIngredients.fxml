@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ButtonBar?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.text.Font?>
+
+
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <ButtonBar focusTraversable="false" layoutX="6.0" layoutY="353.0" prefHeight="40.0" prefWidth="587.0">
+        <buttons>
+            <Button mnemonicParsing="false" onAction="#cancelEdit" text="Cancel" />
+          <Button mnemonicParsing="false" onAction="#applyEdit" text="Apply" />
+        </buttons>
+      </ButtonBar>
+      <Label layoutX="14.0" layoutY="14.0" text="Recipe: ">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Label>
+      <Label layoutX="13.0" layoutY="41.0" text="Ingredients:">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Label>
+      <TableView fx:id="listOfIngredients" editable="true" layoutX="6.0" layoutY="68.0" onMouseClicked="#rowClicked" prefHeight="327.0" prefWidth="393.0">
+        <columns>
+          <TableColumn fx:id="ingredientNameColumn" prefWidth="175.0" text="Name" />
+          <TableColumn fx:id="quantityColumn" prefWidth="115.0" text="Quantity" />
+            <TableColumn fx:id="measurementColumn" prefWidth="75.0" text="Unit" />
+        </columns>
+         <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+         </columnResizePolicy>
+      </TableView>
+      <Button layoutX="452.0" layoutY="251.0" mnemonicParsing="false" onAction="#addIngredient" text="Add ingredient" />
+      <Button layoutX="440.0" layoutY="282.0" mnemonicParsing="false" onAction="#removeIngredient" text="Remove ingredient" />
+      <TextField fx:id="inputFoodName" layoutX="425.0" layoutY="85.0" />
+      <TextField fx:id="inputQuantity" layoutX="425.0" layoutY="134.0" />
+      <TextField fx:id="inputMeasurement" layoutX="425.0" layoutY="185.0" />
+      <Label layoutX="425.0" layoutY="68.0" text="Name:" />
+      <Label layoutX="425.0" layoutY="117.0" text="Quantity:" />
+      <Label layoutX="425.0" layoutY="168.0" text="Unit:" />
+      <Button layoutX="449.0" layoutY="219.0" mnemonicParsing="false" onAction="#submitEdit" text="Submit changes" />
+      <Label fx:id="errorLabel" alignment="CENTER" layoutX="425.0" layoutY="336.0" prefHeight="17.0" prefWidth="149.0" textFill="RED" />
+      <Label fx:id="recipeName" layoutX="76.0" layoutY="14.0" text="Recipe name">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Label>
+   </children>
+</Pane>
