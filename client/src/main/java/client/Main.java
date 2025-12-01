@@ -20,6 +20,7 @@ import static com.google.inject.Guice.createInjector;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
+import client.scenes.ShoppingListMainCtrl;
 import com.google.inject.Injector;
 
 import client.scenes.AddQuoteCtrl;
@@ -64,7 +65,9 @@ public class Main extends Application {
 @Override
 public void start(Stage primaryStage) throws Exception {
 	Parent root = FXMLLoader.load(getClass()
-			.getResource("/client/scenes/MainUI.fxml")); // Adjust path if needed
+			.getResource("/client/scenes/ShoppingListMainUI.fxml"));
+
+    // Adjust path if needed
 	primaryStage.setTitle("Create Recipe");
 	primaryStage.setScene(new Scene(root));
 	primaryStage.show();
