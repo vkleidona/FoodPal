@@ -25,6 +25,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
 import org.glassfish.jersey.client.ClientConfig;
 
 import commons.Quote;
@@ -81,5 +85,31 @@ public class ServerUtils {
                 .target(SERVER + "api/recipes/" + recipe.getId())
                 .request(APPLICATION_JSON)
                 .put(Entity.entity(recipe, APPLICATION_JSON), Recipe.class);
+    }
+
+    public void goToMainUI(Scene currentScene) {
+        try {
+            // loading the fxml file, the UI where the user will be directed
+            // between "" the filepath to the main UI needs to be added
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/client/scenes/MainUI.fxml"));
+
+            // this builds the UI, meaning any previous user input will be reset
+            /*
+            this can be adjusted, depending on whether we want to keep the
+            previous user input, or not
+             */
+            Parent mainRoot = loader.load();
+
+            // we will have here our current scene, so then it can be changed
+            Stage stage = (Stage) currentScene.getWindow();
+
+            // a new scene is created
+            Scene mainScene = new Scene(mainRoot);
+
+            // the current scene is replaced with the new one
+            stage.setScene(mainScene);
+        } catch (IOException e){
+            // if loading the FXML file fails, the error will be caught here
+        }
     }
 }
