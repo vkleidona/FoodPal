@@ -209,17 +209,12 @@ public class EditIngredientsCtrl implements Initializable {
      */
     @FXML
     public void applyEdit() {
-        recipe.setId(1);
-        recipe.setIngredients(listOfIngredients.getItems());
-        System.out.println(recipe);
-        // Send the new listOfIngredients to the server.
         try {
             Recipe done = client.target(recipeEndpointUrl)
                     .path("/ingredients/set/" + recipe.getId())
                     .request(APPLICATION_JSON)
                     .post(Entity.entity(listOfIngredients.getItems(), APPLICATION_JSON), Recipe.class);
             // Return to the mainUI
-            System.out.println(done);
             closeUI();
         } catch (Exception e) {
             // Exceptions
