@@ -123,12 +123,26 @@ public class MainUICtrl {
     }
 
     private void openCreateRecipeUI() {
-        try {
+        /*try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/client/scenes/creatingRecipe.fxml"));
             Parent root = loader.load();
             Stage stage = new Stage();
             stage.setTitle("Create Recipe");
             stage.setScene(new Scene(root));
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+         */
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/client/scenes/creatingRecipe.fxml"));
+            Parent root = loader.load();
+
+            // use a control that exists in MainUICtrl
+            Stage stage = (Stage) addRecipeButton.getScene().getWindow();
+
+            stage.setScene(new Scene(root));
+            stage.setTitle("Create Recipe");
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
