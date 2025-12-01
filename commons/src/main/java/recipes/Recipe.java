@@ -38,6 +38,9 @@ public class Recipe {
     private String language;
      */
 
+    private Recipe() {
+    }
+
 
      /**
      * A constructor for the Recipe class
