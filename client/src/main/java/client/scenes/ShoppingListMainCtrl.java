@@ -40,35 +40,24 @@ public class ShoppingListMainCtrl {
     private ShoppingList s;
 
     private final ServerUtils server;
-    //private final MainCtrl mainCtrl;
+    private final MainCtrl mainCtrl;
 
-    /*
+
     @Inject
     public ShoppingListMainCtrl (ServerUtils server, MainCtrl mainCtrl) {
-        this.server = new ServerUtils();
-        this.mainCtrl = new MainCtrl();
+        this.server = server;
+        this.mainCtrl = mainCtrl;
     }
 
-    public void init() {
+    public void initialize() {
+        //TODO: Change that to the actual ShoppingList
+        s = ShoppingList.getShoppingList();
         List <Ingredient> ingredientList = s.getIngredients();
         if (ingredientList==null) {
-            ingredientList = new ArrayList<>();
+           ingredientList = new ArrayList<>();
         }
         ingredientsObservableList = FXCollections.observableArrayList(ingredientList);
         ingredientsListView.setItems(ingredientsObservableList);
-    }
-*/
-
-    public ShoppingListMainCtrl () {
-        this.server = new ServerUtils();
-        s = new ShoppingList();
-        //TODO: Change that to the actual ShoppingList
-        List <Ingredient> ingredientList = s.getIngredients();
-        if (ingredientList == null) {
-            ingredientList = new ArrayList<>();
-        }
-        ingredientsObservableList = FXCollections.observableArrayList(ingredientList);
-        ingredientsListView = new ListView<>(ingredientsObservableList);
     }
 
     @FXML
@@ -88,6 +77,6 @@ public class ShoppingListMainCtrl {
 
     @FXML
     public void returnToMain () {
-        server.goToMainUI(this.addIngredientButton.getScene());
+        mainCtrl.showMainMenu();
     }
 }

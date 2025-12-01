@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Objects;
 
 public class ShoppingList {
+
+    private static ShoppingList shoppingList;
     private List<Ingredient> ingredients;
 
     /**
@@ -17,6 +19,13 @@ public class ShoppingList {
      */
     public ShoppingList() {
         this.ingredients = new ArrayList<>();
+    }
+
+    public static ShoppingList getShoppingList () {
+        if (shoppingList == null) {
+            return new ShoppingList();
+        }
+        return shoppingList;
     }
 
     public List <Ingredient> getIngredients () {
@@ -28,7 +37,6 @@ public class ShoppingList {
      * @param i - an Ingredient entity to add to the ShoppingList
      */
     public void addIngredient (Ingredient i) {
-        //TODO: Possibly implement the joining together of ingredients of the same FoodType
         this.ingredients.add(i);
     }
 

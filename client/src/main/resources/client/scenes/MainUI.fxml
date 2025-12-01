@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
@@ -8,8 +9,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="client.scenes.MainUICtrl" prefWidth="800" prefHeight="500">
+<BorderPane prefHeight="500" prefWidth="800" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.scenes.MainUICtrl">
 
     <!-- Top bar with window controls -->
     <top>
@@ -23,7 +23,7 @@
 
     <!-- Left sidebar -->
     <left>
-        <VBox spacing="5" prefWidth="200">
+        <VBox prefWidth="200" spacing="5">
             <ListView fx:id="recipeListView" VBox.vgrow="ALWAYS" />
             <HBox spacing="10">
                 <Button fx:id="addRecipeButton" text="+" />
@@ -37,26 +37,27 @@
         <AnchorPane>
 
             <!-- Recipe Name -->
-            <Label text="Recipe Name:" layoutX="10" layoutY="10"/>
-            <Label fx:id="recipeNameLabel" layoutX="110" layoutY="10"/>
-            <Button fx:id="editNameButton" text="Edit" layoutX="300" layoutY="5"/>
+            <Label layoutX="10" layoutY="10" text="Recipe Name:" />
+            <Label fx:id="recipeNameLabel" layoutX="110" layoutY="10" />
+            <Button fx:id="editNameButton" layoutX="300" layoutY="5" text="Edit" />
 
             <!-- Ingredients -->
-            <Label text="Ingredients:" layoutX="10" layoutY="50"/>
-            <Button fx:id="editIngredientsButton" text="Edit" layoutX="300" layoutY="45"/>
-            <ScrollPane fx:id="ingredientsScrollPane" layoutX="10" layoutY="75" prefWidth="500" prefHeight="150">
+            <Label layoutX="10" layoutY="50" text="Ingredients:" />
+            <Button fx:id="editIngredientsButton" layoutX="300" layoutY="45" text="Edit" />
+            <ScrollPane fx:id="ingredientsScrollPane" layoutX="10" layoutY="75" prefHeight="150" prefWidth="500">
                 <VBox fx:id="ingredientsVBox" spacing="5" />
             </ScrollPane>
 
             <!-- Instructions -->
-            <Label text="Instructions:" layoutX="10" layoutY="240"/>
-            <Button fx:id="editInstructionsButton" text="Edit" layoutX="300" layoutY="235"/>
-            <ScrollPane fx:id="instructionsScrollPane" layoutX="10" layoutY="270" prefWidth="500" prefHeight="150">
+            <Label layoutX="10" layoutY="240" text="Instructions:" />
+            <Button fx:id="editInstructionsButton" layoutX="300" layoutY="235" text="Edit" />
+            <ScrollPane fx:id="instructionsScrollPane" layoutX="10" layoutY="270" prefHeight="150" prefWidth="500">
                 <VBox fx:id="instructionsVBox" spacing="5" />
             </ScrollPane>
 
             <!-- Food Items Button -->
-            <Button fx:id="foodItemButton" text="Go to Food Items" layoutX="10" layoutY="430"/>
+            <Button fx:id="foodItemButton" layoutX="10" layoutY="430" text="Go to Food Items" />
+         <Button fx:id="shoppingListButton" layoutX="136.0" layoutY="429.0" mnemonicParsing="false" onAction="#handleGoToShoppingList" prefHeight="26.0" prefWidth="106.0" text="Shopping List" />
 
         </AnchorPane>
     </center>
