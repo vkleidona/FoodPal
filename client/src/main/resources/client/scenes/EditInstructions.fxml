@@ -29,7 +29,7 @@
       </Label>
       <HBox prefHeight="48.0" prefWidth="560.0">
          <children>
-            <Label style="-fx-font-style: bold;" text="Instructions">
+            <Label text="Instructions">
                <font>
                   <Font name="System Bold" size="24.0" />
                </font>
