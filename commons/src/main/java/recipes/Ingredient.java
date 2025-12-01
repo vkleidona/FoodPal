@@ -39,6 +39,12 @@ public class Ingredient {
     @Column(name = "measurement_type")
     private String measurement;
 
+    // a new column, here all the ingredients will have the equivalent in grams
+    // this will help us calculate the nutritional value
+    // so if somebody entered 1kg of potatoes, in this column we will have 1000 (grams)
+    @Column(name = "quantity_in_grams")
+    private double quantityInGrams;
+
     @ManyToOne(cascade = CascadeType.ALL, optional = false)
     @JoinColumn(name = "RECIPE_ID", referencedColumnName = "ID")
 
@@ -50,6 +56,34 @@ public class Ingredient {
      */
     private Ingredient () {
 
+    }
+
+    /**
+     * constructor for our Ingredient, we will now also save the equivalent to grams
+     * @param quantity here, still int, can be changed to long
+     * @param measurement the chosen unit
+     * @param quantityInGrams the equivalent in grams
+     */
+    public Ingredient(double quantity, String measurement, double quantityInGrams) {
+        this.quantity = quantity;
+        this.measurement = measurement;
+        this.quantityInGrams = quantityInGrams;
+    }
+
+    /**
+     * getter
+     * @return the quantity
+     */
+    public double getQuantityInGrams() {
+        return quantityInGrams;
+    }
+
+    /**
+     * setter
+     * @param quantityInGrams double
+     */
+    public void setQuantityInGrams(double quantityInGrams) {
+        this.quantityInGrams = quantityInGrams;
     }
 
     /**

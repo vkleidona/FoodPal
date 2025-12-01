@@ -41,10 +41,10 @@ public class EditInstructionsCtrlTest {
         EditInstructionsCtrl ctrl = new EditInstructionsCtrl(null, null);
         ctrl.instructionList = new ListView<>();
 
-        Recipe recipe = new Recipe();
+        Recipe recipe = new Recipe("test");
         recipe.setInstructions(List.of("Cut", "Bake"));
 
-        ctrl.initData(recipe);
+        ctrl.initializeData(recipe);
 
         assertEquals(2, ctrl.instructionList.getItems().size());
         assertEquals("Cut", ctrl.instructionList.getItems().get(0));

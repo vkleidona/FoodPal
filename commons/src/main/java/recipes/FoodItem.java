@@ -92,6 +92,26 @@ public class FoodItem {
         return fats;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setKcal(int kcal) {
+        this.kcal = kcal;
+    }
+
+    public void setCarbs(int carbs) {
+        this.carbs = carbs;
+    }
+
+    public void setProteins(int proteins) {
+        this.proteins = proteins;
+    }
+
+    public void setFats(int fats) {
+        this.fats = fats;
+    }
+
     /**
      * An implementation of the equals method for FoodItem
      * @param o - the reference object with which to compare.
