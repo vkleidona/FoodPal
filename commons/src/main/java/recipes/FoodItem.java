@@ -60,7 +60,7 @@ public class FoodItem {
     /**
      * Constructor for the FoodItem entity used by the ObjectMapper
      */
-    private FoodItem () {
+    public FoodItem () {
 
     }
 
