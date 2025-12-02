@@ -46,15 +46,25 @@ public class ShoppingListMainCtrl {
         this.mainCtrl = mainCtrl;
     }
 
+    /**
+     * Initializes all data for the ShoppingList
+     */
     public void initialize() {
         s = ShoppingList.getShoppingList();
         s.loadFile();
+
         List<Ingredient> ingredientList = s.getIngredients();
         if (ingredientList == null) {
-            ingredientList = new ArrayList<>();
+            s.setIngredients(new ArrayList<>());
+            ingredientList = s.getIngredients();
         }
-        ingredientsObservableList = FXCollections.observableArrayList(ingredientList);
-        ingredientsListView.setItems(ingredientsObservableList);
+        if (ingredientsObservableList == null) {
+            ingredientsObservableList = FXCollections.observableArrayList(ingredientList);
+            ingredientsListView.setItems(ingredientsObservableList);
+        }
+
+        ingredientsObservableList.clear();
+        ingredientsObservableList.addAll(s.getIngredients());
 
         ingredientsListView.setCellFactory(view -> new ListCell<>() {
             @Override
@@ -70,7 +80,7 @@ public class ShoppingListMainCtrl {
                     Button editButton = new Button("Edit");
                     Button deleteButton = new Button("Delete");
 
-                    editButton.setOnAction(e -> editIngredient(ingredient));
+                    editButton.setOnAction(e -> showDialog(ingredient));
                     deleteButton.setOnAction(e -> deleteIngredient(ingredient));
 
                     HBox container = new HBox(10, nameLabel, editButton, deleteButton);
@@ -84,7 +94,8 @@ public class ShoppingListMainCtrl {
 
     @FXML
     public void reset () {
-        ingredientsListView.getItems().clear();
+        s.getIngredients().clear();
+        ingredientsObservableList.clear();
     }
 
     @FXML
@@ -97,82 +108,7 @@ public class ShoppingListMainCtrl {
      */
     @FXML
     public void addIngredient () {
-        Dialog <Ingredient> dialogBox = new Dialog<>();
-        dialogBox.setTitle("Add ingredient");
-
-        dialogBox.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-        Button okButton = (Button) dialogBox.getDialogPane().lookupButton(ButtonType.OK);
-        okButton.setDisable(true);
-
-        TextField quantityField = new TextField();
-        quantityField.setPromptText("Enter quantity:");
-
-        TextField foodItemField = new TextField();
-        foodItemField.setPromptText("Enter food type:");
-
-        //TODO: Configure for new enum
-        TextField unitField = new TextField();
-        unitField.setPromptText("Enter unit:");
-
-        HBox ingredientInput = new HBox();
-        ingredientInput.setSpacing(15);
-        ingredientInput.setPadding(new Insets(20));
-        ingredientInput.getChildren().addAll(foodItemField, quantityField, unitField);
-        dialogBox.getDialogPane().setContent(ingredientInput);
-
-        ChangeListener <String> inputValidator = (obs, oldVal, newVal) -> {
-            String foodText = foodItemField.getText().trim();
-            String quantityText = quantityField.getText().trim();
-            String measurementText = unitField.getText().trim();
-            boolean condition = !foodText.isEmpty() && !quantityText.isEmpty() && !measurementText.isEmpty();
-
-            okButton.setDisable(!condition);
-        };
-
-        foodItemField.textProperty().addListener(inputValidator);
-        quantityField.textProperty().addListener(inputValidator);
-        unitField.textProperty().addListener(inputValidator);
-
-        dialogBox.setResultConverter(button -> {
-            if (button == ButtonType.OK) {
-
-                String input = foodItemField.getText().trim();
-                FoodItem foodItem = server.searchForFoodItem(input);
-
-                if (foodItem == null) {
-                    Alert nonExistentItemAlert = new Alert(Alert.AlertType.ERROR);
-                    nonExistentItemAlert.setTitle("Food item not found.");
-                    nonExistentItemAlert.setContentText("Food Item does not exist in the database.");
-                    nonExistentItemAlert.showAndWait();
-                    foodItemField.clear();
-                    foodItemField.setPromptText("Enter food type:");
-                    return null;
-                }
-
-                double quantity = 0;
-                try {
-                    quantity = Double.parseDouble(quantityField.getText());
-                }catch (NumberFormatException e) {
-                    Alert wrongNumberInput = new Alert(Alert.AlertType.ERROR);
-                    wrongNumberInput.setTitle("Wrong input");
-                    wrongNumberInput.setContentText("Food Item does not exist in the database.");
-                    wrongNumberInput.showAndWait();
-                    quantityField.clear();
-                    quantityField.setPromptText("Enter quantity");
-                    return null;
-                }
-
-                String measurementType = unitField.getText();
-                return new Ingredient(foodItem, quantity, measurementType);
-            }
-            return null;
-        });
-
-        dialogBox.showAndWait().ifPresent(result -> {
-            s.addIngredient(result);
-            addIngredientToShoppingList(result);
-        });
-
+        showDialog(null);
     }
 
     /**
@@ -192,8 +128,105 @@ public class ShoppingListMainCtrl {
         ShoppingList.getShoppingList().addIngredient(ingredient);
     }
 
-    public void editIngredient(Ingredient ingredient) {
+    /**
+     * Handles the functionality for adding / changing an ingredient
+     * depending on the button clicked
+     * @param ingredient - Ingredient to be edited
+     */
+    public void showDialog(Ingredient ingredient) {
+        boolean editing = !(ingredient==null);
+        Dialog <Ingredient> dialogBox = new Dialog<>();
+        dialogBox.setTitle("Change ingredient");
 
+        dialogBox.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        Button okButton = (Button) dialogBox.getDialogPane().lookupButton(ButtonType.OK);
+        okButton.setDisable(true);
+
+        TextField foodItemField = new TextField();
+        TextField quantityField = new TextField();
+        TextField unitField = new TextField();
+
+        if (!editing) {
+            foodItemField.setPromptText("Enter food type:");
+            quantityField.setPromptText("Enter quantity:");
+            unitField.setPromptText("Enter unit field:");
+        }else{
+            foodItemField.setText(ingredient.getFoodName());
+            quantityField.setText(String.valueOf(ingredient.getQuantity()));
+            //TODO: Configure validation for new enum
+            unitField.setText(ingredient.getMeasurement());
+        }
+
+        HBox ingredientInput = new HBox();
+        ingredientInput.setSpacing(15);
+        ingredientInput.setPadding(new Insets(20));
+        ingredientInput.getChildren().addAll(foodItemField, quantityField, unitField);
+        dialogBox.getDialogPane().setContent(ingredientInput);
+
+        // Disables the OK Button until all items have been entered
+        ChangeListener <String> inputValidator = (obs, oldVal, newVal) -> {
+            String foodText = foodItemField.getText().trim();
+            String quantityText = quantityField.getText().trim();
+            String measurementText = unitField.getText().trim();
+            boolean condition = !foodText.isEmpty() && !quantityText.isEmpty()
+                    && !measurementText.isEmpty();
+
+            okButton.setDisable(!condition);
+        };
+
+        foodItemField.textProperty().addListener(inputValidator);
+        quantityField.textProperty().addListener(inputValidator);
+        unitField.textProperty().addListener(inputValidator);
+
+        dialogBox.setResultConverter(button -> {
+            if (button == ButtonType.OK) {
+
+                String input = foodItemField.getText().trim();
+                FoodItem foodItem = server.searchForFoodItem(input);
+
+                if (foodItem == null) {
+                    Alert nonExistentItemAlert = new Alert(Alert.AlertType.ERROR);
+                    nonExistentItemAlert.setTitle("Food item not found.");
+                    nonExistentItemAlert.
+                            setContentText("Food Item does not exist in the database.");
+                    nonExistentItemAlert.showAndWait();
+                    return null;
+                }
+
+                double quantity = 0;
+                try {
+                    quantity = Double.parseDouble(quantityField.getText());
+                }catch (NumberFormatException e) {
+                    Alert wrongNumberInput = new Alert(Alert.AlertType.ERROR);
+                    wrongNumberInput.setTitle("Wrong input");
+                    wrongNumberInput.setContentText("Food Item does not exist in the database.");
+                    wrongNumberInput.showAndWait();
+                    return null;
+                }
+
+                String measurementType = unitField.getText();
+                if (editing) {
+                    ingredient.setFoodType(foodItem);
+                    ingredient.setQuantity(quantity);
+                    ingredient.setMeasurement(measurementType);
+                    return ingredient;
+                }
+                return new Ingredient(foodItem, quantity, measurementType);
+            }
+            return null;
+        });
+
+        int indexClicked = ingredientsObservableList.indexOf(ingredient);
+
+        dialogBox.showAndWait().ifPresent(result -> {
+            if (editing) {
+                if (indexClicked >= 0) {
+                    ingredientsObservableList.set(indexClicked, ingredient);
+                }
+            }else{
+                addIngredientToShoppingList(result);
+            }
+        });
     }
 
     /**

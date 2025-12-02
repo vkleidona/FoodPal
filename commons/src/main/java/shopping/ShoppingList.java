@@ -38,6 +38,14 @@ public class ShoppingList implements Serializable {
     }
 
     /**
+     * I need this method to reset all Ingredient entities to null
+     * @param ingredients - the ingredients I am setting
+     */
+    public void setIngredients (List <Ingredient> ingredients) {
+        this.ingredients = ingredients;
+    }
+
+    /**
      * A method to add an ingredient from the ShoppingList
      * @param i - an Ingredient entity to add to the ShoppingList
      */
