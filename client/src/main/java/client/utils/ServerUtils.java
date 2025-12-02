@@ -36,6 +36,7 @@ import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.GenericType;
+import recipes.FoodItem;
 import recipes.Recipe;
 
 public class ServerUtils {
@@ -111,5 +112,19 @@ public class ServerUtils {
         } catch (IOException e){
             // if loading the FXML file fails, the error will be caught here
         }
+    }
+
+    public FoodItem addFoodItem(FoodItem foodItem) {
+        return ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER).path("api/fooditems")
+                .request(APPLICATION_JSON)
+                .post(Entity.entity(foodItem, APPLICATION_JSON), FoodItem.class);
+    }
+
+    public List<FoodItem> getAllFoodItems() {
+        return ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER).path("api/fooditems")
+                .request(APPLICATION_JSON)
+                .get(new GenericType<List<FoodItem>>() {});
     }
 }

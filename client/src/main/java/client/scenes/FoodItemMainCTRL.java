@@ -1,5 +1,6 @@
 package client.scenes;
 
+import client.utils.ServerUtils;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -14,32 +15,29 @@ import javafx.stage.Stage;
 import recipes.FoodItem;
 
 import java.io.IOException;
+import java.util.List;
 
 public class FoodItemMainCTRL {
 
     @FXML
     private ListView<FoodItem> foodItemList;
-
     @FXML
     private Label foodNameLabel;
-
     @FXML
     private Label nutritionLabel;
-
     @FXML
     private Label kcalLabel;
-
     @FXML
     private Label carbsLabel;
-
     @FXML
     private Label proteinsLabel;
-
     @FXML
     private Label fatsLabel;
-
     @FXML
     private Button mainMenuButton;
+
+    private MainCtrl mainCtrl = new MainCtrl();
+    private final ServerUtils serverUtils = new ServerUtils();
 
     @FXML
     public void initialize() {
@@ -47,15 +45,14 @@ public class FoodItemMainCTRL {
         Making the listViewer populated with some food items for testing purposes.
         This should be changed later with the actual food items in the database.
         */
-        ObservableList<FoodItem> items = FXCollections.observableArrayList(
-                new FoodItem("Apple", 100, 15, 0, 2),
-                new FoodItem("Orange", 50, 10, 1, 5)
-        );
+        List<FoodItem> allFoodItems = serverUtils.getAllFoodItems();
+        ObservableList<FoodItem> items = FXCollections.observableArrayList(allFoodItems);
         foodItemList.setItems(items);
 
         /*
         Here, the behaviour of how each cell is shown in the UI is overridden as we only want to show the name.
         First super.updateItem is called so nothing else goes wrong.
+        AI was used for help here
          */
         foodItemList.setCellFactory(param -> new ListCell<FoodItem>() {
             @Override
@@ -98,7 +95,8 @@ public class FoodItemMainCTRL {
 
     @FXML
     public void addFoodItem() {
-        showAddFoodItemUI();
+        mainCtrl.showAddFoodItem();
+
         System.out.println("Adding food item");
 
         // TO DO: Adding the created item to the ListView and Database.
