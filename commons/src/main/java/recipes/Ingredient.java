@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+
+import java.io.Serializable;
 import java.util.Objects;
 
 /*
@@ -17,7 +19,7 @@ not needed here.
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Entity
-public class Ingredient {
+public class Ingredient implements Serializable {
     @Id
     @GeneratedValue (strategy = GenerationType.AUTO)
     /*

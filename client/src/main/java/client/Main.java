@@ -31,6 +31,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import shopping.ShoppingList;
 
 public class Main extends Application {
 
@@ -64,15 +65,10 @@ public class Main extends Application {
         var mainCtrl = INJECTOR.getInstance(MainCtrl.class);
         mainCtrl.initialize(primaryStage, overview, add,mainUI, editInstructions, createRecipe, addFoodItem, foodItemMain, shoppingListMain);
 	}
-/*
-@Override
-public void start(Stage primaryStage) throws Exception {
-	Parent root = FXMLLoader.load(getClass()
-			.getResource("/client/scenes/MainUI.fxml")); // Adjust path if needed
-	primaryStage.setTitle("Main Menu");
-	primaryStage.setScene(new Scene(root));
-	primaryStage.show();
-}
- */
 
+    @Override
+    public void stop() throws Exception {
+        ShoppingList.getShoppingList().storeFile();
+        super.stop();
+    }
 }

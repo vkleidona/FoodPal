@@ -48,6 +48,7 @@ public class ShoppingListMainCtrl {
 
     public void initialize() {
         s = ShoppingList.getShoppingList();
+        s.loadFile();
         List<Ingredient> ingredientList = s.getIngredients();
         if (ingredientList == null) {
             ingredientList = new ArrayList<>();
@@ -169,7 +170,7 @@ public class ShoppingListMainCtrl {
 
         dialogBox.showAndWait().ifPresent(result -> {
             s.addIngredient(result);
-            refreshDisplay(result);
+            addIngredientToShoppingList(result);
         });
 
     }
@@ -186,16 +187,21 @@ public class ShoppingListMainCtrl {
      * Adds new ingredient to the list, as well as the options to remove / edit it.
      * @param ingredient - Ingredient to be added
      */
-    public void refreshDisplay (Ingredient ingredient) {
+    public void addIngredientToShoppingList (Ingredient ingredient) {
         ingredientsObservableList.add(ingredient);
-
+        ShoppingList.getShoppingList().addIngredient(ingredient);
     }
 
     public void editIngredient(Ingredient ingredient) {
 
     }
 
+    /**
+     * Deletes ingredient from the ShoppingList
+     * @param ingredient - Ingredient to be deleted from the shopping list
+     */
     public void deleteIngredient(Ingredient ingredient) {
-
+        s.removeIngredient(ingredient);
+        ingredientsObservableList.remove(ingredient);
     }
 }
