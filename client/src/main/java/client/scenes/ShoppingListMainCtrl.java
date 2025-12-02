@@ -14,6 +14,8 @@ import recipes.FoodItem;
 import recipes.Ingredient;
 import shopping.ShoppingList;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 
 
@@ -40,6 +42,13 @@ public class ShoppingListMainCtrl {
     private final ServerUtils server;
     private final MainCtrl mainCtrl;
 
+    /**
+     * A constructor which uses dependency injection
+     * @param server - an instance of the ServerUtils class with useful methods for
+     *               server access
+     * @param mainCtrl - an instance of the Main controller which allows the user
+     *                 to switch scenes
+     */
     @Inject
     public ShoppingListMainCtrl (ServerUtils server, MainCtrl mainCtrl) {
         this.server = server;
@@ -92,15 +101,30 @@ public class ShoppingListMainCtrl {
         });
     }
 
+    /**
+     * Clears the ShoppingList of Ingredients
+     */
     @FXML
     public void reset () {
         s.getIngredients().clear();
         ingredientsObservableList.clear();
     }
 
+    /**
+     * Creates a printable version of the ShoppingList
+     * BTW I don't know if doing it manually like in IP is acceptable
+     * or if I have to use a framework. Whoever is reviewing this,
+     * please share your opinion (or if you have concrete knowledge
+     * about the requirements, even better)
+     */
     @FXML
-    public void print () {
-
+    public void print () throws IOException {
+        try (FileWriter writer = new FileWriter("shopping_list.txt")) {
+            for (Ingredient ingredient : ingredientsObservableList) {
+                writer.write(ingredient.toString());
+                writer.write("\n");
+            }
+        }
     }
 
     /**

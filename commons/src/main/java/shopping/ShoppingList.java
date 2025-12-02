@@ -12,6 +12,11 @@ import java.util.Objects;
 
 public class ShoppingList implements Serializable {
 
+    /**
+     * I know Sebastian said we shouldn't use static, but I thought it
+     * was a good implementation of the fact that the ShoppingList is a Singleton
+     * Whoever is reviewing this, share your opinion and if I should change it
+     */
     private static ShoppingList shoppingList;
     private List<Ingredient> ingredients;
 
@@ -66,12 +71,12 @@ public class ShoppingList implements Serializable {
      */
     public void storeFile () {
         try (ObjectOutputStream outputStream = new ObjectOutputStream(
-                new FileOutputStream("shopping_list.bin"))) {
+                new FileOutputStream("shopping_list_ingredients.bin"))) {
             outputStream.writeObject(ingredients);
         } catch (FileNotFoundException e) {
             System.err.println("File not found!");
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Something went wrong!");
         }
     }
 
@@ -80,7 +85,7 @@ public class ShoppingList implements Serializable {
      */
     public void loadFile () {
         try (ObjectInputStream inputStream =
-                     new ObjectInputStream(new FileInputStream("shopping_list.bin"))) {
+                     new ObjectInputStream(new FileInputStream("shopping_list_ingredients.bin"))) {
             List <Ingredient> fileIngredients = (List<Ingredient>) inputStream.readObject();
             if (fileIngredients == null) {
                 ingredients = new ArrayList<>();
