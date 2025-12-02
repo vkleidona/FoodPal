@@ -1,6 +1,7 @@
 package client.scenes;
 
 import client.utils.ServerUtils;
+import jakarta.inject.Inject;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -36,8 +37,13 @@ public class FoodItemMainCTRL {
     @FXML
     private Button mainMenuButton;
 
-    private MainCtrl mainCtrl = new MainCtrl();
+    private MainCtrl mainCtrl;
     private final ServerUtils serverUtils = new ServerUtils();
+
+    @Inject
+    public FoodItemMainCTRL(MainCtrl mainCtrl) {
+        this.mainCtrl = mainCtrl;
+    }
 
     @FXML
     public void initialize() {
@@ -96,9 +102,6 @@ public class FoodItemMainCTRL {
     @FXML
     public void addFoodItem() {
         mainCtrl.showAddFoodItem();
-
-        System.out.println("Adding food item");
-
         // TO DO: Adding the created item to the ListView and Database.
         // Now it just pops up the adding ui
     }
@@ -123,36 +126,14 @@ public class FoodItemMainCTRL {
 
     @FXML
     public void showMainUI() {
-        try {
-            // Edit the path of this line to the correct one after the main scene is added
-            Parent root = FXMLLoader.load(getClass().getResource("/client/scenes/Main.fxml"));
-
-            // Get current window from the button
-            Stage stage = (Stage) mainMenuButton.getScene().getWindow();
-
-            stage.setTitle("Main Menu");
-            stage.setScene(new Scene(root));
-            stage.show();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        mainCtrl.showMainMenu();
     }
 
     @FXML
-    public void showAddFoodItemUI() {
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("/client/scenes/AddFoodItem.fxml"));
-
-            Stage stage = (Stage) mainMenuButton.getScene().getWindow();
-
-            stage.setTitle("Main Menu");
-            stage.setScene(new Scene(root));
-            stage.show();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void refreshFoodItems(){
+        List<FoodItem> allFoodItems = serverUtils.getAllFoodItems();
+        ObservableList<FoodItem> items = FXCollections.observableArrayList(allFoodItems);
+        foodItemList.setItems(items);
     }
 
 }

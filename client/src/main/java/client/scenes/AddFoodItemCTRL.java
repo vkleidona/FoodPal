@@ -1,6 +1,7 @@
 package client.scenes;
 
 import client.utils.ServerUtils;
+import jakarta.inject.Inject;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
@@ -24,8 +25,13 @@ public class AddFoodItemCTRL {
     @FXML
     private Button confirmButton;
 
-    private MainCtrl mainCtrl = new MainCtrl();
+    private MainCtrl mainCtrl;
     private ServerUtils serverUtils = new ServerUtils();
+
+    @Inject
+    public AddFoodItemCTRL(MainCtrl mainCtrl) {
+        this.mainCtrl = mainCtrl;
+    }
 
     @FXML
     public void confirmChanges(){
