@@ -44,17 +44,17 @@ public class MainCtrl {
     private Scene createRecipe;
 
     //screen 4
-    private AddFoodItemCTRL addFoodItemCtrl;
+    private AddFoodItemCtrl addFoodItemCtrl;
     private Scene addFoodItem;
 
     //screen 5
-    private FoodItemMainCTRL foodItemMainCtrl;
+    private FoodItemMainCtrl foodItemMainCtrl;
     private Scene foodItemMain;
 
     public void initialize(Stage primaryStage, Pair<QuoteOverviewCtrl, Parent> overview,
                            Pair<AddQuoteCtrl, Parent> add, Pair<MainUICtrl, Parent> mainMenu, Pair<EditInstructionsCtrl, Parent>
-                                   editInstructions, Pair<CreateRecipeCtrl, Parent> createRecipe, Pair<AddFoodItemCTRL, Parent>
-                                   addFoodItem, Pair<FoodItemMainCTRL, Parent> foodItemMain) {
+                                   editInstructions, Pair<CreateRecipeCtrl, Parent> createRecipe, Pair<AddFoodItemCtrl, Parent>
+                                   addFoodItem, Pair<FoodItemMainCtrl, Parent> foodItemMain) {
         this.primaryStage = primaryStage;
         this.overviewCtrl = overview.getKey();
         this.overview = new Scene(overview.getValue());
@@ -119,11 +119,11 @@ public class MainCtrl {
         primaryStage.setScene(foodItemMain);
     }
 
-    public AddFoodItemCTRL getAddFoodItemCtrl() {
+    public AddFoodItemCtrl getAddFoodItemCtrl() {
         return addFoodItemCtrl;
     }
 
-    public FoodItemMainCTRL getFoodItemMainCtrl() {
+    public FoodItemMainCtrl getFoodItemMainCtrl() {
         return foodItemMainCtrl;
     }
 }

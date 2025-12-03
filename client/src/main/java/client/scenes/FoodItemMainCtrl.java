@@ -5,18 +5,13 @@ import jakarta.inject.Inject;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.stage.Stage;
 import recipes.FoodItem;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-public class FoodItemMainCTRL {
+public class FoodItemMainCtrl {
 
     @FXML
     private ListView<FoodItem> foodItemList;
@@ -39,7 +34,7 @@ public class FoodItemMainCTRL {
     private final ServerUtils serverUtils = new ServerUtils();
 
     @Inject
-    public FoodItemMainCTRL(MainCtrl mainCtrl) {
+    public FoodItemMainCtrl(MainCtrl mainCtrl) {
         this.mainCtrl = mainCtrl;
     }
 

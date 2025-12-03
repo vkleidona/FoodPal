@@ -7,10 +7,9 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.stage.Stage;
 import recipes.FoodItem;
 
-public class AddFoodItemCTRL {
+public class AddFoodItemCtrl {
 
     @FXML
     private Label sceneTitle;
@@ -35,7 +34,7 @@ public class AddFoodItemCTRL {
     private FoodItem editingItem;
 
     @Inject
-    public AddFoodItemCTRL(MainCtrl mainCtrl) {
+    public AddFoodItemCtrl(MainCtrl mainCtrl) {
         this.mainCtrl = mainCtrl;
     }
 

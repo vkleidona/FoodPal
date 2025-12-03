@@ -25,11 +25,8 @@ import com.google.inject.Injector;
 
 import client.utils.ServerUtils;
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
 
 
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 public class Main extends Application {
@@ -57,8 +54,8 @@ public class Main extends Application {
         var mainUI = FXML.load(MainUICtrl.class, "client", "scenes", "MainUI.fxml");
         var editInstructions = FXML.load(EditInstructionsCtrl.class, "client", "scenes", "EditInstructions.fxml");
         var createRecipe = FXML.load(CreateRecipeCtrl.class, "client", "scenes", "creatingRecipe.fxml");
-        var addFoodItem = FXML.load(AddFoodItemCTRL.class, "client", "scenes", "AddFoodItem.fxml");
-        var foodItemMain = FXML.load(FoodItemMainCTRL.class, "client", "scenes", "FoodItemMain.fxml");
+        var addFoodItem = FXML.load(AddFoodItemCtrl.class, "client", "scenes", "AddFoodItem.fxml");
+        var foodItemMain = FXML.load(FoodItemMainCtrl.class, "client", "scenes", "FoodItemMain.fxml");
 
 		var mainCtrl = INJECTOR.getInstance(MainCtrl.class);
         mainCtrl.initialize(primaryStage, overview, add,mainUI, editInstructions, createRecipe, addFoodItem, foodItemMain);
