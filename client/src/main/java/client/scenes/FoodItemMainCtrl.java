@@ -40,10 +40,6 @@ public class FoodItemMainCtrl {
 
     @FXML
     public void initialize() {
-        /*
-        Making the listViewer populated with some food items for testing purposes.
-        This should be changed later with the actual food items in the database.
-        */
         refreshFoodItems();
         /*
         Here, the behaviour of how each cell is shown in the UI is overridden as we only want to show the name.
