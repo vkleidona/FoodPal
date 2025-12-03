@@ -127,4 +127,11 @@ public class ServerUtils {
                 .request(APPLICATION_JSON)
                 .get(new GenericType<List<FoodItem>>() {});
     }
+
+    public void deleteFoodItem(String name) {
+        ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER).path("api/fooditems/" + name)
+                .request(APPLICATION_JSON)
+                .delete();
+    }
 }

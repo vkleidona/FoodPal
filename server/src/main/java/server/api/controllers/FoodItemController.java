@@ -33,4 +33,14 @@ public class FoodItemController {
         return repo.findAll();
     }
 
+    @DeleteMapping("/{name}")
+    public ResponseEntity<Void> deleteFoodItem(@PathVariable String name) {
+        if (!repo.existsById(name)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        repo.deleteById(name);
+        return ResponseEntity.ok().build();
+    }
+
 }

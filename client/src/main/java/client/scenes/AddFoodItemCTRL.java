@@ -25,8 +25,8 @@ public class AddFoodItemCTRL {
     @FXML
     private Button confirmButton;
 
-    private MainCtrl mainCtrl;
-    private ServerUtils serverUtils = new ServerUtils();
+    private final MainCtrl mainCtrl;
+    private final ServerUtils serverUtils = new ServerUtils();
 
     @Inject
     public AddFoodItemCTRL(MainCtrl mainCtrl) {

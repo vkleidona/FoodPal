@@ -8,15 +8,13 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
+import javafx.scene.control.*;
 import javafx.stage.Stage;
 import recipes.FoodItem;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 public class FoodItemMainCTRL {
 
@@ -51,10 +49,7 @@ public class FoodItemMainCTRL {
         Making the listViewer populated with some food items for testing purposes.
         This should be changed later with the actual food items in the database.
         */
-        List<FoodItem> allFoodItems = serverUtils.getAllFoodItems();
-        ObservableList<FoodItem> items = FXCollections.observableArrayList(allFoodItems);
-        foodItemList.setItems(items);
-
+        refreshFoodItems();
         /*
         Here, the behaviour of how each cell is shown in the UI is overridden as we only want to show the name.
         First super.updateItem is called so nothing else goes wrong.
@@ -102,14 +97,32 @@ public class FoodItemMainCTRL {
     @FXML
     public void addFoodItem() {
         mainCtrl.showAddFoodItem();
-        // TO DO: Adding the created item to the ListView and Database.
-        // Now it just pops up the adding ui
     }
 
     @FXML
     public void deleteFoodItem() {
-        // TO DO: Deleting a food item from the DB and from the ListView
-        System.out.println("Deleting food item");
+        FoodItem selectedFoodItem = foodItemList.getSelectionModel().getSelectedItem();
+
+        if(selectedFoodItem == null) {
+            Alert noSelection = new Alert(Alert.AlertType.WARNING);
+            noSelection.setTitle("Nothing Selected");
+            noSelection.setHeaderText("No food item was selected");
+            noSelection.setContentText("Please select a food item before deleting.");
+            noSelection.showAndWait();
+            return;
+        }
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Deleting Selected Food Item");
+        alert.setHeaderText("Are you sure?");
+        alert.setContentText("Do you want to delete the item " + selectedFoodItem.getName() + " ?");
+
+        Optional<ButtonType> result = alert.showAndWait();
+        if(result.isPresent() && result.get() == ButtonType.OK){
+            serverUtils.deleteFoodItem(selectedFoodItem.getName());
+            refreshFoodItems();
+        }
+
     }
 
     @FXML
