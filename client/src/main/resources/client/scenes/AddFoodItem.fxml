@@ -9,7 +9,6 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-
 <Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="373.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.scenes.AddFoodItemCTRL">
    <children>
       <HBox alignment="CENTER" layoutX="14.0" layoutY="8.0" prefHeight="30.0" prefWidth="573.0">
@@ -23,7 +22,7 @@
       </HBox>
       <HBox alignment="CENTER_LEFT" layoutX="14.0" layoutY="43.0" prefHeight="30.0" prefWidth="573.0">
          <children>
-            <Label text="Adding Food Item" textAlignment="CENTER">
+            <Label fx:id="sceneTitle" text="Adding Food Item" textAlignment="CENTER">
                <font>
                   <Font name="Bookman Old Style" size="15.0" />
                </font>

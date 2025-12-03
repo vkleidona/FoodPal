@@ -118,4 +118,12 @@ public class MainCtrl {
         primaryStage.setTitle("Food Item Main");
         primaryStage.setScene(foodItemMain);
     }
+
+    public AddFoodItemCTRL getAddFoodItemCtrl() {
+        return addFoodItemCtrl;
+    }
+
+    public FoodItemMainCTRL getFoodItemMainCtrl() {
+        return foodItemMainCtrl;
+    }
 }

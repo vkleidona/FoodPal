@@ -129,12 +129,16 @@ public class FoodItemMainCTRL {
     public void editFoodItem() {
         FoodItem selectedItem = foodItemList.getSelectionModel().getSelectedItem();
         if (selectedItem == null) {
-            System.out.println("No food item selected");
+            Alert noSelection = new Alert(Alert.AlertType.WARNING);
+            noSelection.setTitle("Nothing Selected");
+            noSelection.setHeaderText("No food item was selected");
+            noSelection.setContentText("Please select a food item before editing.");
+            noSelection.showAndWait();
             return;
         }
 
-        System.out.println("editing item");
-        // TO DO: Editing the values of the selected item
+        mainCtrl.showAddFoodItem();
+        mainCtrl.getAddFoodItemCtrl().setEditingItem(selectedItem);
     }
 
     @FXML

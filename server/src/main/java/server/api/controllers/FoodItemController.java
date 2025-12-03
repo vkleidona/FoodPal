@@ -43,4 +43,23 @@ public class FoodItemController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/{name}")
+    public ResponseEntity<FoodItem> updateFoodItem(@PathVariable String name, @RequestBody FoodItem updatedItem) {
+        if (!repo.existsById(name)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        repo.findById(name).map(item -> {
+            item.setName(updatedItem.getName());
+            item.setKcal(updatedItem.getKcal());
+            item.setCarbs(updatedItem.getCarbs());
+            item.setProteins(updatedItem.getProteins());
+            item.setFats(updatedItem.getFats());
+
+            FoodItem saved = repo.save(item);
+            return ResponseEntity.ok(saved);
+        });
+        return ResponseEntity.ok().build();
+    }
+
 }

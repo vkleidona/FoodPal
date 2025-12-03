@@ -134,4 +134,11 @@ public class ServerUtils {
                 .request(APPLICATION_JSON)
                 .delete();
     }
+
+    public FoodItem updateFoodItem(String name, FoodItem foodItem) {
+        return ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER).path("api/fooditems/" + foodItem.getName())
+                .request(APPLICATION_JSON)
+                .put(Entity.entity(foodItem, APPLICATION_JSON), FoodItem.class);
+    }
 }
