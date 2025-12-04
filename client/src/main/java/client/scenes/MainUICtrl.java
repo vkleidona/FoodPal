@@ -1,5 +1,6 @@
 package client.scenes;
 
+import com.google.inject.Inject;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -44,6 +45,13 @@ public class MainUICtrl {
 
     private List<Recipe> currentRecipes;
 
+    private MainCtrl mainCtrl;
+
+    @Inject
+    public MainUICtrl(MainCtrl mainCtrl) {
+        this.mainCtrl = mainCtrl;
+    }
+
     @FXML
     public void initialize() {
         loadRecipes();
@@ -72,7 +80,15 @@ public class MainUICtrl {
         // Placeholders for edit buttons
         editNameButton.setOnAction(e -> handleEditName());
         editIngredientsButton.setOnAction(e -> handleEditIngredients());
-        editInstructionsButton.setOnAction(e -> handleEditInstructions());
+        editInstructionsButton.setOnAction(e -> {
+            int selectedIndex = recipeListView.getSelectionModel().getSelectedIndex();
+            if (selectedIndex >= 0 && selectedIndex < currentRecipes.size()) {
+                handleEditInstructions(currentRecipes.get(selectedIndex));
+            }
+            else{
+                System.out.println("Please select a recipe to edit");
+            }
+        });
         foodItemButton.setOnAction(e -> handleGoToFoodItems());
     }
 
@@ -94,6 +110,7 @@ public class MainUICtrl {
             } else {
                 clearRecipeDisplay();
             }
+
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -185,6 +202,14 @@ public class MainUICtrl {
     // Placeholder methods for edit buttons
     private void handleEditName() { System.out.println("Edit name placeholder"); }
     private void handleEditIngredients() { System.out.println("Edit ingredients placeholder"); }
-    private void handleEditInstructions() { System.out.println("Edit instructions placeholder"); }
+
+    private void handleEditInstructions(Recipe recipe) {
+        if(recipe == null){
+            System.out.println("Recipe is null");
+            return;
+        }
+        mainCtrl.showEditInstructions(recipe);
+    }
+
     private void handleGoToFoodItems() { System.out.println("Go to Food Items placeholder"); }
 }
