@@ -18,14 +18,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class CreateRecipeCtrlTest extends ApplicationTest {
 
-   /* @BeforeAll
+    @BeforeAll
     static void skipInCiWithoutDisplay() {
         String display = System.getenv("DISPLAY");
         Assumptions.assumeTrue(display != null && !display.isEmpty(),
                 "Skipping JavaFX UI tests because DISPLAY is not available (CI)");
     }
 
-    */
 
     private CreateRecipeCtrl controller;
 
