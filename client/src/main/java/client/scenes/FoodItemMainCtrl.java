@@ -1,61 +1,55 @@
 package client.scenes;
 
+import client.utils.ServerUtils;
+import jakarta.inject.Inject;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.stage.Stage;
+import javafx.scene.control.*;
 import recipes.FoodItem;
 
-import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 
-public class FoodItemMainCTRL {
+public class FoodItemMainCtrl {
 
     @FXML
     private ListView<FoodItem> foodItemList;
-
     @FXML
     private Label foodNameLabel;
-
     @FXML
     private Label nutritionLabel;
-
     @FXML
     private Label kcalLabel;
-
     @FXML
     private Label carbsLabel;
-
     @FXML
     private Label proteinsLabel;
-
     @FXML
     private Label fatsLabel;
-
     @FXML
     private Button mainMenuButton;
 
+    private final MainCtrl mainCtrl;
+    private final ServerUtils serverUtils;
+
+    @Inject
+    public FoodItemMainCtrl(MainCtrl mainCtrl, ServerUtils serverUtils) {
+        this.mainCtrl = mainCtrl;
+        this.serverUtils = serverUtils;
+    }
+
     @FXML
     public void initialize() {
-        /*
-        Making the listViewer populated with some food items for testing purposes.
-        This should be changed later with the actual food items in the database.
-        */
-        ObservableList<FoodItem> items = FXCollections.observableArrayList(
-                new FoodItem("Apple", 100, 15, 0, 2),
-                new FoodItem("Orange", 50, 10, 1, 5)
-        );
-        foodItemList.setItems(items);
-
+        try {
+            refreshFoodItems();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         /*
         Here, the behaviour of how each cell is shown in the UI is overridden as we only want to show the name.
         First super.updateItem is called so nothing else goes wrong.
+        AI was used for help here
          */
         foodItemList.setCellFactory(param -> new ListCell<FoodItem>() {
             @Override
@@ -98,63 +92,61 @@ public class FoodItemMainCTRL {
 
     @FXML
     public void addFoodItem() {
-        showAddFoodItemUI();
-        System.out.println("Adding food item");
-
-        // TO DO: Adding the created item to the ListView and Database.
-        // Now it just pops up the adding ui
+        mainCtrl.showAddFoodItem();
     }
 
     @FXML
     public void deleteFoodItem() {
-        // TO DO: Deleting a food item from the DB and from the ListView
-        System.out.println("Deleting food item");
+        FoodItem selectedFoodItem = foodItemList.getSelectionModel().getSelectedItem();
+
+        if(selectedFoodItem == null) {
+            Alert noSelection = new Alert(Alert.AlertType.WARNING);
+            noSelection.setTitle("Nothing Selected");
+            noSelection.setHeaderText("No food item was selected");
+            noSelection.setContentText("Please select a food item before deleting.");
+            noSelection.showAndWait();
+            return;
+        }
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Deleting Selected Food Item");
+        alert.setHeaderText("Are you sure?");
+        alert.setContentText("Do you want to delete the item " + selectedFoodItem.getName() + " ?");
+
+        Optional<ButtonType> result = alert.showAndWait();
+        if(result.isPresent() && result.get() == ButtonType.OK){
+            serverUtils.deleteFoodItem(selectedFoodItem.getName());
+            refreshFoodItems();
+        }
+
     }
 
     @FXML
     public void editFoodItem() {
         FoodItem selectedItem = foodItemList.getSelectionModel().getSelectedItem();
         if (selectedItem == null) {
-            System.out.println("No food item selected");
+            Alert noSelection = new Alert(Alert.AlertType.WARNING);
+            noSelection.setTitle("Nothing Selected");
+            noSelection.setHeaderText("No food item was selected");
+            noSelection.setContentText("Please select a food item before editing.");
+            noSelection.showAndWait();
             return;
         }
 
-        System.out.println("editing item");
-        // TO DO: Editing the values of the selected item
+        mainCtrl.showAddFoodItem();
+        mainCtrl.getAddFoodItemCtrl().setEditingItem(selectedItem);
     }
 
     @FXML
     public void showMainUI() {
-        try {
-            // Edit the path of this line to the correct one after the main scene is added
-            Parent root = FXMLLoader.load(getClass().getResource("/client/scenes/Main.fxml"));
-
-            // Get current window from the button
-            Stage stage = (Stage) mainMenuButton.getScene().getWindow();
-
-            stage.setTitle("Main Menu");
-            stage.setScene(new Scene(root));
-            stage.show();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        mainCtrl.showMainMenu();
     }
 
     @FXML
-    public void showAddFoodItemUI() {
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("/client/scenes/AddFoodItem.fxml"));
-
-            Stage stage = (Stage) mainMenuButton.getScene().getWindow();
-
-            stage.setTitle("Main Menu");
-            stage.setScene(new Scene(root));
-            stage.show();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void refreshFoodItems(){
+        List<FoodItem> allFoodItems = serverUtils.getAllFoodItems();
+        ObservableList<FoodItem> items = FXCollections.observableArrayList(allFoodItems);
+        foodItemList.setItems(items);
     }
 
 }

@@ -44,11 +44,11 @@ public class MainCtrl {
     private Scene createRecipe;
 
     //screen 4
-    private AddFoodItemCTRL addFoodItemCtrl;
+    private AddFoodItemCtrl addFoodItemCtrl;
     private Scene addFoodItem;
 
     //screen 5
-    private FoodItemMainCTRL foodItemMainCtrl;
+    private FoodItemMainCtrl foodItemMainCtrl;
     private Scene foodItemMain;
 
     private ShoppingListMainCtrl shoppingListMainCtrl;
@@ -56,8 +56,8 @@ public class MainCtrl {
 
     public void initialize(Stage primaryStage, Pair<QuoteOverviewCtrl, Parent> overview,
                            Pair<AddQuoteCtrl, Parent> add, Pair<MainUICtrl, Parent> mainMenu, Pair<EditInstructionsCtrl, Parent>
-                                   editInstructions, Pair<CreateRecipeCtrl, Parent> createRecipe, Pair<AddFoodItemCTRL, Parent>
-                                   addFoodItem, Pair<FoodItemMainCTRL, Parent> foodItemMain,
+                                   editInstructions, Pair<CreateRecipeCtrl, Parent> createRecipe, Pair<AddFoodItemCtrl, Parent>
+                                   addFoodItem, Pair<FoodItemMainCtrl, Parent> foodItemMain,
                                     Pair <ShoppingListMainCtrl, Parent> shoppingListMain) {
         this.primaryStage = primaryStage;
         this.overviewCtrl = overview.getKey();
@@ -82,7 +82,7 @@ public class MainCtrl {
         this.foodItemMain = new Scene(foodItemMain.getValue());
 
         this.shoppingListMainCtrl = shoppingListMain.getKey();
-        this.shoppingListMainScene = new Scene (shoppingListMain.getValue());
+        this.shoppingListMainScene = new Scene(shoppingListMain.getValue());
 
         showMainMenu();
         primaryStage.show();
@@ -129,5 +129,13 @@ public class MainCtrl {
     public void showShoppingList() {
         primaryStage.setTitle("Shopping List");
         primaryStage.setScene(shoppingListMainScene);
+    }
+
+    public AddFoodItemCtrl getAddFoodItemCtrl() {
+        return addFoodItemCtrl;
+    }
+
+    public FoodItemMainCtrl getFoodItemMainCtrl() {
+    return foodItemMainCtrl;
     }
 }

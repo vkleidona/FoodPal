@@ -199,7 +199,7 @@ public class MainUICtrl {
     private void handleEditName() { System.out.println("Edit name placeholder"); }
     private void handleEditIngredients() { System.out.println("Edit ingredients placeholder"); }
     private void handleEditInstructions() { System.out.println("Edit instructions placeholder"); }
-    private void handleGoToFoodItems() { System.out.println("Go to Food Items placeholder"); }
+    private void handleGoToFoodItems() { mainCtrl.showFoodItemMain(); }
 
     @FXML
     private void handleGoToShoppingList() {

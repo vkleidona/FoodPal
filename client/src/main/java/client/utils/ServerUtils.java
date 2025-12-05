@@ -95,10 +95,37 @@ public class ServerUtils {
      */
     public FoodItem searchForFoodItem (String foodType) {
         return ClientBuilder.newClient(new ClientConfig()).
-                target(SERVER).path("api/food_items").
+                target(SERVER).path("api/fooditems/search").
                 queryParam("name", foodType).
                 request(APPLICATION_JSON).
                 get(FoodItem.class);
+    }
 
+    public FoodItem addFoodItem(FoodItem foodItem) {
+        return ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER).path("api/fooditems")
+                .request(APPLICATION_JSON)
+                .post(Entity.entity(foodItem, APPLICATION_JSON), FoodItem.class);
+    }
+
+    public List<FoodItem> getAllFoodItems() {
+        return ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER).path("api/fooditems")
+                .request(APPLICATION_JSON)
+                .get(new GenericType<List<FoodItem>>() {});
+    }
+
+    public void deleteFoodItem(String name) {
+        ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER).path("api/fooditems/" + name)
+                .request(APPLICATION_JSON)
+                .delete();
+    }
+
+    public FoodItem updateFoodItem(String name, FoodItem foodItem) {
+        return ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER).path("api/fooditems/" + foodItem.getName())
+                .request(APPLICATION_JSON)
+                .put(Entity.entity(foodItem, APPLICATION_JSON), FoodItem.class);
     }
 }
