@@ -51,10 +51,14 @@ public class MainCtrl {
     private FoodItemMainCTRL foodItemMainCtrl;
     private Scene foodItemMain;
 
+    private ShoppingListMainCtrl shoppingListMainCtrl;
+    private Scene shoppingListMainScene;
+
     public void initialize(Stage primaryStage, Pair<QuoteOverviewCtrl, Parent> overview,
                            Pair<AddQuoteCtrl, Parent> add, Pair<MainUICtrl, Parent> mainMenu, Pair<EditInstructionsCtrl, Parent>
                                    editInstructions, Pair<CreateRecipeCtrl, Parent> createRecipe, Pair<AddFoodItemCTRL, Parent>
-                                   addFoodItem, Pair<FoodItemMainCTRL, Parent> foodItemMain) {
+                                   addFoodItem, Pair<FoodItemMainCTRL, Parent> foodItemMain,
+                                    Pair <ShoppingListMainCtrl, Parent> shoppingListMain) {
         this.primaryStage = primaryStage;
         this.overviewCtrl = overview.getKey();
         this.overview = new Scene(overview.getValue());
@@ -76,6 +80,9 @@ public class MainCtrl {
 
         this.foodItemMainCtrl = foodItemMain.getKey();
         this.foodItemMain = new Scene(foodItemMain.getValue());
+
+        this.shoppingListMainCtrl = shoppingListMain.getKey();
+        this.shoppingListMainScene = new Scene (shoppingListMain.getValue());
 
         showMainMenu();
         primaryStage.show();
@@ -117,5 +124,10 @@ public class MainCtrl {
     public void showFoodItemMain() {
         primaryStage.setTitle("Food Item Main");
         primaryStage.setScene(foodItemMain);
+    }
+
+    public void showShoppingList() {
+        primaryStage.setTitle("Shopping List");
+        primaryStage.setScene(shoppingListMainScene);
     }
 }

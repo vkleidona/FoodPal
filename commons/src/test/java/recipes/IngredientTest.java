@@ -75,8 +75,6 @@ class IngredientTest {
     @Test
     void testToString() {
         String iStr = ingredient.toString();
-        assertTrue(iStr.contains("quantity") && iStr.contains("measurement"));
-        assertTrue(iStr.contains("Ingredient"));
-        assertTrue(iStr.contains("\n"));
+        assertEquals("slanina (20.0 g)",iStr);
     }
 }
