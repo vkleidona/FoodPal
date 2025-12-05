@@ -2,6 +2,7 @@ package shopping;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import recipes.FoodItem;
 import recipes.Ingredient;
 import recipes.Recipe;
 
@@ -20,10 +21,11 @@ class ShoppingListTest {
 
     @BeforeEach
     void setup () {
-        i = new Ingredient(20, "ml");
+        i = new Ingredient(20, "g");
         i2 = new Ingredient(30, "g");
         r = new Recipe("bryndzové halušky");
         i.setRecipe(r);
+        i.setFoodType(new FoodItem("slanina"));
         i2.setRecipe(r);
         s.addIngredient(i);
         testList = List.of(i);
@@ -56,8 +58,8 @@ class ShoppingListTest {
     @Test
     void testToString() {
         String toStr = s.toString();
-        assertTrue(toStr.contains("ingredients"));
-        assertTrue(toStr.contains("ShoppingList"));
-        assertTrue(toStr.contains("\n"));
+        assertTrue(toStr.contains("ShoppingList") && toStr.contains("ingredients"));
+        assertTrue(toStr.contains("slanina (20.0 g)"));
+        System.out.println(toStr);
     }
 }

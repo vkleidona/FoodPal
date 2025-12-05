@@ -25,10 +25,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.MediaType;
 import org.glassfish.jersey.client.ClientConfig;
 
 import commons.Quote;
@@ -36,6 +36,7 @@ import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.GenericType;
+import recipes.FoodItem;
 import recipes.Recipe;
 
 public class ServerUtils {
@@ -87,29 +88,17 @@ public class ServerUtils {
                 .put(Entity.entity(recipe, APPLICATION_JSON), Recipe.class);
     }
 
-    public void goToMainUI(Scene currentScene) {
-        try {
-            // loading the fxml file, the UI where the user will be directed
-            // between "" the filepath to the main UI needs to be added
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/client/scenes/MainUI.fxml"));
+    /**
+     * Searches the FoodItem repository for type
+     * @param foodType - String entered by the user which we will search for FoodType
+     * @return FoodItem - the corresponding FoodItem
+     */
+    public FoodItem searchForFoodItem (String foodType) {
+        return ClientBuilder.newClient(new ClientConfig()).
+                target(SERVER).path("api/food_items").
+                queryParam("name", foodType).
+                request(APPLICATION_JSON).
+                get(FoodItem.class);
 
-            // this builds the UI, meaning any previous user input will be reset
-            /*
-            this can be adjusted, depending on whether we want to keep the
-            previous user input, or not
-             */
-            Parent mainRoot = loader.load();
-
-            // we will have here our current scene, so then it can be changed
-            Stage stage = (Stage) currentScene.getWindow();
-
-            // a new scene is created
-            Scene mainScene = new Scene(mainRoot);
-
-            // the current scene is replaced with the new one
-            stage.setScene(mainScene);
-        } catch (IOException e){
-            // if loading the FXML file fails, the error will be caught here
-        }
     }
 }

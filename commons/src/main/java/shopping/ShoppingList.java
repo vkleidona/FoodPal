@@ -5,11 +5,19 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import recipes.Ingredient;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class ShoppingList {
+public class ShoppingList implements Serializable {
+
+    /**
+     * I know Sebastian said we shouldn't use static, but I thought it
+     * was a good implementation of the fact that the ShoppingList is a Singleton
+     * Whoever is reviewing this, share your opinion and if I should change it
+     */
+    private static ShoppingList shoppingList;
     private List<Ingredient> ingredients;
 
     /**
@@ -19,8 +27,27 @@ public class ShoppingList {
         this.ingredients = new ArrayList<>();
     }
 
+    public ShoppingList(List <Ingredient> ingredients) {
+        this.ingredients = ingredients;
+    }
+
+    public static ShoppingList getShoppingList () {
+        if (shoppingList == null) {
+            shoppingList = new ShoppingList();
+        }
+        return shoppingList;
+    }
+
     public List <Ingredient> getIngredients () {
         return this.ingredients;
+    }
+
+    /**
+     * I need this method to reset all Ingredient entities to null
+     * @param ingredients - the ingredients I am setting
+     */
+    public void setIngredients (List <Ingredient> ingredients) {
+        this.ingredients = ingredients;
     }
 
     /**
@@ -28,7 +55,6 @@ public class ShoppingList {
      * @param i - an Ingredient entity to add to the ShoppingList
      */
     public void addIngredient (Ingredient i) {
-        //TODO: Possibly implement the joining together of ingredients of the same FoodType
         this.ingredients.add(i);
     }
 
@@ -38,6 +64,40 @@ public class ShoppingList {
      */
     public void removeIngredient (Ingredient i) {
         this.ingredients.remove(i);
+    }
+
+    /**
+     * Creates a local file which stores the ShoppingList
+     */
+    public void storeFile () {
+        try (ObjectOutputStream outputStream = new ObjectOutputStream(
+                new FileOutputStream("shopping_list_ingredients.bin"))) {
+            outputStream.writeObject(ingredients);
+        } catch (FileNotFoundException e) {
+            System.err.println("File not found!");
+        } catch (IOException e) {
+            System.err.println("Something went wrong!");
+        }
+    }
+
+    /**
+     * Loads the local file into the Shopping list
+     */
+    public void loadFile () {
+        try (ObjectInputStream inputStream =
+                     new ObjectInputStream(new FileInputStream("shopping_list_ingredients.bin"))) {
+            List <Ingredient> fileIngredients = (List<Ingredient>) inputStream.readObject();
+            if (fileIngredients == null) {
+                ingredients = new ArrayList<>();
+            }else{
+                ingredients = fileIngredients;
+            }
+        }catch (FileNotFoundException e) {
+            System.err.println("File not found!");
+        } catch (IOException | ClassNotFoundException e) {
+            System.err.println("Class not initialized!");
+            shoppingList = getShoppingList();
+        }
     }
 
     /**

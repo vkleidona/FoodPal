@@ -1,6 +1,7 @@
 package client.scenes;
 
-import com.google.inject.Inject;
+import client.utils.ServerUtils;
+import jakarta.inject.Inject;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -30,6 +31,7 @@ public class MainUICtrl {
     @FXML private Button editIngredientsButton;
     @FXML private Button editInstructionsButton;
     @FXML private Button foodItemButton;
+    @FXML private Button shoppingListButton;
 
     @FXML private Button exitButton;
     @FXML private Button minimizeButton;
@@ -45,10 +47,13 @@ public class MainUICtrl {
 
     private List<Recipe> currentRecipes;
 
-    private MainCtrl mainCtrl;
+    private final ServerUtils server;
+    private final MainCtrl mainCtrl;
+
 
     @Inject
-    public MainUICtrl(MainCtrl mainCtrl) {
+    public MainUICtrl (ServerUtils server, MainCtrl mainCtrl) {
+        this.server = server;
         this.mainCtrl = mainCtrl;
     }
 
@@ -212,4 +217,9 @@ public class MainUICtrl {
     }
 
     private void handleGoToFoodItems() { System.out.println("Go to Food Items placeholder"); }
+
+    @FXML
+    private void handleGoToShoppingList() {
+        mainCtrl.showShoppingList();
+    }
 }
