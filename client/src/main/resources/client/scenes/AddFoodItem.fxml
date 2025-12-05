@@ -9,8 +9,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="373.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.scenes.AddFoodItemCTRL">
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="373.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.scenes.AddFoodItemCtrl">
    <children>
       <HBox alignment="CENTER" layoutX="14.0" layoutY="8.0" prefHeight="30.0" prefWidth="573.0">
          <children>
@@ -23,7 +22,7 @@
       </HBox>
       <HBox alignment="CENTER_LEFT" layoutX="14.0" layoutY="43.0" prefHeight="30.0" prefWidth="573.0">
          <children>
-            <Label text="Adding Food Item" textAlignment="CENTER">
+            <Label fx:id="sceneTitle" text="Adding Food Item" textAlignment="CENTER">
                <font>
                   <Font name="Bookman Old Style" size="15.0" />
                </font>
@@ -45,7 +44,11 @@
          </children>
       </VBox>
       <Separator layoutX="11.0" layoutY="39.0" prefHeight="8.0" prefWidth="582.0" />
-      <Button fx:id="confirmButton" layoutX="527.0" layoutY="341.0" mnemonicParsing="false" onAction="#confirmChanges" text="Confirm" />
-      <Button fx:id="cancelButton" layoutX="467.0" layoutY="341.0" mnemonicParsing="false" onAction="#cancelChanges" text="Cancel" />
+      <HBox alignment="CENTER_RIGHT" layoutX="442.0" layoutY="341.0" prefHeight="26.0" prefWidth="144.0" spacing="10.0">
+         <children>
+            <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#cancelChanges" text="Cancel" />
+            <Button fx:id="confirmButton" mnemonicParsing="false" onAction="#confirmChanges" text="Confirm" />
+         </children>
+      </HBox>
    </children>
 </Pane>
