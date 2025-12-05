@@ -29,13 +29,14 @@ public class AddFoodItemCtrl {
     private Button confirmButton;
 
     private final MainCtrl mainCtrl;
-    private final ServerUtils serverUtils = new ServerUtils();
+    private final ServerUtils serverUtils;
 
     private FoodItem editingItem;
 
     @Inject
-    public AddFoodItemCtrl(MainCtrl mainCtrl) {
+    public AddFoodItemCtrl(MainCtrl mainCtrl, ServerUtils serverUtils) {
         this.mainCtrl = mainCtrl;
+        this.serverUtils = serverUtils;
     }
 
     @FXML

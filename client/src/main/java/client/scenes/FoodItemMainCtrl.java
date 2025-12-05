@@ -30,12 +30,13 @@ public class FoodItemMainCtrl {
     @FXML
     private Button mainMenuButton;
 
-    private MainCtrl mainCtrl;
-    private final ServerUtils serverUtils = new ServerUtils();
+    private final MainCtrl mainCtrl;
+    private final ServerUtils serverUtils;
 
     @Inject
-    public FoodItemMainCtrl(MainCtrl mainCtrl) {
+    public FoodItemMainCtrl(MainCtrl mainCtrl, ServerUtils serverUtils) {
         this.mainCtrl = mainCtrl;
+        this.serverUtils = serverUtils;
     }
 
     @FXML
