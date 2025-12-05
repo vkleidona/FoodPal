@@ -2,6 +2,7 @@ package recipes;
 
 import jakarta.persistence.*;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -11,7 +12,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 @Entity
-public class Recipe {
+public class Recipe implements Serializable {
     @Id
     @GeneratedValue (strategy = GenerationType.AUTO)
     private Long id;

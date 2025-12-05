@@ -1,5 +1,7 @@
 package client.scenes;
 
+import client.utils.ServerUtils;
+import jakarta.inject.Inject;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -29,6 +31,7 @@ public class MainUICtrl {
     @FXML private Button editIngredientsButton;
     @FXML private Button editInstructionsButton;
     @FXML private Button foodItemButton;
+    @FXML private Button shoppingListButton;
 
     @FXML private Button exitButton;
     @FXML private Button minimizeButton;
@@ -43,6 +46,16 @@ public class MainUICtrl {
     private final String recipeEndpointUrl = "http://localhost:8080/recipes";
 
     private List<Recipe> currentRecipes;
+
+    private final ServerUtils server;
+    private final MainCtrl mainCtrl;
+
+
+    @Inject
+    public MainUICtrl (ServerUtils server, MainCtrl mainCtrl) {
+        this.server = server;
+        this.mainCtrl = mainCtrl;
+    }
 
     @FXML
     public void initialize() {
@@ -186,5 +199,10 @@ public class MainUICtrl {
     private void handleEditName() { System.out.println("Edit name placeholder"); }
     private void handleEditIngredients() { System.out.println("Edit ingredients placeholder"); }
     private void handleEditInstructions() { System.out.println("Edit instructions placeholder"); }
-    private void handleGoToFoodItems() { System.out.println("Go to Food Items placeholder"); }
+    private void handleGoToFoodItems() { mainCtrl.showFoodItemMain(); }
+
+    @FXML
+    private void handleGoToShoppingList() {
+        mainCtrl.showShoppingList();
+    }
 }

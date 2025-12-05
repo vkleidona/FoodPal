@@ -41,7 +41,11 @@ public class FoodItemMainCtrl {
 
     @FXML
     public void initialize() {
-        refreshFoodItems();
+        try {
+            refreshFoodItems();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         /*
         Here, the behaviour of how each cell is shown in the UI is overridden as we only want to show the name.
         First super.updateItem is called so nothing else goes wrong.

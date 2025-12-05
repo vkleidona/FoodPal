@@ -1,16 +1,17 @@
 package server.api.controllers;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import recipes.FoodItem;
 import server.repositories.FoodItemRepository;
-
 import java.util.List;
 
 @RestController
 @RequestMapping("api/fooditems")
 public class FoodItemController {
 
+    @Autowired
     private final FoodItemRepository repo;
 
     public FoodItemController(FoodItemRepository repo) {
@@ -62,4 +63,8 @@ public class FoodItemController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/search")
+    public FoodItem searchByName(@RequestParam("name") String foodType) {
+        return repo.findByName(foodType).orElse(null);
+    }
 }

@@ -28,6 +28,7 @@ import javafx.application.Application;
 
 
 import javafx.stage.Stage;
+import shopping.ShoppingList;
 
 public class Main extends Application {
 
@@ -54,21 +55,19 @@ public class Main extends Application {
         var mainUI = FXML.load(MainUICtrl.class, "client", "scenes", "MainUI.fxml");
         var editInstructions = FXML.load(EditInstructionsCtrl.class, "client", "scenes", "EditInstructions.fxml");
         var createRecipe = FXML.load(CreateRecipeCtrl.class, "client", "scenes", "creatingRecipe.fxml");
+
         var addFoodItem = FXML.load(AddFoodItemCtrl.class, "client", "scenes", "AddFoodItem.fxml");
         var foodItemMain = FXML.load(FoodItemMainCtrl.class, "client", "scenes", "FoodItemMain.fxml");
 
-		var mainCtrl = INJECTOR.getInstance(MainCtrl.class);
-        mainCtrl.initialize(primaryStage, overview, add,mainUI, editInstructions, createRecipe, addFoodItem, foodItemMain);
-	}
-/*
-@Override
-public void start(Stage primaryStage) throws Exception {
-	Parent root = FXMLLoader.load(getClass()
-			.getResource("/client/scenes/MainUI.fxml")); // Adjust path if needed
-	primaryStage.setTitle("Main Menu");
-	primaryStage.setScene(new Scene(root));
-	primaryStage.show();
-}
- */
+        var shoppingListMain = FXML.load(ShoppingListMainCtrl.class, "client", "scenes", "ShoppingListMainUI.fxml");
 
+        var mainCtrl = INJECTOR.getInstance(MainCtrl.class);
+        mainCtrl.initialize(primaryStage, overview, add,mainUI, editInstructions, createRecipe, addFoodItem, foodItemMain, shoppingListMain);
+	}
+
+    @Override
+    public void stop() throws Exception {
+        ShoppingList.getShoppingList().storeFile();
+        super.stop();
+    }
 }
