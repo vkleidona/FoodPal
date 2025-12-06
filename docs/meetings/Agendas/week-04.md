@@ -12,6 +12,9 @@ Agenda Items :
     - How are you all doing?
   
 ---
+
+#### Agenda:
+
 - Any potential important announcements by the team (1 min)
     - Does anybody want to announce anything?
 
@@ -20,9 +23,17 @@ Agenda Items :
 - Teodora and Pawel: Next meeting (after the midterms) they won't be able to attend it in person and instead they will join online.
 ---
 
+#### Agenda:
+
 - Approval of the agenda - Does anyone have any additions? (1 min)
 
+#### Minutes:
+
+- No additions, all approved.
 ---
+
+#### Agenda:
+
 - Announcements by the TA (2 min)
 
 #### Minutes:
@@ -36,6 +47,9 @@ Agenda Items :
 - Buddycheck is anonymous, only TA's and stuff can see.
 
 ---
+
+#### Agenda:
+
 - Progress Update from every team member (9 min, ~1.5 min for each team member)
     - Short description of the planned out tasks for the week
     - Short description of the accomplished tasks for the week
@@ -66,6 +80,9 @@ Wrote tests, tried implementing final functionality for MainUI, problems with Ed
 - K. Kadrieh:
 Implemented Add/Edit/Delete functionality for FoodItems and actually made the all the connections with the database.
 ---
+
+#### Agenda:
+
 - Current State of the App (4 min) - Demonstration of what is on the main branch before the meeting
 
 #### Minutes: 
@@ -73,6 +90,9 @@ Implemented Add/Edit/Delete functionality for FoodItems and actually made the al
 - The newly implemented shopping list and it's functionality was shown. Other than that nothing could be show since the MR's for connecting the Main UI to the other UI's didn't 
 
 ---
+
+#### Agenda:
+
 - Current issues for discussion : (14 min)
     - Improved planning and communication (4 min)
         - How can we improve our planning and task division?
@@ -113,6 +133,9 @@ Implemented Add/Edit/Delete functionality for FoodItems and actually made the al
 - About warning for fields/methods never used = suppress them in the FXML Ctrl class but keep them for other classes.
 
 ---
+
+#### Agenda:
+
 - Future Vision for the project (6 min)
     - What set of features should we implement next?
         - Which user epics and stories should we get started on?
@@ -122,7 +145,7 @@ Implemented Add/Edit/Delete functionality for FoodItems and actually made the al
         - Synchronization of our plans for the Midterm week and our code contribution planning for that week
     - Fine-grained task division to occur after the meeting - does everyone agree?
 
-##### Minutes:
+#### Minutes:
 
 What do we want to achieve next:
 - T. Corlateanu: Create nutritional calculations in Recipes.
@@ -138,13 +161,15 @@ Project Management in midterm:
 - Monday week 6 is the next meeting, T. Corlateanu is joining online.
 ---
 
+#### Agenda:
+
 - Summarize action points: (2 min)
 - Meeting Review (3 min)
     - Question round : Does anyone have anything to add before the meeting closes? (1 min)
     - Feedback round : What went well and what can be improved next time? (1 min)
     - Planned meeting duration vs Actual duration? (1 min)
   
-##### Minutes:
+#### Minutes:
 
 Q/A:
 - Removing lines: don't add or subtract lines to your line requirements, so it's neutral
@@ -154,3 +179,5 @@ Q/A:
 ---
 
 - Closure (1 min)
+
+# End of Meeting
