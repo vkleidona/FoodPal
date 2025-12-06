@@ -1,6 +1,7 @@
 package client.scenes;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.inject.Inject;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -8,6 +9,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -24,6 +27,14 @@ public class CreateRecipeCtrl {
      */
     @FXML
     private VBox ingredientsVBox;
+
+    @FXML
+    private AnchorPane AnchorPane;   // fx:id="AnchorPane" in FXML
+
+    @FXML
+    private void initialize() {
+        VBox.setVgrow(AnchorPane, Priority.ALWAYS);
+    }
 
     @FXML
     private VBox preparationVBox;
@@ -305,10 +316,10 @@ public class CreateRecipeCtrl {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/client/scenes/MainUI.fxml"));
 
             // this builds the UI, meaning any previous user input will be reset
-            /*
-            this can be adjusted, depending on whether we want to keep the
-            previous user input, or not
-             */
+            //
+            //this can be adjusted, depending on whether we want to keep the
+           // previous user input, or not
+             //
             Parent mainRoot = loader.load();
 
             // we will have here our current scene, so then it can be changed
