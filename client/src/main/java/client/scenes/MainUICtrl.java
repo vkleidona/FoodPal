@@ -8,6 +8,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import recipes.Recipe;
 import recipes.Ingredient;
@@ -18,8 +19,11 @@ import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
+
 
 public class MainUICtrl {
 
@@ -204,5 +208,49 @@ public class MainUICtrl {
     @FXML
     private void handleGoToShoppingList() {
         mainCtrl.showShoppingList();
+    }
+
+    @FXML
+    public void downloadRecipe(){
+        int index = recipeListView.getSelectionModel().getSelectedIndex();
+        if (index < 0 || index >= currentRecipes.size()) return;
+        Recipe selectedRecipe = currentRecipes.get(index);
+
+        String content = "Recipe: "  + selectedRecipe.getName() + "\n\n";
+        content += "Ingredients:\n";
+
+        if(selectedRecipe.getIngredients() != null){
+            for(int i=0; i<selectedRecipe.getIngredients().size(); i++){
+                content += String.valueOf(i+1) + ". ";
+                content += selectedRecipe.getIngredients().get(i).toString();
+                content += "\n";
+            }
+        }
+
+        content += "Instructions:\n";
+
+        if(selectedRecipe.getInstructions() != null) {
+            for (int i = 0; i < selectedRecipe.getInstructions().size(); i++) {
+                content += "Step " + String.valueOf(i + 1) + ": ";
+                content += selectedRecipe.getInstructions().get(i);
+                content += "\n";
+            }
+        }
+        
+        FileChooser fileChooser = new  FileChooser();
+        fileChooser.setTitle("Save Recipe File");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Recipe", "*.txt"));
+        fileChooser.setInitialFileName(selectedRecipe.getName() + ".txt");
+
+        Stage stage = (Stage) addRecipeButton.getScene().getWindow();
+        File file = fileChooser.showSaveDialog(stage);
+
+        if (file != null) {
+            try (FileWriter fw = new FileWriter(file);) {
+                fw.write(content);
+            }catch (IOException e){
+                e.printStackTrace();
+            }
+        }
     }
 }
