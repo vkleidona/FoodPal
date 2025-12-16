@@ -1,0 +1,236 @@
+package client.scenes;
+
+import client.utils.ServerUtils;
+import jakarta.inject.Inject;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import recipes.FoodItem;
+import recipes.Ingredient;
+import recipes.Recipe;
+
+public class InformationCtrl {
+
+
+    @FXML private Label caloriesLabel;
+    @FXML private Label proteinsLabel;
+    @FXML private Label carbsLabel;
+    @FXML private Label fatsLabel;
+    @FXML private TextField servingsField;
+    @FXML private VBox ingredientsContainer;
+
+    private final MainCtrl mainCtrl;
+    private final ServerUtils serverUtils;
+    private Recipe currentRecipe;
+
+    @Inject
+    public InformationCtrl(MainCtrl mainCtrl, ServerUtils serverUtils) {
+        this.mainCtrl = mainCtrl;
+        this.serverUtils = serverUtils;
+    }
+
+    /**
+     * go the main UI
+     */
+    @FXML
+    private void returnToMainUI() {
+        mainCtrl.showMainMenu();
+    }
+
+    /**
+     * return to main UI
+     * @param actionEvent for the cancel button
+     */
+    public void handleCancel(ActionEvent actionEvent){
+        returnToMainUI();
+    }
+
+    /**
+     * here we pass the data from the main UI
+     * to the InformationUI
+     * @param recipe Recipe
+     */
+    public void setRecipe(Recipe recipe) {
+        this.currentRecipe = recipe;
+
+        // 1. Set Servings Field
+        if (recipe.getServings() != null) {
+            servingsField.setText(String.valueOf(recipe.getServings()));
+        } else {
+            servingsField.setText("1");
+            recipe.setServings(1);
+        }
+
+        // render Ingredients List
+        renderIngredientsList();
+
+        // update Nutritional Totals
+        calculateAndShowNutrition();
+    }
+
+    /**
+     * helper to redraw the ingredients list.
+     * separated, so we can call it after scaling without resetting the whole recipe object.
+     */
+    private void renderIngredientsList() {
+        ingredientsContainer.getChildren().clear();
+
+        if (currentRecipe.getIngredients() != null) {
+            for (Ingredient ing : currentRecipe.getIngredients()) {
+                HBox row = new HBox(15);
+
+                // Name
+                Label nameLbl = new Label(ing.getFoodType().getName());
+                nameLbl.setPrefWidth(200);
+                nameLbl.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
+
+                // Quantity Input
+                TextField qtyField = new TextField();
+                if (ing.getQuantity() == (long) ing.getQuantity()) {
+                    qtyField.setText(String.format("%d", (long) ing.getQuantity()));
+                } else {
+                    qtyField.setText(String.format("%.2f", ing.getQuantity()));
+                }
+
+                qtyField.setPrefWidth(80);
+                qtyField.setStyle("-fx-font-size: 14px;");
+
+                // when user presses ENTER on an ingredient quantity ---
+                qtyField.setOnAction(e -> handleIngredientChange(ing, qtyField.getText()));
+
+                // Unit
+                Label unitLbl = new Label(ing.getMeasurement());
+                unitLbl.setStyle("-fx-font-size: 14px;");
+
+                row.getChildren().addAll(nameLbl, qtyField, unitLbl);
+                ingredientsContainer.getChildren().add(row);
+            }
+        }
+    }
+
+    /**
+     * scaling logic: user changes Servings -> Scale Ingredients
+     */
+    @FXML
+    public void handleServingsChange() {
+        try {
+            int newServings = Integer.parseInt(servingsField.getText());
+            if (newServings < 1) return; // Ignore invalid values
+
+            int oldServings = currentRecipe.getServings();
+            double scaleFactor = (double) newServings / oldServings;
+
+            // Update Recipe State
+            currentRecipe.setServings(newServings);
+
+            // Scale every ingredient
+            for (Ingredient ing : currentRecipe.getIngredients()) {
+                scaleIngredient(ing, scaleFactor);
+            }
+
+            // Refresh UI
+            renderIngredientsList();
+            calculateAndShowNutrition();
+
+        } catch (NumberFormatException e) {
+            // Ignore non-integer input
+        }
+    }
+
+    /**
+     * scaling logic 2: user changes Ingredient Quantity -> Scale Servings & Other Ingredients
+     */
+    private void handleIngredientChange(Ingredient targetIng, String newQtyStr) {
+        try {
+            double newQty = Double.parseDouble(newQtyStr);
+            if (newQty <= 0) return;
+
+            double oldQty = targetIng.getQuantity();
+            double scaleFactor = newQty / oldQty;
+
+            // 1. Update Servings (Rounded to nearest integer)
+            int newServings = (int) Math.round(currentRecipe.getServings() * scaleFactor);
+            if (newServings < 1) newServings = 1;
+
+            currentRecipe.setServings(newServings);
+            servingsField.setText(String.valueOf(newServings));
+
+            // 2. Scale ALL ingredients (including the one changed, to keep precision sync)
+            for (Ingredient ing : currentRecipe.getIngredients()) {
+                scaleIngredient(ing, scaleFactor);
+            }
+
+            // Refresh UI
+            renderIngredientsList();
+            calculateAndShowNutrition();
+
+        } catch (NumberFormatException e) {
+            // Ignore invalid input
+        }
+    }
+
+    /**
+     * Helper to scale a single ingredient's visual quantity and internal grams.
+     */
+    private void scaleIngredient(Ingredient ing, double scaleFactor) {
+        // update visual quantity
+        double newQty = ing.getQuantity() * scaleFactor;
+        ing.setQuantity(newQty);
+
+        // update internal grams
+        double newGrams = ing.getQuantityInGrams() * scaleFactor;
+        ing.setQuantityInGrams(newGrams);
+    }
+
+    /**
+     * Calculates totals and displays nutritional info per 100g.
+     */
+    private void calculateAndShowNutrition() {
+        double totalCal = 0;
+        double totalProt = 0;
+        double totalCarb = 0;
+        double totalFat = 0;
+        double totalWeightInGrams = 0;
+
+        if (currentRecipe.getIngredients() != null) {
+            for (Ingredient ing : currentRecipe.getIngredients()) {
+                FoodItem food = ing.getFoodType();
+
+                // track total weight of the recipe to normalize to 100g later
+                double grams = ing.getQuantityInGrams();
+                totalWeightInGrams += grams;
+
+                if (food != null) {
+                    // add actual total nutrients for this ingredient to the recipe totals
+                    // ratio: (Grams / 100) because FoodItem values are stored per 100g
+                    double ratio = grams / 100.0;
+
+                    totalCal += ratio * food.getKcal();
+                    totalProt += ratio * food.getProteins();
+                    totalCarb += ratio * food.getCarbs();
+                    totalFat += ratio * food.getFats();
+                }
+            }
+        }
+
+        // Calculate values per 100g of the final dish
+        if (totalWeightInGrams > 0) {
+            // Formula: (Total Nutrient / Total Weight) * 100
+            double factor = 100.0 / totalWeightInGrams;
+
+            caloriesLabel.setText(String.format("Calories per 100g: %.0f", totalCal * factor));
+            proteinsLabel.setText(String.format("Proteins per 100g: %.1f g", totalProt * factor));
+            carbsLabel.setText(String.format("Carbs per 100g: %.1f g", totalCarb * factor));
+            fatsLabel.setText(String.format("Fats per 100g: %.1f g", totalFat * factor));
+        } else {
+            caloriesLabel.setText("Calories per 100g: 0");
+            proteinsLabel.setText("Proteins per 100g: 0.0 g");
+            carbsLabel.setText("Carbs per 100g: 0.0 g");
+            fatsLabel.setText("Fats per 100g: 0.0 g");
+        }
+    }
+
+}

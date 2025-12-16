@@ -1,23 +1,13 @@
 package client.scenes;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.inject.Inject;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Priority;
-import javafx.stage.Stage;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import recipes.Recipe;
 import recipes.Ingredient;
 import recipes.FoodItem;
-import java.io.IOException;
 import java.util.*;
 
 public class CreateRecipeCtrl {
@@ -28,13 +18,13 @@ public class CreateRecipeCtrl {
     @FXML
     private VBox ingredientsVBox;
 
-    @FXML
-    private AnchorPane AnchorPane;   // fx:id="AnchorPane" in FXML
+    private RecipeActions recipeActions;
+    public void setRecipeActions(RecipeActions recipeActions) {
+        this.recipeActions = recipeActions;
+    }
 
     @FXML
-    private void initialize() {
-        VBox.setVgrow(AnchorPane, Priority.ALWAYS);
-    }
+    private TextField servingsTextField;
 
     @FXML
     private VBox preparationVBox;
@@ -142,11 +132,6 @@ public class CreateRecipeCtrl {
         }
     }
 
-
-    /*
-    TO DO:
-    modify when doing the nutritional value part
-     */
     /**
      * main handler for the Apply button
      * coordinates validation, object creation, and saving
@@ -160,6 +145,23 @@ public class CreateRecipeCtrl {
             return;
         }
 
+        String servingsText = servingsTextField.getText().trim();
+        Integer servings = null;
+        if (!servingsText.isEmpty()) {
+            try {
+                servings = Integer.parseInt(servingsText);
+                if (servings <= 0) {
+                    showAlert(Alert.AlertType.ERROR, "Invalid servings",
+                            "Number of servings must be a positive integer.");
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                showAlert(Alert.AlertType.ERROR, "Invalid servings",
+                        "Number of servings must be a whole number.");
+                return;
+            }
+        }
+
         if (!validateRecipeCompleteness()) return;
 
         try {
@@ -170,6 +172,10 @@ public class CreateRecipeCtrl {
             if (ingredients == null) return; // validation failed inside helper
             recipe.setIngredients(ingredients);
 
+            if (servings != null) {
+                recipe.setServings(servings);
+            }
+
             // build Instructions List
             List<String> steps = buildInstructionsList();
             if (steps == null) return; // validation failed inside helper
@@ -178,11 +184,31 @@ public class CreateRecipeCtrl {
             // save
             serverService.sendRecipe(recipe);
             goToMainUI();
+            resetUI();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+
+    /**
+     * resets all UI fields to their default state.
+     * clears text fields, removes ingredients/instructions, and resets radio buttons.
+     */
+    private void resetUI() {
+
+        nameTextField.clear();
+        servingsTextField.clear();
+
+        ingredientsVBox.getChildren().clear();
+        preparationVBox.getChildren().clear();
+
+        metricRadioButton.setSelected(true);
+
+        selectedRow = null;
+    }
+
 
     /**
      * Helper: checks if lists are empty and asks for confirmation
@@ -203,6 +229,54 @@ public class CreateRecipeCtrl {
         }
         return true;
     }
+
+    @FXML
+    public void initialize() {
+        if (mainCtrl != null && mainCtrl.getDraftRecipe() != null) {
+            restoreDraft(mainCtrl.getDraftRecipe());
+        }
+    }
+    /**
+     * Restore the UI state from a saved draft
+     */
+    private void restoreDraft(Recipe draft) {
+        // restore Name & Servings
+        nameTextField.setText(draft.getName());
+        if (draft.getServings() != null) {
+            servingsTextField.setText(String.valueOf(draft.getServings()));
+        }
+
+        // restore Ingredients
+        ingredientsVBox.getChildren().clear();
+
+        for (Ingredient ing : draft.getIngredients()) {
+            handleAddIngredient();
+
+            // get the last added row
+            HBox lastRow = (HBox) ingredientsVBox.getChildren().get(ingredientsVBox.getChildren().size() - 1);
+
+            ComboBox<String> nameBox = (ComboBox<String>) lastRow.getChildren().get(0);
+            TextField qtyField = (TextField) lastRow.getChildren().get(1);
+            ChoiceBox<String> unitChoice = (ChoiceBox<String>) lastRow.getChildren().get(2);
+
+            String savedName = ing.getFoodType().getName();
+            if ("+ Create New Food Item...".equals(savedName)) {
+                nameBox.setValue(null);
+                javafx.application.Platform.runLater(() -> {
+                    nameBox.getSelectionModel().clearSelection();
+                    nameBox.getEditor().clear();
+                });
+            } else {
+                nameBox.setValue(savedName);
+            }
+
+            qtyField.setText(String.valueOf(ing.getQuantity()));
+            unitChoice.setValue(ing.getMeasurement());
+        }
+
+        mainCtrl.setDraftRecipe(null);
+    }
+
 
     /**
      * helper: iterates through UI rows to build the Ingredient list
@@ -307,31 +381,15 @@ public class CreateRecipeCtrl {
         ingredientsVBox.getChildren().clear();
         preparationVBox.getChildren().clear();
         goToMainUI();
+        resetUI();
     }
 
     private void goToMainUI() {
-        try {
-            // loading the fxml file, the UI where the user will be directed
-            // between "" the filepath to the main UI needs to be added
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/client/scenes/MainUI.fxml"));
 
-            // this builds the UI, meaning any previous user input will be reset
-            //
-            //this can be adjusted, depending on whether we want to keep the
-           // previous user input, or not
-             //
-            Parent mainRoot = loader.load();
-
-            // we will have here our current scene, so then it can be changed
-            Stage stage = (Stage) nameTextField.getScene().getWindow();
-
-            // a new scene is created
-            Scene mainScene = new Scene(mainRoot);
-
-            // the current scene is replaced with the new one
-            stage.setScene(mainScene);
-        } catch (IOException e){
-            // if loading the FXML file fails, the error will be caught here
+        if (recipeActions != null) {
+            recipeActions.goToMainUI();
+        } else {
+            System.err.println("");
         }
     }
 
@@ -354,33 +412,62 @@ public class CreateRecipeCtrl {
         preparationVBox.getChildren().add(row);
     }
 
+    /**
+     * Normalizes a food name to lower case and singular form (basic heuristic).
+     * "Eggs " -> "egg", "Apple" -> "apple"
+     */
+    private String normalizeName(String input) {
+        if (input == null) return "";
+        String normalized = input.trim().toLowerCase();
+        if (normalized.endsWith("s") && normalized.length() > 1) {
+            normalized = normalized.substring(0, normalized.length() - 1);
+        }
+        return normalized;
+    }
+
 
     /**
      * when the add button is pressed, '+', near 'Ingredients:' a new 'ingredient row' will be
      * added, where the user will have to add the name, quantity, unit.
      * the rows will also contain a delete button.
      */
-    /*
-    TO DO:
-    add fields for the nutritional values
-     */
-    @FXML
-    public void handleAddIngredient(){
 
-        TextField nameField = new TextField();
-        nameField.setPromptText("Ingredient name");
+    @FXML
+    public void handleAddIngredient() {
+        // creating ComboBox for Food Items
+        ComboBox<String> foodItemBox = new ComboBox<>();
+        foodItemBox.setEditable(true); // Allow typing to filter
+        foodItemBox.setPromptText("Select Ingredient");
+        foodItemBox.setPrefWidth(150);
+
+        // fetch and Populate Items
+        List<FoodItem> items = serverService.getAllFoodItems();
+
+        // sorting alphabetically
+        items.sort(Comparator.comparing(FoodItem::getName));
+
+        for (FoodItem item : items) {
+            foodItemBox.getItems().add(item.getName());
+        }
+
+        // adding "Create New" option
+        foodItemBox.getItems().add("+ Create New Food Item...");
+
+        // make sure the food item is added
+        javafx.application.Platform.runLater(() -> foodItemBox.getSelectionModel().clearSelection());
+
+        foodItemBox.setOnAction(e -> {
+            if ("+ Create New Food Item...".equals(foodItemBox.getValue())) {
+                handleCreateNewFoodItem();
+            }
+        });
 
         TextField quantityField = new TextField();
-        quantityField.setPromptText("Quantity");
-
-        /*
-        TextField unitField = new TextField();
-        unitField.setPromptText("Unit");
-        previously, when the user could enter the unit
-         */
+        quantityField.setPromptText("Qty");
+        quantityField.setPrefWidth(60);
 
         ChoiceBox<String> unitChoice = new ChoiceBox<>();
-
+        // populate units based on radio selection
         if (metricRadioButton.isSelected()) {
             unitChoice.getItems().addAll("g", "kg", "ml", "l");
             unitChoice.setValue("g");
@@ -392,62 +479,99 @@ public class CreateRecipeCtrl {
             unitChoice.setValue("stick");
         }
 
-        // hidden fields
+        // Hidden fields
         TextField customUnitField = new TextField();
-        customUnitField.setPromptText("Unit Name (e.g. can)");
-        customUnitField.setVisible(false); // hidden by default
-        customUnitField.setManaged(false); // does not take up space when hidden
+        customUnitField.setPromptText("Unit Name");
+        customUnitField.setVisible(false); customUnitField.setManaged(false);
 
         TextField gramsField = new TextField();
-        gramsField.setPromptText("Grams per 1 unit");
-        gramsField.setVisible(false);
-        gramsField.setManaged(false);
+        gramsField.setPromptText("Grams");
+        gramsField.setVisible(false); gramsField.setManaged(false);
 
         unitChoice.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             boolean isOther = "other".equals(newVal);
-
-            // Show/Hide fields
-            customUnitField.setVisible(isOther);
-            customUnitField.setManaged(isOther);
-
-            gramsField.setVisible(isOther);
-            gramsField.setManaged(isOther);
+            customUnitField.setVisible(isOther); customUnitField.setManaged(isOther);
+            gramsField.setVisible(isOther); gramsField.setManaged(isOther);
         });
 
         Button deleteButton = new Button("x");
-        // when this button is clicked -> the row is removed
 
-        HBox row = new HBox(10, nameField, quantityField, unitChoice, customUnitField, gramsField, deleteButton);
-        // creating a horizontal container, for a single ingredient input row
-        // 10 = spacing, in pixels, between rows/children
-        // this rows contains in the exact order, the fields
+        HBox row = new HBox(10, foodItemBox, quantityField, unitChoice, customUnitField, gramsField, deleteButton);
 
-        // when user clicks Name or Quantity, we mark this row as selected
-        nameField.focusedProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal) selectedRow = row;
-        });
-        quantityField.focusedProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal) selectedRow = row;
-        });
-        unitChoice.focusedProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal) selectedRow = row;
-        });
-        customUnitField.focusedProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal) selectedRow = row;
-        });
-        gramsField.focusedProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal) selectedRow = row;
-        });
+        foodItemBox.focusedProperty().addListener((obs, o, n) -> { if(n) selectedRow = row; });
+        quantityField.focusedProperty().addListener((obs, o, n) -> { if(n) selectedRow = row; });
 
-
-        deleteButton.setOnAction(event ->
-                ingredientsVBox.getChildren().remove(row));
-        // defines what happens when the button is clicked, the row is deleted
+        deleteButton.setOnAction(event -> ingredientsVBox.getChildren().remove(row));
         ingredientsVBox.getChildren().add(row);
         selectedRow = row;
-        // .getChildren() -> all elements in the VBox(in this case, rows)
-
     }
+
+    /**
+     * Saves current progress and redirects to Add Food Item screen
+     */
+    private void handleCreateNewFoodItem() {
+        // create a temporary recipe object to hold the draft data
+        Recipe draft = new Recipe(nameTextField.getText());
+
+        try {
+            if (!servingsTextField.getText().isEmpty()) {
+                draft.setServings(Integer.parseInt(servingsTextField.getText()));
+            }
+        } catch (NumberFormatException ignored) {
+            // ignore invalid servings for draft
+        }
+
+        List<Ingredient> partialIngredients = new ArrayList<>();
+
+        // loop through existing UI rows to save them
+        for (Node node : ingredientsVBox.getChildren()) {
+            if (node instanceof HBox row) {
+                // Get controls
+                ComboBox<String> nameBox = (ComboBox<String>) row.getChildren().get(0);
+                TextField qtyField = (TextField) row.getChildren().get(1);
+                ChoiceBox<String> unitChoice = (ChoiceBox<String>) row.getChildren().get(2);
+
+                String name = nameBox.getValue();
+                String qtyStr = qtyField.getText();
+                String unit = unitChoice.getValue();
+
+                if (name != null && !name.isEmpty()) {
+                    double qty = 0;
+                    try {
+                        qty = Double.parseDouble(qtyStr);
+                    } catch (Exception e) {}
+
+                    // Create ingredient just to hold data
+                    Ingredient ing = new Ingredient(qty, unit, 0);
+                    ing.setFoodType(new FoodItem(name));
+                    partialIngredients.add(ing);
+
+                    if ("+ Create New Food Item...".equals(name)) {
+                        javafx.application.Platform.runLater(() -> nameBox.setValue(null));
+                    }
+                }
+            }
+        }
+        draft.setIngredients(partialIngredients);
+
+        // save to MainCtrl and Switch Scene
+        if (mainCtrl != null) {
+            mainCtrl.setDraftRecipe(draft);
+            mainCtrl.showAddFoodItem();
+        } else {
+            System.err.println("MainCtrl is null, cannot redirect!");
+        }
+    }
+
+
+
+    private MainCtrl mainCtrl;
+
+    public void setMainCtrl(MainCtrl mainCtrl) {
+        this.mainCtrl = mainCtrl;
+    }
+
+
 
     /**
      * helper method, to use in the test class
@@ -485,4 +609,43 @@ public class CreateRecipeCtrl {
 
         return recipe;
     }
+
+    @FXML
+    public void handleRefresh() {
+        // fetch latest data
+        List<FoodItem> freshList = serverService.getAllFoodItems();
+        freshList.sort(Comparator.comparing(FoodItem::getName));
+
+        for (Node node : ingredientsVBox.getChildren()) {
+            if (node instanceof HBox) {
+                HBox row = (HBox) node;
+                if (row.getChildren().get(0) instanceof ComboBox) {
+                    @SuppressWarnings("unchecked")
+                    ComboBox<String> box = (ComboBox<String>) row.getChildren().get(0);
+
+                    String currentSelection = box.getValue();
+
+                    if (box.getValue() != null) {
+                        box.getSelectionModel().clearSelection();
+                        box.setValue(null);
+                    }
+
+                    box.getItems().clear();
+
+                    for (FoodItem item : freshList) {
+                        box.getItems().add(item.getName());
+                    }
+                    box.getItems().add("+ Create New Food Item...");
+
+                    if ("+ Create New Food Item...".equals(currentSelection)) {
+                        // does nothing, it's already null from step 2
+                    }
+                    else if (currentSelection != null && box.getItems().contains(currentSelection)) {
+                        box.setValue(currentSelection);
+                    }
+                }
+            }
+        }
+    }
+
 }

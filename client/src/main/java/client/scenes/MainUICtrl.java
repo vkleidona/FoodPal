@@ -2,6 +2,7 @@ package client.scenes;
 
 import client.utils.ServerUtils;
 import jakarta.inject.Inject;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -41,6 +42,8 @@ public class MainUICtrl {
     @FXML private Label recipeNameLabel;
     @FXML private VBox ingredientsVBox;
     @FXML private VBox instructionsVBox;
+
+    @FXML private Label servingsLabel;
 
     private final Client client = ClientBuilder.newClient();
     private final String recipeEndpointUrl = "http://localhost:8080/recipes";
@@ -125,6 +128,10 @@ public class MainUICtrl {
     private void displayRecipe(Recipe recipe) {
         recipeNameLabel.setText(recipe.getName());
 
+        // if the serving is null, then it becomes 1 automatically
+        int servings = (recipe.getServings() != null) ? recipe.getServings() : 1;
+        servingsLabel.setText(String.valueOf(servings));
+
         ingredientsVBox.getChildren().clear();
         for (Ingredient ing : recipe.getIngredients()) {
             ingredientsVBox.getChildren().add(new Label(ing.getFoodType().getName() +
@@ -142,6 +149,7 @@ public class MainUICtrl {
         recipeNameLabel.setText("");
         ingredientsVBox.getChildren().clear();
         instructionsVBox.getChildren().clear();
+        servingsLabel.setText("");
     }
 
     private void openCreateRecipeUI() {
@@ -155,7 +163,7 @@ public class MainUICtrl {
         } catch (IOException e) {
             e.printStackTrace();
         }
-         */
+
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/client/scenes/creatingRecipe.fxml"));
             Parent root = loader.load();
@@ -169,6 +177,8 @@ public class MainUICtrl {
         } catch (IOException e) {
             e.printStackTrace();
         }
+*/
+        mainCtrl.showCreateRecipe();
     }
 
     // delete button
@@ -222,4 +232,42 @@ public class MainUICtrl {
     private void handleGoToShoppingList() {
         mainCtrl.showShoppingList();
     }
+
+
+    @FXML
+    public void handleInformation(ActionEvent actionEvent) {
+        if (recipeListView.getSelectionModel().isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("No Selection");
+            alert.setHeaderText(null);
+            alert.setContentText("Please select a recipe from the list first!");
+            alert.showAndWait();
+            return;
+        }
+
+        int selectedIndex = recipeListView.getSelectionModel().getSelectedIndex();
+
+        if (selectedIndex < 0 || selectedIndex >= currentRecipes.size()) {
+            return;
+        }
+
+        Recipe selectedRecipe = currentRecipes.get(selectedIndex);
+
+        if (selectedRecipe == null ||
+                selectedRecipe.getName() == null ||
+                selectedRecipe.getName().trim().isEmpty()) {
+
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Invalid Selection");
+            alert.setHeaderText(null);
+            alert.setContentText("Cannot open detailed view: The selected recipe has no name/data.");
+            alert.showAndWait();
+            return;
+        }
+
+        mainCtrl.showInformation(selectedRecipe);
+    }
+
+
+
 }

@@ -1,0 +1,19 @@
+.list-cell {
+    -fx-background-color: -fx-control-inner-background;
+    -fx-text-fill: -fx-text-base-color;
+}
+
+.list-cell {
+    -fx-background-color: -fx-control-inner-background !important;
+    -fx-text-fill: -fx-text-base-color !important;
+}
+
+
+.list-cell:filled:selected:focused, .list-cell:filled:selected {
+    -fx-background-color: -fx-accent;
+    -fx-text-fill: white;
+}
+
+.list-cell:odd {
+    -fx-background-color: -fx-control-inner-background-alt;
+}

@@ -50,12 +50,14 @@ public class AddFoodItemCtrl {
                     Double.parseDouble(fatsValue.getText())
             );
 
+            // Clear inputs
             foodItemName.clear();
             kcalValue.clear();
             carbsValue.clear();
             proteinsValue.clear();
             fatsValue.clear();
 
+            // Save to server
             if(editingItem == null) {
                 serverUtils.addFoodItem(newItem);
             } else {
@@ -65,8 +67,19 @@ public class AddFoodItemCtrl {
             confirmButton.setText("Confirm");
             sceneTitle.setText("Adding Food Item");
 
-            mainCtrl.getFoodItemMainCtrl().refreshFoodItems();
-            mainCtrl.showFoodItemMain();
+            if (mainCtrl.getFoodItemMainCtrl() != null) {
+                mainCtrl.getFoodItemMainCtrl().refreshFoodItems();
+            }
+
+            // if we came from "Create Recipe" (draft exists), we go back there.
+            if (mainCtrl.getDraftRecipe() != null) {
+                mainCtrl.showCreateRecipe();
+                // the initialize() method in CreateRecipeCtrl will pick up the draft
+                // and reload the food list (finding the new item).
+            } else {
+                // otherwise, go to the Food Item Management screen
+                mainCtrl.showFoodItemMain();
+            }
 
         } catch (NumberFormatException e) {
             Alert invalidInput = new Alert(Alert.AlertType.WARNING);
@@ -77,10 +90,11 @@ public class AddFoodItemCtrl {
         }
     }
 
-    @FXML
-    public void cancelChanges(){
-        editingItem = null;
 
+    @FXML
+    public void cancelChanges() {
+        // 1. Reset the UI state
+        editingItem = null;
         foodItemName.clear();
         kcalValue.clear();
         carbsValue.clear();
@@ -89,8 +103,16 @@ public class AddFoodItemCtrl {
 
         confirmButton.setText("Confirm");
         sceneTitle.setText("Adding Food Item");
-        mainCtrl.showFoodItemMain();
+
+        // if a draft exists, we go back to the Create Recipe screen.
+        // if not, we go back to the Food Item list.
+        if (mainCtrl.getDraftRecipe() != null) {
+            mainCtrl.showCreateRecipe();
+        } else {
+            mainCtrl.showFoodItemMain();
+        }
     }
+
 
     public void setEditingItem(FoodItem item){
         this.editingItem = item;
