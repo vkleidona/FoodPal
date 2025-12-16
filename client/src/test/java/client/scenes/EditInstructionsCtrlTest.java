@@ -1,53 +1,71 @@
 package client.scenes;
 
-import javafx.application.Platform;
-import javafx.scene.control.ListView;
+import javafx.stage.Stage;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Assumptions; // Import this!
+import org.junit.jupiter.api.Assumptions;
+import org.testfx.framework.junit5.ApplicationTest;
 import recipes.Recipe;
-
-import java.awt.GraphicsEnvironment;
+import java.util.ArrayList;
 import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import client.utils.ServerUtils;
 
-public class EditInstructionsCtrlTest {
+public class EditInstructionsCtrlTest extends ApplicationTest{
+    private EditInstructionsCtrl ctrl;
+    private ServerUtils mockServer;
+    private MainCtrl mockMainCtrl;
+    private Recipe testRecipe;
 
-    /*
-     I used AI for the following method because I was not sure how I can
-     test with JavaFx components but I understand it
-     */
     @BeforeAll
-    static void initJFX() {
-        // Check if there is no screen
-        if (GraphicsEnvironment.isHeadless()) {
-            return;
-        }
+    static void skipInCiWithoutDisplay() {
+        String display = System.getenv("DISPLAY");
+        Assumptions.assumeTrue(display != null && !display.isEmpty(),
+                "Skipping JavaFX UI tests because DISPLAY is not available (CI)");
+    }
 
-        //Start JavaFX only if there is a screen
-        try {
-            Platform.startup(() -> {});
-        } catch (IllegalStateException e) {
-            // Toolkit already initialized
-        }
+    /**
+     * This method starts the JavaFX application for each test
+     */
+
+    @Override
+    public void start(Stage stage) throws Exception{
+        mockServer = mock(ServerUtils.class);
+        mockMainCtrl = mock(MainCtrl.class);
+
+        FXMLLoader loader =  new FXMLLoader(getClass().getResource("/client/scenes/EditInstructions.fxml"));
+
+        loader.setControllerFactory(param -> new EditInstructionsCtrl(mockServer, mockMainCtrl));
+
+        Parent root =  loader.load();
+        ctrl = loader.getController();
+
+        testRecipe = new Recipe("Pizza");
+        testRecipe.setInstructions(new ArrayList<>(List.of("Cut", "Bake")));
+        ctrl.initializeData(testRecipe);
+
+        stage.setScene(new Scene(root));
+        stage.show();
     }
 
     @Test
-    void initDataLoadsRecipeInstructionsCorrectly() {
-        // Skip this test if no screen
-        Assumptions.assumeFalse(GraphicsEnvironment.isHeadless(), "Skipping UI test on headless server");
-
-        EditInstructionsCtrl ctrl = new EditInstructionsCtrl(null, null);
-        ctrl.instructionList = new ListView<>();
-
-        Recipe recipe = new Recipe("test");
-        recipe.setInstructions(List.of("Cut", "Bake"));
-
-        ctrl.initializeData(recipe);
-
+    public void testInitializeData(){
         assertEquals(2, ctrl.instructionList.getItems().size());
         assertEquals("Cut", ctrl.instructionList.getItems().get(0));
         assertEquals("Bake", ctrl.instructionList.getItems().get(1));
+    }
+
+    @Test
+    public void testAddInstruction(){
+        clickOn("Add");
+        write("New Step");
+        clickOn("OK");
+
+        assertEquals(3, ctrl.instructionList.getItems().size());
+        assertEquals("New Step", ctrl.instructionList.getItems().get(2));
     }
 }
