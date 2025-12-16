@@ -176,9 +176,6 @@ public class CreateRecipeCtrl {
                 recipe.setServings(servings);
             }
 
-            System.out.println("DEBUG: Servings from input: " + servings);
-            System.out.println("DEBUG: Recipe object before sending: " + recipe.toString());
-
             // build Instructions List
             List<String> steps = buildInstructionsList();
             if (steps == null) return; // validation failed inside helper
