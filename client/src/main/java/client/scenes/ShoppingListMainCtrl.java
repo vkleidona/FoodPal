@@ -215,6 +215,7 @@ public class ShoppingListMainCtrl {
             unitChoice.setValue(String.valueOf(ingredient.getMeasurement()));
         }
 
+        // Sets up the horizontal box with all components
         HBox ingredientInput = new HBox();
         ingredientInput.setSpacing(15);
         ingredientInput.setPadding(new Insets(20));
@@ -225,18 +226,38 @@ public class ShoppingListMainCtrl {
         ChangeListener <String> inputValidator = (obs, oldVal, newVal) -> {
             String foodText = foodItemField.getText().trim();
             String quantityText = quantityField.getText().trim();
-            boolean condition = !foodText.isEmpty() && !quantityText.isEmpty();
-            okButton.setDisable(!condition);
+            String measurementType = unitChoice.getValue();
+            Double quantity = null;
+            try {
+                quantity = Double.parseDouble(quantityText);
+            } catch (NumberFormatException ignored) {}
+
+            if (!editing) {
+                okButton.setDisable(foodText.isEmpty() ||
+                        quantityText.isEmpty() || measurementType == null);
+            }else{
+                boolean disableCondition =
+                        (foodText.isEmpty() || foodText.equals(ingredient.getFoodName())) &&
+                        (quantityText.isEmpty() || quantity == null ||
+                                quantity == ingredient.getQuantity()) &&
+                        (measurementType == null ||
+                                measurementType.equals(ingredient.getMeasurement()));
+                okButton.setDisable(disableCondition);
+            }
         };
 
+        // we listen to the clicking of any buttons
         foodItemField.textProperty().addListener(inputValidator);
         quantityField.textProperty().addListener(inputValidator);
+        unitChoice.valueProperty().addListener(inputValidator);
         dialogBox.setResultConverter(button -> {
             if (button == ButtonType.OK) {
 
+                // Searches the server for the entered FoodItem
                 String input = foodItemField.getText().trim();
                 FoodItem foodItem = server.searchForFoodItem(input);
 
+                // If the FoodItem hasn't been found, show an alert
                 if (foodItem == null) {
                     Alert nonExistentItemAlert = new Alert(Alert.AlertType.ERROR);
                     nonExistentItemAlert.setTitle("Food item not found.");
@@ -246,29 +267,33 @@ public class ShoppingListMainCtrl {
                     return null;
                 }
 
+                // Catches non-number inputs in the quantity field
                 double quantity;
                 try {
                     quantity = Double.parseDouble(quantityField.getText());
                 }catch (NumberFormatException e) {
                     Alert wrongNumberInput = new Alert(Alert.AlertType.ERROR);
                     wrongNumberInput.setTitle("Wrong input");
-                    wrongNumberInput.setContentText("Food Item does not exist in the database.");
+                    wrongNumberInput.setContentText("Invalid input of a decimal number.");
                     wrongNumberInput.showAndWait();
                     return null;
                 }
 
                 String measurementType = unitChoice.getValue();
+                // If the user is editing, we edit the currently selected ingredient
                 if (editing) {
                     ingredient.setFoodType(foodItem);
                     ingredient.setQuantity(quantity);
                     ingredient.setMeasurement(measurementType);
                     return ingredient;
                 }
+                // Otherwise, a new ingredient with the data is returned
                 return new Ingredient(foodItem, quantity, measurementType);
             }
             return null;
         });
 
+        // We edit the ingredients in the list itself
         int indexClicked = ingredientsObservableList.indexOf(ingredient);
 
         dialogBox.showAndWait().ifPresent(result -> {

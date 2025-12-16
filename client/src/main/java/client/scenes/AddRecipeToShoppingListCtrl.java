@@ -94,60 +94,81 @@ public class AddRecipeToShoppingListCtrl {
     }
 
     /**
-     * A copy of the edit ingredients interface from the Shopping List
-     * @param ingredient - the ingredient to be edited
+     * Handles the functionality for adding / changing an ingredient
+     * depending on the button clicked
+     * @param ingredient - Ingredient to be edited
      */
     public void showDialog(Ingredient ingredient) {
         boolean editing = !(ingredient==null);
-        Dialog<Ingredient> dialogBox = new Dialog<>();
+        Dialog <Ingredient> dialogBox = new Dialog<>();
         dialogBox.setTitle("Change ingredient");
 
+        // Adds an OK button and a Cancel button to the dialog box
         dialogBox.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
         Button okButton = (Button) dialogBox.getDialogPane().lookupButton(ButtonType.OK);
+
+        // The OK Button is initially disabled
         okButton.setDisable(true);
 
+        // Setting up the three parameters the user has to enter
         TextField foodItemField = new TextField();
         TextField quantityField = new TextField();
-        TextField unitField = new TextField();
+        ChoiceBox <String> unitChoice = new ChoiceBox<>();
+        loadItemsIntoChoiceBox(unitChoice);
 
+        // If the user is not editing, we show an empty text box with prompts
+        // If they are editing, we fetch the ingredient's data
         if (!editing) {
             foodItemField.setPromptText("Enter food type:");
             quantityField.setPromptText("Enter quantity:");
-            unitField.setPromptText("Enter unit field:");
         }else{
             foodItemField.setText(ingredient.getFoodName());
             quantityField.setText(String.valueOf(ingredient.getQuantity()));
-            //TODO: Configure validation for new enum
-            unitField.setText(ingredient.getMeasurement());
+            unitChoice.setValue(String.valueOf(ingredient.getMeasurement()));
         }
 
+        // Sets up the horizontal box with all components
         HBox ingredientInput = new HBox();
         ingredientInput.setSpacing(15);
         ingredientInput.setPadding(new Insets(20));
-        ingredientInput.getChildren().addAll(foodItemField, quantityField, unitField);
+        ingredientInput.getChildren().addAll(foodItemField, quantityField, unitChoice);
         dialogBox.getDialogPane().setContent(ingredientInput);
 
-        // Disables the OK Button until all items have been entered
-        ChangeListener<String> inputValidator = (obs, oldVal, newVal) -> {
+        ChangeListener <String> inputValidator = (obs, oldVal, newVal) -> {
             String foodText = foodItemField.getText().trim();
             String quantityText = quantityField.getText().trim();
-            String measurementText = unitField.getText().trim();
-            boolean condition = !foodText.isEmpty() && !quantityText.isEmpty()
-                    && !measurementText.isEmpty();
+            String measurementType = unitChoice.getValue();
+            Double quantity = null;
+            try {
+                quantity = Double.parseDouble(quantityText);
+            } catch (NumberFormatException ignored) {}
 
-            okButton.setDisable(!condition);
+            if (!editing) {
+                okButton.setDisable(foodText.isEmpty() ||
+                        quantityText.isEmpty() || measurementType == null);
+            }else{
+                boolean disableCondition =
+                        (foodText.isEmpty() || foodText.equals(ingredient.getFoodName())) &&
+                                (quantityText.isEmpty() || quantity == null ||
+                                        quantity == ingredient.getQuantity()) &&
+                                (measurementType == null ||
+                                        measurementType.equals(ingredient.getMeasurement()));
+                okButton.setDisable(disableCondition);
+            }
         };
 
+        // we listen to the clicking of any buttons
         foodItemField.textProperty().addListener(inputValidator);
         quantityField.textProperty().addListener(inputValidator);
-        unitField.textProperty().addListener(inputValidator);
-
+        unitChoice.valueProperty().addListener(inputValidator);
         dialogBox.setResultConverter(button -> {
             if (button == ButtonType.OK) {
 
+                // Searches the server for the entered FoodItem
                 String input = foodItemField.getText().trim();
                 FoodItem foodItem = serverUtils.searchForFoodItem(input);
 
+                // If the FoodItem hasn't been found, show an alert
                 if (foodItem == null) {
                     Alert nonExistentItemAlert = new Alert(Alert.AlertType.ERROR);
                     nonExistentItemAlert.setTitle("Food item not found.");
@@ -157,29 +178,33 @@ public class AddRecipeToShoppingListCtrl {
                     return null;
                 }
 
-                double quantity = 0;
+                // Catches non-number inputs in the quantity field
+                double quantity;
                 try {
                     quantity = Double.parseDouble(quantityField.getText());
                 }catch (NumberFormatException e) {
                     Alert wrongNumberInput = new Alert(Alert.AlertType.ERROR);
                     wrongNumberInput.setTitle("Wrong input");
-                    wrongNumberInput.setContentText("Food Item does not exist in the database.");
+                    wrongNumberInput.setContentText("Invalid input of a decimal number.");
                     wrongNumberInput.showAndWait();
                     return null;
                 }
 
-                String measurementType = unitField.getText();
+                String measurementType = unitChoice.getValue();
+                // If the user is editing, we edit the currently selected ingredient
                 if (editing) {
                     ingredient.setFoodType(foodItem);
                     ingredient.setQuantity(quantity);
                     ingredient.setMeasurement(measurementType);
                     return ingredient;
                 }
+                // Otherwise, a new ingredient with the data is returned
                 return new Ingredient(foodItem, quantity, measurementType);
             }
             return null;
         });
 
+        // We edit the ingredients in the list itself
         int indexClicked = recipeIngredientsObservableList.indexOf(ingredient);
 
         dialogBox.showAndWait().ifPresent(result -> {
@@ -236,5 +261,16 @@ public class AddRecipeToShoppingListCtrl {
         }
         shoppingList.storeFile();
         mainCtrl.showShoppingList();
+    }
+
+    /**
+     * A method for loading all possible measurement types into the choice box
+     * @param choiceBox - the choice box where we load the items
+     */
+    public void loadItemsIntoChoiceBox (ChoiceBox <String> choiceBox) {
+        List <String> availableMeasurementTypes =
+                List.of("g", "kg", "L", "mL", "oz", "lb", "fl oz", "cup", "tbsp", "tsp",
+                        "slice", "clove", "stick", "pinch", "dash", "jar", "-");
+        choiceBox.getItems().addAll(availableMeasurementTypes);
     }
 }
