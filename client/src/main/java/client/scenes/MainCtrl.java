@@ -54,11 +54,15 @@ public class MainCtrl {
     private ShoppingListMainCtrl shoppingListMainCtrl;
     private Scene shoppingListMainScene;
 
+    private AddRecipeToShoppingListCtrl addRecipeToShoppingListCtrl;
+    private Scene addRecipeToShoppingList;
+
     public void initialize(Stage primaryStage, Pair<QuoteOverviewCtrl, Parent> overview,
                            Pair<AddQuoteCtrl, Parent> add, Pair<MainUICtrl, Parent> mainMenu, Pair<EditInstructionsCtrl, Parent>
                                    editInstructions, Pair<CreateRecipeCtrl, Parent> createRecipe, Pair<AddFoodItemCtrl, Parent>
                                    addFoodItem, Pair<FoodItemMainCtrl, Parent> foodItemMain,
-                                    Pair <ShoppingListMainCtrl, Parent> shoppingListMain) {
+                                    Pair <ShoppingListMainCtrl, Parent> shoppingListMain,
+                                    Pair <AddRecipeToShoppingListCtrl, Parent> addRecipeToShoppingList) {
         this.primaryStage = primaryStage;
         this.overviewCtrl = overview.getKey();
         this.overview = new Scene(overview.getValue());
@@ -83,6 +87,9 @@ public class MainCtrl {
 
         this.shoppingListMainCtrl = shoppingListMain.getKey();
         this.shoppingListMainScene = new Scene(shoppingListMain.getValue());
+
+        this.addRecipeToShoppingListCtrl = addRecipeToShoppingList.getKey();
+        this.addRecipeToShoppingList = new Scene (addRecipeToShoppingList.getValue());
 
         showMainMenu();
         primaryStage.show();
@@ -126,9 +133,25 @@ public class MainCtrl {
         primaryStage.setScene(foodItemMain);
     }
 
+    /**
+     * Switches to the Shopping List scene
+     */
     public void showShoppingList() {
         primaryStage.setTitle("Shopping List");
+        shoppingListMainCtrl.getS().loadFile();
+        shoppingListMainCtrl.refreshInterface();
         primaryStage.setScene(shoppingListMainScene);
+    }
+
+    /**
+     * Switches to the Interface asking for confirmation about adding
+     * the recipe to the Shopping List
+     */
+    public void showAddRecipeToShoppingList () {
+        primaryStage.setTitle("Add Recipe to Shopping List");
+        Recipe currentRecipe = mainUICtrl.getSelectedRecipe();
+        addRecipeToShoppingListCtrl.setRecipe(currentRecipe);
+        primaryStage.setScene(addRecipeToShoppingList);
     }
 
     public AddFoodItemCtrl getAddFoodItemCtrl() {
@@ -136,6 +159,6 @@ public class MainCtrl {
     }
 
     public FoodItemMainCtrl getFoodItemMainCtrl() {
-    return foodItemMainCtrl;
+        return foodItemMainCtrl;
     }
 }

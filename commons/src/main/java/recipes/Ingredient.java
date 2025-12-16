@@ -22,11 +22,6 @@ not needed here.
 public class Ingredient implements Serializable {
     @Id
     @GeneratedValue (strategy = GenerationType.AUTO)
-    /*
-    I am converting the long into Long, so data has null values instead of 0
-    That way, we can test ingredientID in the database and locally,
-    IDs won't be the same (all 0)
-     */
     private Long ingredientID;
 
     /*
@@ -173,7 +168,11 @@ public class Ingredient implements Serializable {
      * to the user in the ShoppingList
      */
     public String toString () {
-        return this.getFoodName() + " (" +
-                this.getQuantity() + " " + this.getMeasurement() + ")";
+        String ingredientToString = this.getFoodName() + " - " +
+                this.getQuantity() + " " + this.getMeasurement();
+        if (this.getRecipe() != null) {
+            ingredientToString += " (for preparing " + this.getRecipe().getName() + ")";
+        }
+        return ingredientToString;
     }
 }

@@ -53,18 +53,31 @@ public class Main extends Application {
 		var add = FXML.load(AddQuoteCtrl.class, "client", "scenes", "AddQuote.fxml");
 
         var mainUI = FXML.load(MainUICtrl.class, "client", "scenes", "MainUI.fxml");
-        var editInstructions = FXML.load(EditInstructionsCtrl.class, "client", "scenes", "EditInstructions.fxml");
-        var createRecipe = FXML.load(CreateRecipeCtrl.class, "client", "scenes", "creatingRecipe.fxml");
+        var editInstructions = FXML.load
+                (EditInstructionsCtrl.class, "client", "scenes", "EditInstructions.fxml");
+        var createRecipe = FXML.load
+                (CreateRecipeCtrl.class, "client", "scenes", "creatingRecipe.fxml");
 
         var addFoodItem = FXML.load(AddFoodItemCtrl.class, "client", "scenes", "AddFoodItem.fxml");
-        var foodItemMain = FXML.load(FoodItemMainCtrl.class, "client", "scenes", "FoodItemMain.fxml");
+        var foodItemMain = FXML.load
+                (FoodItemMainCtrl.class, "client", "scenes", "FoodItemMain.fxml");
 
-        var shoppingListMain = FXML.load(ShoppingListMainCtrl.class, "client", "scenes", "ShoppingListMainUI.fxml");
+        var shoppingListMain = FXML.load
+                (ShoppingListMainCtrl.class, "client", "scenes", "ShoppingListMainUI.fxml");
+        var addRecipeToShoppingList = FXML.load
+                (AddRecipeToShoppingListCtrl.class, "client", "scenes", "AddRecipeToShoppingList.fxml");
 
         var mainCtrl = INJECTOR.getInstance(MainCtrl.class);
-        mainCtrl.initialize(primaryStage, overview, add,mainUI, editInstructions, createRecipe, addFoodItem, foodItemMain, shoppingListMain);
+        mainCtrl.initialize(primaryStage, overview, add, mainUI, editInstructions,
+                createRecipe, addFoodItem, foodItemMain, shoppingListMain, addRecipeToShoppingList);
 	}
 
+    /**
+     * Stores the ingredients of the current shopping list in a file
+     * when the application is stopped
+     * @throws Exception - a FileNotFoundException might be thrown in case the
+     * file has not been found
+     */
     @Override
     public void stop() throws Exception {
         ShoppingList.getShoppingList().storeFile();

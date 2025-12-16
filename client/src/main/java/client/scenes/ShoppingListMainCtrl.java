@@ -2,6 +2,7 @@ package client.scenes;
 
 import client.utils.ServerUtils;
 import jakarta.inject.Inject;
+import javafx.beans.InvalidationListener;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -37,6 +38,7 @@ public class ShoppingListMainCtrl {
     private ListView <Ingredient> ingredientsListView;
     private ObservableList<Ingredient> ingredientsObservableList;
 
+    // I require a public ShoppingList to access it when loading
     private ShoppingList s;
 
     private final ServerUtils server;
@@ -56,40 +58,46 @@ public class ShoppingListMainCtrl {
     }
 
     /**
+     * A getter for the ShoppingList parameter - needed for access
+     * from multiple places
+     * @return - ShoppingList - returns the ShoppingList instance
+     */
+    public ShoppingList getS() {
+        return s;
+    }
+
+    /**
      * Initializes all data for the ShoppingList
      */
     public void initialize() {
+        // loads the shopping list from the file
         s = ShoppingList.getShoppingList();
         s.loadFile();
 
-        List<Ingredient> ingredientList = s.getIngredients();
-        if (ingredientList == null) {
-            s.setIngredients(new ArrayList<>());
-            ingredientList = s.getIngredients();
-        }
-        if (ingredientsObservableList == null) {
-            ingredientsObservableList = FXCollections.observableArrayList(ingredientList);
-            ingredientsListView.setItems(ingredientsObservableList);
-        }
+        // refreshes the interface to match the state of the shopping list
+        refreshInterface();
 
-        ingredientsObservableList.clear();
-        ingredientsObservableList.addAll(s.getIngredients());
-
+        // sets up a cell factory for the list of ingredients - to display an Edit and Delete button
         ingredientsListView.setCellFactory(view -> new ListCell<>() {
             @Override
             protected void updateItem(Ingredient ingredient, boolean empty) {
                 super.updateItem(ingredient, empty);
 
                 if (empty || ingredient == null) {
+                    // for empty slots of the list, display nothing
                     setText(null);
                     setGraphic(null);
                 } else {
+                    // set up a label (containing each Ingredient), and Edit and Delete buttons
                     Label nameLabel = new Label(ingredient.toString());
 
                     Button editButton = new Button("Edit");
                     Button deleteButton = new Button("Delete");
 
+                    // the edit button shows the dialog box for changing an ingredient
                     editButton.setOnAction(e -> showDialog(ingredient));
+
+                    // the delete button deletes the ingredient
                     deleteButton.setOnAction(e -> deleteIngredient(ingredient));
 
                     HBox container = new HBox(10, nameLabel, editButton, deleteButton);
@@ -99,6 +107,30 @@ public class ShoppingListMainCtrl {
                 }
             }
         });
+    }
+
+    /**
+     * Refreshes the interface to match the current state of the Shopping List
+     */
+    public void refreshInterface () {
+        // I added this method, as now the ShoppingList is accessed from 2 places
+        // and I need to refresh the interface to display the most recent version
+        List<Ingredient> ingredientList = s.getIngredients();
+
+        // initializes the ingredients if uninitialized
+        if (ingredientList == null) {
+            s.setIngredients(new ArrayList<>());
+            ingredientList = s.getIngredients();
+        }
+        // initializes the observable list if uninitialized
+        if (ingredientsObservableList == null) {
+            ingredientsObservableList = FXCollections.observableArrayList(ingredientList);
+            ingredientsListView.setItems(ingredientsObservableList);
+        }
+
+        // clears the observable list and then shows all items
+        ingredientsObservableList.clear();
+        ingredientsObservableList.addAll(s.getIngredients());
     }
 
     /**
@@ -112,10 +144,6 @@ public class ShoppingListMainCtrl {
 
     /**
      * Creates a printable version of the ShoppingList
-     * BTW I don't know if doing it manually like in IP is acceptable
-     * or if I have to use a framework. Whoever is reviewing this,
-     * please share your opinion (or if you have concrete knowledge
-     * about the requirements, even better)
      */
     @FXML
     public void print () throws IOException {
@@ -140,6 +168,7 @@ public class ShoppingListMainCtrl {
      */
     @FXML
     public void returnToMain () {
+        s.storeFile();
         mainCtrl.showMainMenu();
     }
 
@@ -162,46 +191,46 @@ public class ShoppingListMainCtrl {
         Dialog <Ingredient> dialogBox = new Dialog<>();
         dialogBox.setTitle("Change ingredient");
 
+        // Adds an OK button and a Cancel button to the dialog box
         dialogBox.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
         Button okButton = (Button) dialogBox.getDialogPane().lookupButton(ButtonType.OK);
+
+        // The OK Button is initially disabled
         okButton.setDisable(true);
 
+        // Setting up the three parameters the user has to enter
         TextField foodItemField = new TextField();
         TextField quantityField = new TextField();
-        TextField unitField = new TextField();
+        ChoiceBox <String> unitChoice = new ChoiceBox<>();
+        loadItemsIntoChoiceBox(unitChoice);
 
+        // If the user is not editing, we show an empty text box with prompts
+        // If they are editing, we fetch the ingredient's data
         if (!editing) {
             foodItemField.setPromptText("Enter food type:");
             quantityField.setPromptText("Enter quantity:");
-            unitField.setPromptText("Enter unit field:");
         }else{
             foodItemField.setText(ingredient.getFoodName());
             quantityField.setText(String.valueOf(ingredient.getQuantity()));
-            //TODO: Configure validation for new enum
-            unitField.setText(ingredient.getMeasurement());
+            unitChoice.setValue(String.valueOf(ingredient.getMeasurement()));
         }
 
         HBox ingredientInput = new HBox();
         ingredientInput.setSpacing(15);
         ingredientInput.setPadding(new Insets(20));
-        ingredientInput.getChildren().addAll(foodItemField, quantityField, unitField);
+        ingredientInput.getChildren().addAll(foodItemField, quantityField, unitChoice);
         dialogBox.getDialogPane().setContent(ingredientInput);
 
         // Disables the OK Button until all items have been entered
         ChangeListener <String> inputValidator = (obs, oldVal, newVal) -> {
             String foodText = foodItemField.getText().trim();
             String quantityText = quantityField.getText().trim();
-            String measurementText = unitField.getText().trim();
-            boolean condition = !foodText.isEmpty() && !quantityText.isEmpty()
-                    && !measurementText.isEmpty();
-
+            boolean condition = !foodText.isEmpty() && !quantityText.isEmpty();
             okButton.setDisable(!condition);
         };
 
         foodItemField.textProperty().addListener(inputValidator);
         quantityField.textProperty().addListener(inputValidator);
-        unitField.textProperty().addListener(inputValidator);
-
         dialogBox.setResultConverter(button -> {
             if (button == ButtonType.OK) {
 
@@ -217,7 +246,7 @@ public class ShoppingListMainCtrl {
                     return null;
                 }
 
-                double quantity = 0;
+                double quantity;
                 try {
                     quantity = Double.parseDouble(quantityField.getText());
                 }catch (NumberFormatException e) {
@@ -228,7 +257,7 @@ public class ShoppingListMainCtrl {
                     return null;
                 }
 
-                String measurementType = unitField.getText();
+                String measurementType = unitChoice.getValue();
                 if (editing) {
                     ingredient.setFoodType(foodItem);
                     ingredient.setQuantity(quantity);
@@ -260,5 +289,16 @@ public class ShoppingListMainCtrl {
     public void deleteIngredient(Ingredient ingredient) {
         s.removeIngredient(ingredient);
         ingredientsObservableList.remove(ingredient);
+    }
+
+    /**
+     * A method for loading all possible measurement types into the choice box
+     * @param choiceBox - the choice box where we load the items
+     */
+    public void loadItemsIntoChoiceBox (ChoiceBox <String> choiceBox) {
+        List <String> availableMeasurementTypes =
+                List.of("g", "kg", "L", "mL", "oz", "lb", "fl oz", "cup", "tbsp", "tsp",
+                        "slice", "clove", "stick", "pinch", "dash", "jar", "-");
+        choiceBox.getItems().addAll(availableMeasurementTypes);
     }
 }
