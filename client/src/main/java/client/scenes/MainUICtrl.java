@@ -2,6 +2,7 @@ package client.scenes;
 
 import client.utils.ServerUtils;
 import jakarta.inject.Inject;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -42,6 +43,8 @@ public class MainUICtrl {
     @FXML private Label recipeNameLabel;
     @FXML private VBox ingredientsVBox;
     @FXML private VBox instructionsVBox;
+
+    @FXML private Label servingsLabel;
 
     private final Client client = ClientBuilder.newClient();
     private final String recipeEndpointUrl = "http://localhost:8080/recipes";
@@ -88,7 +91,15 @@ public class MainUICtrl {
         // Placeholders for edit buttons
         editNameButton.setOnAction(e -> handleEditName());
         editIngredientsButton.setOnAction(e -> handleEditIngredients());
-        editInstructionsButton.setOnAction(e -> handleEditInstructions());
+        editInstructionsButton.setOnAction(e -> {
+            int selectedIndex = recipeListView.getSelectionModel().getSelectedIndex();
+            if (selectedIndex >= 0 && selectedIndex < currentRecipes.size()) {
+                handleEditInstructions(currentRecipes.get(selectedIndex));
+            }
+            else{
+                System.out.println("Please select a recipe to edit");
+            }
+        });
         foodItemButton.setOnAction(e -> handleGoToFoodItems());
     }
 
@@ -112,6 +123,7 @@ public class MainUICtrl {
                 clearRecipeDisplay();
             }
 
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -119,6 +131,10 @@ public class MainUICtrl {
 
     private void displayRecipe(Recipe recipe) {
         recipeNameLabel.setText(recipe.getName());
+
+        // if the serving is null, then it becomes 1 automatically
+        int servings = (recipe.getServings() != null) ? recipe.getServings() : 1;
+        servingsLabel.setText(String.valueOf(servings));
 
         ingredientsVBox.getChildren().clear();
         for (Ingredient ing : recipe.getIngredients()) {
@@ -137,6 +153,7 @@ public class MainUICtrl {
         recipeNameLabel.setText("");
         ingredientsVBox.getChildren().clear();
         instructionsVBox.getChildren().clear();
+        servingsLabel.setText("");
     }
 
     private void openCreateRecipeUI() {
@@ -150,7 +167,7 @@ public class MainUICtrl {
         } catch (IOException e) {
             e.printStackTrace();
         }
-         */
+
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/client/scenes/creatingRecipe.fxml"));
             Parent root = loader.load();
@@ -164,6 +181,8 @@ public class MainUICtrl {
         } catch (IOException e) {
             e.printStackTrace();
         }
+*/
+        mainCtrl.showCreateRecipe();
     }
 
     // delete button
@@ -202,8 +221,16 @@ public class MainUICtrl {
     // Placeholder methods for edit buttons
     private void handleEditName() { System.out.println("Edit name placeholder"); }
     private void handleEditIngredients() { System.out.println("Edit ingredients placeholder"); }
-    private void handleEditInstructions() { System.out.println("Edit instructions placeholder"); }
-    private void handleGoToFoodItems() { mainCtrl.showFoodItemMain(); }
+
+    private void handleEditInstructions(Recipe recipe) {
+        if(recipe == null){
+            System.out.println("Recipe is null");
+            return;
+        }
+        mainCtrl.showEditInstructions(recipe);
+    }
+
+    private void handleGoToFoodItems() { System.out.println("Go to Food Items placeholder"); }
 
     /**
      * The Shopping List is connected to the corresponding interface
@@ -228,5 +255,39 @@ public class MainUICtrl {
      */
     public Recipe getSelectedRecipe () {
         return selectedRecipe;
+    }
+
+    @FXML
+    public void handleInformation(ActionEvent actionEvent) {
+        if (recipeListView.getSelectionModel().isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("No Selection");
+            alert.setHeaderText(null);
+            alert.setContentText("Please select a recipe from the list first!");
+            alert.showAndWait();
+            return;
+        }
+
+        int selectedIndex = recipeListView.getSelectionModel().getSelectedIndex();
+
+        if (selectedIndex < 0 || selectedIndex >= currentRecipes.size()) {
+            return;
+        }
+
+        Recipe selectedRecipe = currentRecipes.get(selectedIndex);
+
+        if (selectedRecipe == null ||
+                selectedRecipe.getName() == null ||
+                selectedRecipe.getName().trim().isEmpty()) {
+
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Invalid Selection");
+            alert.setHeaderText(null);
+            alert.setContentText("Cannot open detailed view: The selected recipe has no name/data.");
+            alert.showAndWait();
+            return;
+        }
+
+        mainCtrl.showInformation(selectedRecipe);
     }
 }
