@@ -89,15 +89,7 @@ public class MainUICtrl {
 
         // Placeholders for edit buttons
         editNameButton.setOnAction(e -> handleEditName());
-        editIngredientsButton.setOnAction(e -> {
-            int selectedIndex = recipeListView.getSelectionModel().getSelectedIndex();
-            if (selectedIndex >= 0 && selectedIndex < currentRecipes.size()) {
-                handleEditIngredients(currentRecipes.get(selectedIndex));
-            }
-            else{
-                System.out.println("Please select a recipe to edit");
-            }
-        });
+        editIngredientsButton.setOnAction(e -> handleEditIngredients());
         editInstructionsButton.setOnAction(e -> {
             int selectedIndex = recipeListView.getSelectionModel().getSelectedIndex();
             if (selectedIndex >= 0 && selectedIndex < currentRecipes.size()) {
