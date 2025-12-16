@@ -39,7 +39,10 @@ public class Recipe implements Serializable {
     private String language;
      */
 
-    private Recipe() {
+    /**
+     * A public constructor for the Recipe - now, the recipe should be able to be fetched properly
+     */
+    public Recipe() {
     }
 
 
