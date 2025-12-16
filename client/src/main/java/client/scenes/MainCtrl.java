@@ -75,8 +75,8 @@ public class MainCtrl {
                                    editInstructions, Pair<CreateRecipeCtrl, Parent> createRecipe, Pair<AddFoodItemCtrl, Parent>
                                    addFoodItem, Pair<FoodItemMainCtrl, Parent> foodItemMain,
                                     Pair <ShoppingListMainCtrl, Parent> shoppingListMain,
-                                    Pair <AddRecipeToShoppingListCtrl, Parent> addRecipeToShoppingList
-                                    Pair<InformationCtrl, Parent> information) {
+                                    Pair <AddRecipeToShoppingListCtrl, Parent> addRecipeToShoppingList,
+                                    Pair <InformationCtrl, Parent> information) {
         this.primaryStage = primaryStage;
         this.overviewCtrl = overview.getKey();
         this.overview = new Scene(overview.getValue());
