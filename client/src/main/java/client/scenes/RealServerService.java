@@ -37,4 +37,10 @@ public class RealServerService implements ServerService {
             return new ArrayList<>(); // return empty list on failure
         }
     }
+
+    @Override
+    public List<recipes.FoodItem> getFoodItems() {
+        return getAllFoodItems();
+    }
+
 }
