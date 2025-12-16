@@ -9,7 +9,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
 import org.testfx.util.WaitForAsyncUtils;
@@ -41,19 +40,28 @@ public class CreateRecipeCtrlTest extends ApplicationTest {
         // the controller instance
         controller = loader.getController();
 
-        // inject the server implementation
-        // This overrides the "RealServerService" so we don't hit the network
         controller.setServerService(new ServerService() {
             @Override
             public void sendRecipe(Recipe recipe) {
                 wasRecipeSent = true;
-                capturedRecipe = recipe; // Capture the recipe to verify it later
+                capturedRecipe = recipe;
+            }
+
+            @Override
+            public java.util.List<recipes.FoodItem> getAllFoodItems() {
+                return new java.util.ArrayList<>();
+            }
+
+            @Override
+            public java.util.List<recipes.FoodItem> getFoodItems() {
+                return new java.util.ArrayList<>();
             }
         });
 
         stage.setScene(new Scene(root));
         stage.show();
     }
+
 
     @Test
     public void testInvalidQuantityAlert() {

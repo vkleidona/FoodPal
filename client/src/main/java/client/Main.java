@@ -49,6 +49,8 @@ public class Main extends Application {
 			return;
 		}
 
+		var information = FXML.load(InformationCtrl.class, "client", "scenes", "InformationUI.fxml");
+
 		var overview = FXML.load(QuoteOverviewCtrl.class, "client", "scenes", "QuoteOverview.fxml");
 		var add = FXML.load(AddQuoteCtrl.class, "client", "scenes", "AddQuote.fxml");
 
@@ -64,7 +66,7 @@ public class Main extends Application {
         var shoppingListMain = FXML.load(ShoppingListMainCtrl.class, "client", "scenes", "ShoppingListMainUI.fxml");
 
         var mainCtrl = INJECTOR.getInstance(MainCtrl.class);
-        mainCtrl.initialize(primaryStage, overview, add,mainUI, editInstructions, createRecipe, addFoodItem, foodItemMain, editIngredients, shoppingListMain);
+        mainCtrl.initialize(primaryStage, overview, add,mainUI, editInstructions, createRecipe, addFoodItem, foodItemMain, editIngredients, shoppingListMain, information);
 	}
 
     @Override

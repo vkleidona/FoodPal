@@ -8,8 +8,9 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<BorderPane prefHeight="500" prefWidth="800" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.scenes.MainUICtrl">
+<BorderPane prefHeight="560.0" prefWidth="841.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.scenes.MainUICtrl">
 
     <!-- Top bar with window controls -->
     <top>
@@ -42,23 +43,30 @@
             <Button fx:id="editNameButton" layoutX="300" layoutY="5" text="Edit" />
 
             <!-- Ingredients -->
-            <Label layoutX="10" layoutY="50" text="Ingredients:" />
-            <Button fx:id="editIngredientsButton" layoutX="300" layoutY="45" text="Edit" />
-            <ScrollPane fx:id="ingredientsScrollPane" layoutX="10" layoutY="75" prefHeight="150" prefWidth="500">
+            <Label layoutX="15.0" layoutY="93.0" text="Ingredients:" />
+            <Button fx:id="editIngredientsButton" layoutX="300.0" layoutY="89.0" text="Edit" />
+            <ScrollPane fx:id="ingredientsScrollPane" layoutX="10.0" layoutY="127.0" prefHeight="150" prefWidth="570.0">
                 <VBox fx:id="ingredientsVBox" spacing="5" />
             </ScrollPane>
 
             <!-- Instructions -->
-            <Label layoutX="10" layoutY="240" text="Instructions:" />
-            <Button fx:id="editInstructionsButton" layoutX="300" layoutY="235" text="Edit" />
-            <ScrollPane fx:id="instructionsScrollPane" layoutX="10" layoutY="270" prefHeight="150" prefWidth="500">
+            <Label layoutX="14.0" layoutY="291.0" text="Instructions:" />
+            <Button fx:id="editInstructionsButton" layoutX="297.0" layoutY="287.0" text="Edit" />
+            <ScrollPane fx:id="instructionsScrollPane" layoutX="14.0" layoutY="325.0" prefHeight="150" prefWidth="566.0">
                 <VBox fx:id="instructionsVBox" spacing="5" />
             </ScrollPane>
 
             <!-- Food Items Button -->
-            <Button fx:id="foodItemButton" layoutX="10" layoutY="430" text="Go to Food Items" />
-         <Button fx:id="shoppingListButton" layoutX="136.0" layoutY="429.0" mnemonicParsing="false" onAction="#handleGoToShoppingList" prefHeight="26.0" prefWidth="106.0" text="Shopping List" />
-         <Button fx:id="downloadButton" layoutX="260.0" layoutY="429.0" mnemonicParsing="false" onAction="#downloadRecipe" prefHeight="25.0" prefWidth="89.0" text="Download" />
+            <Button fx:id="foodItemButton" layoutX="10.0" layoutY="494.0" text="Go to Food Items" />
+         <Button fx:id="shoppingListButton" layoutX="134.0" layoutY="493.0" mnemonicParsing="false" onAction="#handleGoToShoppingList" prefHeight="26.0" prefWidth="106.0" text="Shopping List" />
+            <Button fx:id="downloadButton" layoutX="260.0" layoutY="429.0" mnemonicParsing="false" onAction="#downloadRecipe" prefHeight="25.0" prefWidth="89.0" text="Download" />
+         <Button layoutX="497.0" layoutY="6.0" mnemonicParsing="false" onAction="#handleInformation" text="Information" />
+         <Label layoutX="14.0" layoutY="56.0" text="Servings" />
+         <Label fx:id="servingsLabel" layoutX="301.0" layoutY="56.0">
+            <font>
+               <Font size="14.0" />
+            </font>
+         </Label>
 
         </AnchorPane>
     </center>

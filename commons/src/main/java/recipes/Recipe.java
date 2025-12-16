@@ -32,6 +32,17 @@ public class Recipe implements Serializable {
     @Column(name = "instruction")
     private List<String> instructions = new ArrayList<>();
 
+    // new column, number of servings
+    @Column(name = "servings")
+    private Integer servings;
+
+    public Integer getServings() {
+        return servings;
+    }
+
+    public void setServings(Integer servings) {
+        this.servings = servings;
+    }
 
     /*
     To be implemented at a later date. We will probably use a specific

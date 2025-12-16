@@ -31,6 +31,15 @@ public class MainCtrl {
     private AddQuoteCtrl addCtrl;
     private Scene add;
 
+    // ADD THIS FIELD
+    private final RecipeActions recipeActions;
+
+    // ADD THIS CONSTRUCTOR
+    @com.google.inject.Inject
+    public MainCtrl(RecipeActions recipeActions) {
+        this.recipeActions = recipeActions;
+    }
+
     //screen 1
     private MainUICtrl mainUICtrl;
     private Scene mainMenu;
@@ -54,6 +63,10 @@ public class MainCtrl {
     private EditIngredientsCtrl editIngredientsCtrl;
     private Scene editIngredients;
 
+    //screen 6
+    private InformationCtrl informationCtrl;
+    private Scene informationScene;
+
     private ShoppingListMainCtrl shoppingListMainCtrl;
     private Scene shoppingListMainScene;
 
@@ -61,7 +74,7 @@ public class MainCtrl {
                            Pair<AddQuoteCtrl, Parent> add, Pair<MainUICtrl, Parent> mainMenu, Pair<EditInstructionsCtrl, Parent>
                                    editInstructions, Pair<CreateRecipeCtrl, Parent> createRecipe, Pair<AddFoodItemCtrl, Parent>
                                    addFoodItem, Pair<FoodItemMainCtrl, Parent> foodItemMain, Pair<EditIngredientsCtrl, Parent> editIngredients,
-                                    Pair <ShoppingListMainCtrl, Parent> shoppingListMain) {
+                                    Pair <ShoppingListMainCtrl, Parent> shoppingListMain, Pair<InformationCtrl, Parent> information) {
         this.primaryStage = primaryStage;
         this.overviewCtrl = overview.getKey();
         this.overview = new Scene(overview.getValue());
@@ -77,6 +90,8 @@ public class MainCtrl {
 
         this.createRecipeCtrl = createRecipe.getKey();
         this.createRecipe = new Scene(createRecipe.getValue());
+        this.createRecipeCtrl.setRecipeActions(this.recipeActions);
+        this.createRecipeCtrl.setMainCtrl(this);
 
         this.addFoodItemCtrl = addFoodItem.getKey();
         this.addFoodItem = new Scene(addFoodItem.getValue());
@@ -90,8 +105,21 @@ public class MainCtrl {
         this.shoppingListMainCtrl = shoppingListMain.getKey();
         this.shoppingListMainScene = new Scene(shoppingListMain.getValue());
 
+        this.informationCtrl = information.getKey();
+        this.informationScene = new Scene(information.getValue());
+
         showMainMenu();
         primaryStage.show();
+    }
+
+    private Recipe draftRecipe; // field to store the draft
+
+    public void setDraftRecipe(Recipe draftRecipe) {
+        this.draftRecipe = draftRecipe;
+    }
+
+    public Recipe getDraftRecipe() {
+        return draftRecipe;
     }
 
     public void showOverview() {
@@ -104,6 +132,14 @@ public class MainCtrl {
         primaryStage.setTitle("Quotes: Adding Quote");
         primaryStage.setScene(add);
         add.setOnKeyPressed(e -> addCtrl.keyPressed(e));
+    }
+
+    public void showInformation(Recipe recipe) {
+        if (informationCtrl != null) {
+            informationCtrl.setRecipe(recipe); // <--- PASS THE DATA
+        }
+        primaryStage.setTitle("Nutritional Information: " + recipe.getName());
+        primaryStage.setScene(informationScene);
     }
 
     public void showMainMenu() {
