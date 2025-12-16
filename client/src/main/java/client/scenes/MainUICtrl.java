@@ -8,8 +8,9 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
-import javafx.stage.FileChooser;
+//import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import recipes.FoodItem;
 import recipes.Recipe;
 import recipes.Ingredient;
 
@@ -19,7 +20,7 @@ import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import java.io.File;
+//import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
@@ -88,7 +89,15 @@ public class MainUICtrl {
 
         // Placeholders for edit buttons
         editNameButton.setOnAction(e -> handleEditName());
-        editIngredientsButton.setOnAction(e -> handleEditIngredients());
+        editIngredientsButton.setOnAction(e -> {
+            int selectedIndex = recipeListView.getSelectionModel().getSelectedIndex();
+            if (selectedIndex >= 0 && selectedIndex < currentRecipes.size()) {
+                handleEditIngredients(currentRecipes.get(selectedIndex));
+            }
+            else{
+                System.out.println("Please select a recipe to edit");
+            }
+        });
         editInstructionsButton.setOnAction(e -> {
             int selectedIndex = recipeListView.getSelectionModel().getSelectedIndex();
             if (selectedIndex >= 0 && selectedIndex < currentRecipes.size()) {
@@ -253,17 +262,18 @@ public class MainUICtrl {
                 content += "\n";
             }
         }
-        
+
+        /* THIS COULD POSSIBLY BE USED SO THAT THE USER IS ASKED WHERE TO SAVE THE FILE INSTEAD OF BLINDLY SAVING IT INTO THE
+        PROJECT FOLDER
+
         FileChooser fileChooser = new  FileChooser();
-        fileChooser.setTitle("Save Recipe File");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Recipe", "*.txt"));
-        fileChooser.setInitialFileName(selectedRecipe.getName() + ".txt");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Recipe", "*.txt"));  //ensures the file is saved as txt
 
         Stage stage = (Stage) addRecipeButton.getScene().getWindow();
         File file = fileChooser.showSaveDialog(stage);
+         */
 
-        if (file != null) {
-            try (FileWriter fw = new FileWriter(file);) {
+            try (FileWriter fw = new FileWriter(selectedRecipe.getName() + ".txt")) {
                 fw.write(content);
             }catch (IOException e){
                 e.printStackTrace();

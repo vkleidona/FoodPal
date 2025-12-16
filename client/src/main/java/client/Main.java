@@ -59,10 +59,12 @@ public class Main extends Application {
         var addFoodItem = FXML.load(AddFoodItemCtrl.class, "client", "scenes", "AddFoodItem.fxml");
         var foodItemMain = FXML.load(FoodItemMainCtrl.class, "client", "scenes", "FoodItemMain.fxml");
 
+        var editIngredients = FXML.load(EditIngredientsCtrl.class, "client", "scenes", "EditIngredients.fxml");
+
         var shoppingListMain = FXML.load(ShoppingListMainCtrl.class, "client", "scenes", "ShoppingListMainUI.fxml");
 
         var mainCtrl = INJECTOR.getInstance(MainCtrl.class);
-        mainCtrl.initialize(primaryStage, overview, add,mainUI, editInstructions, createRecipe, addFoodItem, foodItemMain, shoppingListMain);
+        mainCtrl.initialize(primaryStage, overview, add,mainUI, editInstructions, createRecipe, addFoodItem, foodItemMain, editIngredients, shoppingListMain);
 	}
 
     @Override

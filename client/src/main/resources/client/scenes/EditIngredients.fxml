@@ -8,9 +8,10 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.control.ComboBox?>
 
 
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1">
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.scenes.EditIngredientsCtrl">
    <children>
       <ButtonBar focusTraversable="false" layoutX="6.0" layoutY="353.0" prefHeight="40.0" prefWidth="587.0">
         <buttons>
@@ -40,7 +41,7 @@
       </TableView>
       <Button layoutX="452.0" layoutY="251.0" mnemonicParsing="false" onAction="#addIngredient" text="Add ingredient" />
       <Button layoutX="440.0" layoutY="282.0" mnemonicParsing="false" onAction="#removeIngredient" text="Remove ingredient" />
-      <TextField fx:id="inputFoodName" layoutX="425.0" layoutY="85.0" />
+       <ComboBox fx:id="inputFoodName" layoutX="425.0" layoutY="85.0" prefWidth="150.0" editable="true" />
       <TextField fx:id="inputQuantity" layoutX="425.0" layoutY="134.0" />
       <TextField fx:id="inputMeasurement" layoutX="425.0" layoutY="185.0" />
       <Label layoutX="425.0" layoutY="68.0" text="Name:" />
