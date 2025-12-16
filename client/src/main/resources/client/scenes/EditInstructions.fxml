@@ -17,9 +17,9 @@
       <HBox prefHeight="5.0" prefWidth="560.0" spacing="10.0">
          <children>
             <Button fx:id="refreshButton" mnemonicParsing="false" onAction="#initializeTopButtons" prefHeight="25.0" prefWidth="27.0" text="⟳" />
-            <Button fx:id="minimizeButton" mnemonicParsing="false" onAction="#initializeTopButtons" prefHeight="25.0" prefWidth="20.0" style="-fx-font-style: bold;" text="-" />
+            <Button fx:id="minimizeButton" mnemonicParsing="false" onAction="#initializeTopButtons" prefHeight="25.0" prefWidth="20.0" style="-fx-font-weight: bold;" text="-" />
             <Button fx:id="maximizeButton" mnemonicParsing="false" onAction="#initializeTopButtons" text="[ ]" />
-            <Button fx:id="exitButton" mnemonicParsing="false" onAction="#initializeTopButtons" prefHeight="25.0" prefWidth="20.0" style="-fx-font-style: bold;" text="X" />
+            <Button fx:id="exitButton" mnemonicParsing="false" onAction="#initializeTopButtons" prefHeight="25.0" prefWidth="20.0" style="-fx-font-weight: bold;" text="X" />
          </children>
       </HBox>
       <Label alignment="CENTER" maxWidth="1.7976931348623157E308" prefHeight="81.0" prefWidth="560.0" style="-fx-background-color: D3D3D3;" text="FoodPal">
