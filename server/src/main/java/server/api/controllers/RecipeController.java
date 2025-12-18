@@ -115,8 +115,11 @@ public class RecipeController {
             oldRecipe.setName(updatedRecipe.getName());
             oldRecipe.setServings(updatedRecipe.getServings());
             oldRecipe.setInstructions(updatedRecipe.getInstructions());
-            //TODO: Figure out how ingredients are saved to the server
-            //oldRecipe.setIngredients(updatedRecipe.getIngredients());
+            oldRecipe.getIngredients().clear();
+            if (updatedRecipe.getIngredients()!=null) {
+                updatedRecipe.getIngredients().forEach(ingredient -> ingredient.setRecipe(oldRecipe));
+                oldRecipe.getIngredients().addAll(updatedRecipe.getIngredients());
+            }
             Recipe newRecipe = recipeRepository.save(oldRecipe);
             return ResponseEntity.ok(newRecipe);
         });
