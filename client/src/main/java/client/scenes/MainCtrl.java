@@ -166,6 +166,16 @@ public class MainCtrl implements MainCtrlMethods {
         primaryStage.setScene(addFoodItem);
     }
 
+    /**
+     * Switches to the Add FoodItem entry from the ShoppingList
+     * @param foodItemEntry - the name of the entered ingredient in the ShoppingList
+     */
+    public void showAddFoodItem(String foodItemEntry) {
+        primaryStage.setTitle("Add Food Item");
+        addFoodItemCtrl.accessFromTheShoppingList(foodItemEntry);
+        primaryStage.setScene(addFoodItem);
+    }
+
     public void showFoodItemMain() {
         primaryStage.setTitle("Food Item Main");
         primaryStage.setScene(foodItemMain);

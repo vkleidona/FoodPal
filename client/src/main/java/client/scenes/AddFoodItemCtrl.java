@@ -33,10 +33,18 @@ public class AddFoodItemCtrl {
 
     private FoodItem editingItem;
 
+    private String ingredientName;
+
     @Inject
     public AddFoodItemCtrl(MainCtrl mainCtrl, ServerUtils serverUtils) {
         this.mainCtrl = mainCtrl;
         this.serverUtils = serverUtils;
+    }
+
+    public void initialize () {
+        if (ingredientName!=null) {
+            foodItemName.setText(ingredientName);
+        }
     }
 
     @FXML
@@ -125,6 +133,17 @@ public class AddFoodItemCtrl {
 
         confirmButton.setText("Save");
         sceneTitle.setText("Editing Food Item");
+    }
+
+    /**
+     * Sets up the label for FoodItem name
+     * @param foodItemString - the String entered from the user
+     */
+    public void accessFromTheShoppingList (String foodItemString){
+        ingredientName = foodItemString;
+        if (foodItemName != null) {
+            foodItemName.setText(ingredientName);
+        }
     }
 
 }

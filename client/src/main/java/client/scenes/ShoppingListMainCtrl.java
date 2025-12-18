@@ -38,8 +38,9 @@ public class ShoppingListMainCtrl {
     private ListView <Ingredient> ingredientsListView;
     private ObservableList<Ingredient> ingredientsObservableList;
 
-    // I require a public ShoppingList to access it when loading
     private ShoppingList s;
+
+    private Ingredient currentIngredient;
 
     private final ServerUtils server;
     private final MainCtrl mainCtrl;
@@ -259,11 +260,14 @@ public class ShoppingListMainCtrl {
 
                 // If the FoodItem hasn't been found, show an alert
                 if (foodItem == null) {
+                    /**
                     Alert nonExistentItemAlert = new Alert(Alert.AlertType.ERROR);
                     nonExistentItemAlert.setTitle("Food item not found.");
                     nonExistentItemAlert.
                             setContentText("Food Item does not exist in the database.");
                     nonExistentItemAlert.showAndWait();
+                    **/
+                    askToAddFoodItem(ingredient, input);
                     return null;
                 }
 
@@ -325,5 +329,41 @@ public class ShoppingListMainCtrl {
                 List.of("g", "kg", "L", "mL", "oz", "lb", "fl oz", "cup", "tbsp", "tsp",
                         "slice", "clove", "stick", "pinch", "dash", "jar", "-");
         choiceBox.getItems().addAll(availableMeasurementTypes);
+    }
+
+    /**
+     * If the user wants to add a Food Item which is not in the database,
+     * they get redirected to this method which asks for confirmation to add the food item
+     * @param ingredient - the Ingredient to be added as a FoodItem
+     * @param foodItemEntry - what the user has entered for food item
+     */
+    public void askToAddFoodItem (Ingredient ingredient, String foodItemEntry) {
+        Dialog <ButtonType> dialogBox = new Dialog<>();
+        dialogBox.setTitle("Food Item not found");
+        dialogBox.setContentText("""
+                The ingredient you are adding is not known to us.
+                
+                Do you wish to add it?""");
+
+        dialogBox.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        Optional <ButtonType> buttonType = dialogBox.showAndWait();
+        if (buttonType.isPresent() && buttonType.get() == ButtonType.OK) {
+            saveCurrentIngredient(ingredient, foodItemEntry);
+        }else{
+            mainCtrl.showAddFoodItem();
+        }
+    }
+
+    /**
+     * Saves the current ingredient before jumping to AddFoodItemUI
+     * @param ingredient - the ingredient to be saved
+     * @param foodItemEntry - the FoodItem to be added
+     */
+    public void saveCurrentIngredient (Ingredient ingredient, String foodItemEntry) {
+        if (ingredient.getMeasurement() == null) {
+            ingredient.setMeasurement("");
+        }
+        currentIngredient = new Ingredient(ingredient.getQuantity(), ingredient.getMeasurement());
+        mainCtrl.showAddFoodItem(foodItemEntry);
     }
 }
