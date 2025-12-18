@@ -15,13 +15,14 @@
  */
 package client.scenes;
 
+import client.Main;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 import recipes.Recipe;
 
-public class MainCtrl {
+public class MainCtrl implements MainCtrlMethods {
 
     private Stage primaryStage;
 

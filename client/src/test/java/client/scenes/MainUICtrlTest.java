@@ -1,6 +1,7 @@
 package client.scenes;
 
 import client.utils.ServerUtils;
+import com.google.inject.Provider;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -20,14 +21,17 @@ import java.lang.reflect.*;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 public class MainUICtrlTest extends ApplicationTest {
+
 
     @BeforeAll
     static void skipInCiWithoutDisplay() {
         String display = System.getenv("DISPLAY");
         Assumptions.assumeTrue(display != null && !display.isEmpty(), "Skip JavaFX UI tests because DISPLAY is not available");
     }
+
 
     // Controller instance
     private MainUICtrl controller;
@@ -50,7 +54,8 @@ public class MainUICtrlTest extends ApplicationTest {
         };
 
         // Mock MainCtrl
-        MainCtrl mockMainCtrl = new MainCtrl() {
+
+        MainCtrl mockMainCtrl = new MainCtrl(null) {
             @Override
             public void showFoodItemMain() {}
 
@@ -59,7 +64,7 @@ public class MainUICtrlTest extends ApplicationTest {
         };
 
         // Load UI
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/client/scenes/mainUI.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/client/scenes/MainUI.fxml"));
         Parent root = loader.load();
 
         controller = loader.getController();
