@@ -7,7 +7,7 @@
 | Minute Taker : | A. Iliev                                                                                    |
 | Attendees :    | M. Tinkelenberg, P. Gruca, K. Kadrieh, A. Iliev, V. Kleidona, T. Corlateanu, E. Tskhay (TA) |
 
-Agenda Items :
+#Agenda Items :
 - Opening by chair (1 min)
 - Check-in : (2 min)
     - How is everyone doing? 
