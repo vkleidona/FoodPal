@@ -27,8 +27,7 @@ public class Recipe implements Serializable {
     new table, recipe and its instructions
      */
     @ElementCollection
-    @CollectionTable(name = "RECIPE_INSTRUCTIONS", joinColumns =
-    @JoinColumn(name = "RECIPE_ID"))
+    @CollectionTable(name = "RECIPE_INSTRUCTIONS", joinColumns = @JoinColumn(name = "RECIPE_ID"))
     @Column(name = "instruction")
     private List<String> instructions = new ArrayList<>();
 
@@ -44,7 +43,10 @@ public class Recipe implements Serializable {
         this.servings = servings;
     }
 
-    /*
+    public void setName(String name) {
+        this.name = name;
+    }
+/*
     To be implemented at a later date. We will probably use a specific
     built-in class for languages, not String
     private String language;

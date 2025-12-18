@@ -15,7 +15,7 @@ import java.util.List;
 public class RealServerService implements ServerService {
 
     private final Client client = ClientBuilder.newClient();
-    private final String recipeEndpointUrl = "http://localhost:8080/recipes";
+    private final String recipeEndpointUrl = "http://localhost:8080/api/recipes";
     private final String foodItemEndpointUrl = "http://localhost:8080/api/fooditems";
 
     @Override
