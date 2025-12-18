@@ -238,17 +238,17 @@ public class MainUICtrl {
     }
 
     @FXML
-    public void downloadRecipe(){
+    public void downloadRecipe() {
         int index = recipeListView.getSelectionModel().getSelectedIndex();
         if (index < 0 || index >= currentRecipes.size()) return;
         Recipe selectedRecipe = currentRecipes.get(index);
 
-        String content = "Recipe: "  + selectedRecipe.getName() + "\n\n";
+        String content = "Recipe: " + selectedRecipe.getName() + "\n\n";
         content += "Ingredients:\n";
 
-        if(selectedRecipe.getIngredients() != null){
-            for(int i=0; i<selectedRecipe.getIngredients().size(); i++){
-                content += String.valueOf(i+1) + ". ";
+        if (selectedRecipe.getIngredients() != null) {
+            for (int i = 0; i < selectedRecipe.getIngredients().size(); i++) {
+                content += String.valueOf(i + 1) + ". ";
                 content += selectedRecipe.getIngredients().get(i).toString();
                 content += "\n";
             }
@@ -256,7 +256,7 @@ public class MainUICtrl {
 
         content += "Instructions:\n";
 
-        if(selectedRecipe.getInstructions() != null) {
+        if (selectedRecipe.getInstructions() != null) {
             for (int i = 0; i < selectedRecipe.getInstructions().size(); i++) {
                 content += "Step " + String.valueOf(i + 1) + ": ";
                 content += selectedRecipe.getInstructions().get(i);
@@ -274,14 +274,12 @@ public class MainUICtrl {
         File file = fileChooser.showSaveDialog(stage);
          */
 
-            try (FileWriter fw = new FileWriter(selectedRecipe.getName() + ".txt")) {
-                fw.write(content);
-            }catch (IOException e){
-                e.printStackTrace();
-            }
+        try (FileWriter fw = new FileWriter(selectedRecipe.getName() + ".txt")) {
+            fw.write(content);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
-
 
     @FXML
     public void handleInformation(ActionEvent actionEvent) {
@@ -316,7 +314,4 @@ public class MainUICtrl {
 
         mainCtrl.showInformation(selectedRecipe);
     }
-
-
-
 }
