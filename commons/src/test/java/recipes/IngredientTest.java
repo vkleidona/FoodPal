@@ -75,6 +75,6 @@ class IngredientTest {
     @Test
     void testToString() {
         String iStr = ingredient.toString();
-        assertEquals("slanina (20.0 g)",iStr);
+        assertEquals("slanina - 20.0 g (for preparing bryndzové halušky)",iStr);
     }
 }

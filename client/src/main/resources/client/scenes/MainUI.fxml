@@ -57,8 +57,9 @@
             </ScrollPane>
 
             <!-- Food Items Button -->
-            <Button fx:id="foodItemButton" layoutX="10.0" layoutY="494.0" text="Go to Food Items" />
-         <Button fx:id="shoppingListButton" layoutX="134.0" layoutY="493.0" mnemonicParsing="false" onAction="#handleGoToShoppingList" prefHeight="26.0" prefWidth="106.0" text="Shopping List" />
+            <Button fx:id="foodItemButton" layoutX="10" layoutY="430" text="Go to Food Items" />
+         <Button fx:id="shoppingListButton" layoutX="136.0" layoutY="429.0" mnemonicParsing="false" onAction="#handleGoToShoppingList" prefHeight="26.0" prefWidth="106.0" text="Shopping List" />
+         <Button fx:id="addToShoppingListButton" layoutX="446.0" layoutY="6.0" mnemonicParsing="false" onAction="#handleAddRecipeToShoppingList" text="Add to Shopping List" />
          <Button layoutX="497.0" layoutY="6.0" mnemonicParsing="false" onAction="#handleInformation" text="Information" />
          <Label layoutX="14.0" layoutY="56.0" text="Servings" />
          <Label fx:id="servingsLabel" layoutX="301.0" layoutY="56.0">
@@ -66,6 +67,7 @@
                <Font size="14.0" />
             </font>
          </Label>
+>>>>>>> client/src/main/resources/client/scenes/MainUI.fxml
 
         </AnchorPane>
     </center>

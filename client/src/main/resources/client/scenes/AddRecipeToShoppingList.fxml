@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.text.Font?>
+
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.scenes.AddRecipeToShoppingListCtrl">
+   <children>
+      <HBox layoutX="9.0" layoutY="14.0" prefHeight="58.0" prefWidth="583.0">
+         <children>
+            <Button fx:id="backButton" mnemonicParsing="false" onAction="#returnToMainUI" text="Back">
+               <HBox.margin>
+                  <Insets left="15.0" top="15.0" />
+               </HBox.margin>
+            </Button>
+            <Label fx:id="shoppingListLabel" alignment="CENTER" prefHeight="46.0" prefWidth="240.0" text="Add to Shopping List?">
+               <font>
+                  <Font size="18.0" />
+               </font>
+               <HBox.margin>
+                  <Insets left="120.0" top="5.0" />
+               </HBox.margin>
+            </Label>
+         </children>
+      </HBox>
+      <ScrollPane layoutX="82.0" layoutY="100.0" prefHeight="210.0" prefWidth="460.0">
+        <content>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="209.0" prefWidth="459.0">
+               <children>
+                  <ListView fx:id="recipeIngredientsListView" layoutY="2.0" prefHeight="203.0" prefWidth="446.0" />
+               </children>
+            </AnchorPane>
+        </content>
+      </ScrollPane>
+      <HBox layoutX="57.0" layoutY="339.0" prefHeight="26.0" prefWidth="485.0">
+         <children>
+            <Button fx:id="plusButton" mnemonicParsing="false" onAction="#addIngredientThroughPlusButton" prefHeight="26.0" prefWidth="26.0" text="+" />
+            <Button fx:id="confirmButton" mnemonicParsing="false" onAction="#confirmAction" text="Confirm">
+               <HBox.margin>
+                  <Insets left="400.0" />
+               </HBox.margin>
+            </Button>
+         </children>
+      </HBox>
+   </children>
+</AnchorPane>
