@@ -84,7 +84,9 @@ public class AddFoodItemCtrl {
                 mainCtrl.showCreateRecipe();
                 // the initialize() method in CreateRecipeCtrl will pick up the draft
                 // and reload the food list (finding the new item).
-            } else {
+            } else if (ingredientName != null) {
+                mainCtrl.showShoppingListDialogBox(ingredientName);
+            }else{
                 // otherwise, go to the Food Item Management screen
                 mainCtrl.showFoodItemMain();
             }

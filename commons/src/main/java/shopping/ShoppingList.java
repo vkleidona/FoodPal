@@ -51,6 +51,15 @@ public class ShoppingList implements Serializable {
     }
 
     /**
+     * Sets an ingredient at a specific index to the provided ingredient
+     * @param index      - the index of the ingredient to be replaced
+     * @param ingredient - ingredient to be set
+     */
+    public void setIngredient (int index, Ingredient ingredient) {
+        this.ingredients.set(index, ingredient);
+    }
+
+    /**
      * A method to add an ingredient from the ShoppingList
      * @param i - an Ingredient entity to add to the ShoppingList
      */

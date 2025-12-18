@@ -186,9 +186,13 @@ public class MainCtrl implements MainCtrlMethods {
      */
     public void showShoppingList() {
         primaryStage.setTitle("Shopping List");
-        shoppingListMainCtrl.getS().loadFile();
         shoppingListMainCtrl.refreshInterface();
         primaryStage.setScene(shoppingListMainScene);
+    }
+
+    public void showShoppingListDialogBox(String ingredientName) {
+        primaryStage.setTitle("Shopping List");
+        shoppingListMainCtrl.restoreIngredient(ingredientName);
     }
 
     /**
