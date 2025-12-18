@@ -359,7 +359,11 @@ public class ShoppingListMainCtrl {
         dialogBox.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
         Optional <ButtonType> buttonType = dialogBox.showAndWait();
         if (buttonType.isPresent() && buttonType.get() == ButtonType.OK) {
-            saveCurrentIngredient(ingredient, foodItemEntry);
+            if (ingredient == null) {
+                mainCtrl.showAddFoodItemFromShoppingList(foodItemEntry);
+            }else{
+                saveCurrentIngredient(ingredient, foodItemEntry);
+            }
         }else{
             mainCtrl.showAddFoodItem();
         }
@@ -375,7 +379,7 @@ public class ShoppingListMainCtrl {
             ingredient.setMeasurement("");
         }
         currentIngredient = new Ingredient(ingredient.getQuantity(), ingredient.getMeasurement());
-        mainCtrl.showAddFoodItem(foodItemEntry);
+        mainCtrl.showAddFoodItemFromShoppingList(foodItemEntry);
     }
 
     /**
@@ -384,6 +388,7 @@ public class ShoppingListMainCtrl {
      * @param ingredientName - the new Food Item added to the database
      */
     public void restoreIngredient(String ingredientName) {
+        currentIngredient = new Ingredient(0.0, "g");
         currentIngredient.setFoodType(server.searchForFoodItem(ingredientName));
         mainCtrl.showShoppingList();
         showDialog(currentIngredient);

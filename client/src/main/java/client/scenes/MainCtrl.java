@@ -170,9 +170,19 @@ public class MainCtrl implements MainCtrlMethods {
      * Switches to the Add FoodItem entry from the ShoppingList
      * @param foodItemEntry - the name of the entered ingredient in the ShoppingList
      */
-    public void showAddFoodItem(String foodItemEntry) {
+    public void showAddFoodItemFromShoppingList(String foodItemEntry) {
         primaryStage.setTitle("Add Food Item");
         addFoodItemCtrl.accessFromTheShoppingList(foodItemEntry);
+        primaryStage.setScene(addFoodItem);
+    }
+
+    /**
+     * Switches to the Add FoodItem entry from the ShoppingList
+     * @param foodItemEntry - the name of the entered ingredient in the ShoppingList
+     */
+    public void showAddFoodItemFromAddRecipeToShoppingList(String foodItemEntry) {
+        primaryStage.setTitle("Add Food Item");
+        addFoodItemCtrl.accessFromAddRecipeToTheShoppingList(foodItemEntry);
         primaryStage.setScene(addFoodItem);
     }
 
@@ -190,9 +200,22 @@ public class MainCtrl implements MainCtrlMethods {
         primaryStage.setScene(shoppingListMainScene);
     }
 
+    /**
+     * Returns to the dialog box for the ShoppingList
+     * @param ingredientName - the fresh name which is applied to the ingredient
+     */
     public void showShoppingListDialogBox(String ingredientName) {
         primaryStage.setTitle("Shopping List");
         shoppingListMainCtrl.restoreIngredient(ingredientName);
+    }
+
+    /**
+     * Returns to the dialog box for AddRecipeToShoppingList
+     * @param ingredientName - the fresh name which is applied to the ingredient
+     */
+    public void showAddRecipeToShoppingListDialogBox(String ingredientName) {
+        primaryStage.setTitle("Add Recipe to Shopping List");
+        addRecipeToShoppingListCtrl.restoreIngredient(ingredientName);
     }
 
     /**

@@ -35,6 +35,10 @@ public class AddFoodItemCtrl {
 
     private String ingredientName;
 
+    // these booleans indicate where the Add Food Item was accessed from
+    private boolean cameFromShoppingList = false;
+    private boolean cameFromAddRecipeToShoppingList = false;
+
     @Inject
     public AddFoodItemCtrl(MainCtrl mainCtrl, ServerUtils serverUtils) {
         this.mainCtrl = mainCtrl;
@@ -84,9 +88,12 @@ public class AddFoodItemCtrl {
                 mainCtrl.showCreateRecipe();
                 // the initialize() method in CreateRecipeCtrl will pick up the draft
                 // and reload the food list (finding the new item).
-            } else if (ingredientName != null) {
+            } else if (cameFromShoppingList) {
                 mainCtrl.showShoppingListDialogBox(ingredientName);
-            }else{
+            }else if (cameFromAddRecipeToShoppingList) {
+                mainCtrl.showAddRecipeToShoppingListDialogBox(ingredientName);
+            }
+            else{
                 // otherwise, go to the Food Item Management screen
                 mainCtrl.showFoodItemMain();
             }
@@ -139,13 +146,29 @@ public class AddFoodItemCtrl {
 
     /**
      * Sets up the label for FoodItem name
+     * Also confirms it is accessed from Shopping List
      * @param foodItemString - the String entered from the user
      */
     public void accessFromTheShoppingList (String foodItemString){
+        cameFromShoppingList = true;
         ingredientName = foodItemString;
         if (foodItemName != null) {
             foodItemName.setText(ingredientName);
         }
     }
+
+    /**
+     * Sets up the label for FoodItem name
+     * Also confirms it is accessed from Add Recipe To Shopping List
+     * @param foodItemString - the String entered from the user
+     */
+    public void accessFromAddRecipeToTheShoppingList(String foodItemString) {
+        cameFromAddRecipeToShoppingList = true;
+        ingredientName = foodItemString;
+        if (foodItemName != null) {
+            foodItemName.setText(ingredientName);
+        }
+    }
+
 
 }
