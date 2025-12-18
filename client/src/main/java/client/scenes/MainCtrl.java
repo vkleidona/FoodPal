@@ -162,6 +162,12 @@ public class MainCtrl implements MainCtrlMethods {
         primaryStage.setScene(editInstructions);
     }
 
+    public void showEditIngredients(Recipe recipe) {
+        editIngredientsCtrl.initialize(recipe);
+        primaryStage.setTitle("Edit Ingredients");
+        primaryStage.setScene(editIngredients);
+    }
+
     public void showCreateRecipe() {
         primaryStage.setTitle("Create Recipe");
         primaryStage.setScene(createRecipe);

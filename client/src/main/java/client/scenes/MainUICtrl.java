@@ -24,6 +24,7 @@ import jakarta.ws.rs.core.Response;
 //import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainUICtrl {
@@ -94,7 +95,15 @@ public class MainUICtrl {
 
         // Placeholders for edit buttons
         editNameButton.setOnAction(e -> handleEditName());
-        editIngredientsButton.setOnAction(e -> handleEditIngredients());
+        editIngredientsButton.setOnAction(e -> {
+            int selectedIndex = recipeListView.getSelectionModel().getSelectedIndex();
+            if (selectedIndex >= 0 && selectedIndex < currentRecipes.size()) {
+                handleEditIngredients(currentRecipes.get(selectedIndex));
+            }
+            else{
+                System.out.println("Please select a recipe to edit");
+            }
+        });
         editInstructionsButton.setOnAction(e -> {
             int selectedIndex = recipeListView.getSelectionModel().getSelectedIndex();
             if (selectedIndex >= 0 && selectedIndex < currentRecipes.size()) {
@@ -224,7 +233,13 @@ public class MainUICtrl {
 
     // Placeholder methods for edit buttons
     private void handleEditName() { System.out.println("Edit name placeholder"); }
-    private void handleEditIngredients() { System.out.println("Edit ingredients placeholder"); }
+    private void handleEditIngredients(Recipe recipe) {
+        if(recipe == null){
+            System.out.println("Recipe is null");
+            return;
+        }
+        mainCtrl.showEditIngredients(recipe);
+    }
 
     private void handleEditInstructions(Recipe recipe) {
         if(recipe == null){
