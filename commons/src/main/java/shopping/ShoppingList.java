@@ -27,10 +27,10 @@ public class ShoppingList implements Serializable {
         this.ingredients = new ArrayList<>();
     }
 
-    public ShoppingList(List <Ingredient> ingredients) {
-        this.ingredients = ingredients;
-    }
-
+    /**
+     * Returns the singular instance of a ShoppingList
+     * @return - ShoppingList - the instance of the ShoppingList this class has
+     */
     public static ShoppingList getShoppingList () {
         if (shoppingList == null) {
             shoppingList = new ShoppingList();
