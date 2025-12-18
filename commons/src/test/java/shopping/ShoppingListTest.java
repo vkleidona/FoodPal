@@ -59,7 +59,7 @@ class ShoppingListTest {
     void testToString() {
         String toStr = s.toString();
         assertTrue(toStr.contains("ShoppingList") && toStr.contains("ingredients"));
-        assertTrue(toStr.contains("slanina (20.0 g)"));
+        assertTrue(toStr.contains("slanina - 20.0 g (for preparing bryndzové halušky)"));
         System.out.println(toStr);
     }
 }

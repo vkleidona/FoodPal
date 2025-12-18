@@ -55,18 +55,25 @@ public class Main extends Application {
 		var add = FXML.load(AddQuoteCtrl.class, "client", "scenes", "AddQuote.fxml");
 
         var mainUI = FXML.load(MainUICtrl.class, "client", "scenes", "MainUI.fxml");
-        var editInstructions = FXML.load(EditInstructionsCtrl.class, "client", "scenes", "EditInstructions.fxml");
-        var createRecipe = FXML.load(CreateRecipeCtrl.class, "client", "scenes", "creatingRecipe.fxml");
+        var editInstructions = FXML.load
+                (EditInstructionsCtrl.class, "client", "scenes", "EditInstructions.fxml");
+        var createRecipe = FXML.load
+                (CreateRecipeCtrl.class, "client", "scenes", "creatingRecipe.fxml");
 
         var addFoodItem = FXML.load(AddFoodItemCtrl.class, "client", "scenes", "AddFoodItem.fxml");
-        var foodItemMain = FXML.load(FoodItemMainCtrl.class, "client", "scenes", "FoodItemMain.fxml");
+        var foodItemMain = FXML.load
+                (FoodItemMainCtrl.class, "client", "scenes", "FoodItemMain.fxml");
 
         var editIngredients = FXML.load(EditIngredientsCtrl.class, "client", "scenes", "EditIngredients.fxml");
 
         var shoppingListMain = FXML.load(ShoppingListMainCtrl.class, "client", "scenes", "ShoppingListMainUI.fxml");
 
+        var addRecipeToShoppingList = FXML.load
+                (AddRecipeToShoppingListCtrl.class, "client", "scenes", "AddRecipeToShoppingList.fxml");
+
         var mainCtrl = INJECTOR.getInstance(MainCtrl.class);
-        mainCtrl.initialize(primaryStage, overview, add,mainUI, editInstructions, createRecipe, addFoodItem, foodItemMain, editIngredients, shoppingListMain, information);
+        mainCtrl.initialize(primaryStage, overview, add, mainUI, editInstructions,
+                createRecipe, addFoodItem, foodItemMain, editIngredients, shoppingListMain, addRecipeToShoppingList, information);
 	}
 
     @Override

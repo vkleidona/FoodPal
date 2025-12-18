@@ -37,6 +37,7 @@ public class MainUICtrl {
     @FXML private Button editInstructionsButton;
     @FXML private Button foodItemButton;
     @FXML private Button shoppingListButton;
+    @FXML private Button addToShoppingListButton;
 
     @FXML private Button exitButton;
     @FXML private Button minimizeButton;
@@ -53,6 +54,7 @@ public class MainUICtrl {
     private final String recipeEndpointUrl = "http://localhost:8080/recipes";
 
     private List<Recipe> currentRecipes;
+    private Recipe selectedRecipe;
 
     private final ServerUtils server;
     private final MainCtrl mainCtrl;
@@ -72,7 +74,8 @@ public class MainUICtrl {
         recipeListView.getSelectionModel().selectedIndexProperty().addListener((obs, oldVal, newVal) -> {
             int index = newVal.intValue();
             if (index >= 0 && index < currentRecipes.size()) {
-                displayRecipe(currentRecipes.get(index));
+                selectedRecipe = currentRecipes.get(index);
+                displayRecipe(selectedRecipe);
             }
         });
 
@@ -117,6 +120,7 @@ public class MainUICtrl {
 
             // Select first recipe if exists
             if (!currentRecipes.isEmpty()) {
+                selectedRecipe = currentRecipes.get(0);
                 recipeListView.getSelectionModel().select(0);
                 displayRecipe(currentRecipes.get(0));
             } else {
@@ -232,11 +236,30 @@ public class MainUICtrl {
 
     private void handleGoToFoodItems() { System.out.println("Go to Food Items placeholder"); }
 
+    /**
+     * The Shopping List is connected to the corresponding interface
+     */
     @FXML
     private void handleGoToShoppingList() {
         mainCtrl.showShoppingList();
     }
 
+    /**
+     * The Add to Shopping List button is connected to the corresponding interface
+     */
+    @FXML
+    private void handleAddRecipeToShoppingList () {
+        mainCtrl.showAddRecipeToShoppingList();
+    }
+
+    /**
+     * A getter for the selected recipe
+     * @return - Recipe - returns the currently selected recipe -
+     * useful for displaying ingredients, instructions, etc.
+     */
+    public Recipe getSelectedRecipe () {
+        return selectedRecipe;
+    }
     @FXML
     public void downloadRecipe() {
         int index = recipeListView.getSelectionModel().getSelectedIndex();
@@ -314,4 +337,7 @@ public class MainUICtrl {
 
         mainCtrl.showInformation(selectedRecipe);
     }
+
+
+
 }
