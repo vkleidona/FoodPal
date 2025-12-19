@@ -14,23 +14,23 @@ import java.util.Optional;
 public class FoodItemMainCtrl {
 
     @FXML
-    private ListView<FoodItem> foodItemList;
+    public ListView<FoodItem> foodItemList;
     @FXML
-    private Label foodNameLabel;
+    public Label foodNameLabel;
     @FXML
-    private Label nutritionLabel;
+    public Label nutritionLabel;
     @FXML
-    private Label kcalLabel;
+    public Label kcalLabel;
     @FXML
-    private Label carbsLabel;
+    public Label carbsLabel;
     @FXML
-    private Label proteinsLabel;
+    public Label proteinsLabel;
     @FXML
-    private Label fatsLabel;
+    public Label fatsLabel;
     @FXML
     private Button mainMenuButton;
     @FXML
-    private Label recipeUsages;
+    public Label recipeUsages;
 
     private final MainCtrl mainCtrl;
     private final ServerUtils serverUtils;
