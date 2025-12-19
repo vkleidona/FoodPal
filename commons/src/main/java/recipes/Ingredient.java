@@ -29,7 +29,7 @@ public class Ingredient implements Serializable {
     the Ingredient table
      */
     @ManyToOne(cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "foodType", referencedColumnName = "name")
+    @JoinColumn(name = "fooditem_id")
     private FoodItem foodType;
 
     private double quantity;

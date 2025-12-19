@@ -17,4 +17,6 @@ public interface FoodItemRepository extends JpaRepository<FoodItem, Long> {
     Optional<FoodItem> findByName(String name);
 
     List<FoodItem> findAllByOrderByNameAsc();
+
+    boolean existsByNameAndIdNot(String name, Long id);
 }

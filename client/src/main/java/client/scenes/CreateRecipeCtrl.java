@@ -288,13 +288,13 @@ public class CreateRecipeCtrl {
 
         for (Node node : ingredientsVBox.getChildren()) {
             if (node instanceof HBox row) {
-                TextField nameField = (TextField) row.getChildren().get(0);
+                ComboBox<String> nameField = (ComboBox<String>) row.getChildren().get(0);
                 TextField quantityField = (TextField) row.getChildren().get(1);
                 ChoiceBox<String> unitChoice = (ChoiceBox<String>) row.getChildren().get(2);
                 TextField customUnitField = (TextField) row.getChildren().get(3);
                 TextField gramsField = (TextField) row.getChildren().get(4);
 
-                String name = nameField.getText().trim();
+                String name = nameField.getValue().trim();
                 String qtyStr = quantityField.getText().trim();
 
                 if (name.isEmpty() || qtyStr.isEmpty()) {

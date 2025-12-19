@@ -1,11 +1,15 @@
 package server.api.controllers;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import recipes.FoodItem;
 import server.repositories.FoodItemRepository;
+
+import java.lang.annotation.Repeatable;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("api/fooditems")
@@ -45,22 +49,26 @@ public class FoodItemController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<FoodItem> updateFoodItem(@PathVariable Long id, @RequestBody FoodItem updatedItem) {
-        if (!repo.existsById(id)) {
+    public ResponseEntity<?> updateFoodItem(@PathVariable Long id, @RequestBody FoodItem updatedItem) {
+
+        Optional<FoodItem> foodItem = repo.findById(id);
+        if (foodItem.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
-        repo.findById(id).map(item -> {
-            item.setName(updatedItem.getName());
-            item.setKcal(updatedItem.getKcal());
-            item.setCarbs(updatedItem.getCarbs());
-            item.setProteins(updatedItem.getProteins());
-            item.setFats(updatedItem.getFats());
+        if (repo.existsByNameAndIdNot(updatedItem.getName(), id)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("A fooditem with the same already exists");
+        }
 
-            FoodItem saved = repo.save(item);
-            return ResponseEntity.ok(saved);
-        });
-        return ResponseEntity.ok().build();
+        FoodItem item = foodItem.get();
+        item.setName(updatedItem.getName());
+        item.setKcal(updatedItem.getKcal());
+        item.setCarbs(updatedItem.getCarbs());
+        item.setProteins(updatedItem.getProteins());
+        item.setFats(updatedItem.getFats());
+
+        FoodItem saved = repo.save(item);
+        return ResponseEntity.ok(saved);
     }
 
     @GetMapping("/search")
