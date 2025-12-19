@@ -43,9 +43,8 @@ public class Ingredient implements Serializable {
     @Column(name = "quantity_in_grams")
     private double quantityInGrams;
 
-    @ManyToOne(cascade = CascadeType.ALL, optional = false)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "RECIPE_ID", referencedColumnName = "ID")
-
     @com.fasterxml.jackson.annotation.JsonBackReference
     private Recipe recipe;
 
