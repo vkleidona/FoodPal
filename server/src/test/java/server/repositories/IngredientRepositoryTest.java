@@ -17,6 +17,8 @@ import static org.junit.jupiter.api.Assertions.*;
 public class IngredientRepositoryTest {
     @Autowired
     private IngredientRepository repo;
+    @Autowired
+    private RecipeRepository recipeRepo;
 
     Ingredient i;
     Recipe r;
@@ -24,6 +26,7 @@ public class IngredientRepositoryTest {
     @BeforeEach
     void setup () {
         r = new Recipe("orange juice");
+        recipeRepo.save(r);
         i = new Ingredient(20, "g");
         i.setRecipe(r);
         repo.save(i);
