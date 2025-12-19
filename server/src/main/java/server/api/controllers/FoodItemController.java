@@ -34,23 +34,23 @@ public class FoodItemController {
         return repo.findAllByOrderByNameAsc();
     }
 
-    @DeleteMapping("/{name}")
-    public ResponseEntity<Void> deleteFoodItem(@PathVariable String name) {
-        if (!repo.existsById(name)) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteFoodItem(@PathVariable Long id) {
+        if (!repo.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
 
-        repo.deleteById(name);
+        repo.deleteById(id);
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/{name}")
-    public ResponseEntity<FoodItem> updateFoodItem(@PathVariable String name, @RequestBody FoodItem updatedItem) {
-        if (!repo.existsById(name)) {
+    @PutMapping("/{id}")
+    public ResponseEntity<FoodItem> updateFoodItem(@PathVariable Long id, @RequestBody FoodItem updatedItem) {
+        if (!repo.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
 
-        repo.findById(name).map(item -> {
+        repo.findById(id).map(item -> {
             item.setName(updatedItem.getName());
             item.setKcal(updatedItem.getKcal());
             item.setCarbs(updatedItem.getCarbs());

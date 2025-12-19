@@ -14,11 +14,15 @@ import java.util.Optional;
 @Entity
 public class FoodItem implements Serializable {
     @Id
-    private String name;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
 
     @OneToMany(mappedBy = "foodType", cascade = CascadeType.ALL)
     @com.fasterxml.jackson.annotation.JsonIgnore
     private List<Ingredient> ingredientsWithFoodItem = new ArrayList<>();
+
+    @Column(nullable = false, unique = true)
+    private String name;
 
     private int kcal;
     private double carbs;
@@ -65,6 +69,10 @@ public class FoodItem implements Serializable {
 
     }
 
+    public Long getId() {
+        return id;
+    }
+
     public String getName() {
         return name;
     }
@@ -91,6 +99,10 @@ public class FoodItem implements Serializable {
 
     public double getFats() {
         return fats;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public void setName(String name) {

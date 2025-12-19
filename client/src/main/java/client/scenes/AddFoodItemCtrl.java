@@ -61,7 +61,7 @@ public class AddFoodItemCtrl {
             if(editingItem == null) {
                 serverUtils.addFoodItem(newItem);
             } else {
-                serverUtils.updateFoodItem(editingItem.getName(), newItem);
+                serverUtils.updateFoodItem(editingItem.getId(), newItem);
             }
 
             confirmButton.setText("Confirm");

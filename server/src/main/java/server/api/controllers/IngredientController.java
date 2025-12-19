@@ -23,11 +23,10 @@ public class IngredientController {
         this.foodItemRepo = foodItemRepo;
     }
 
-    @GetMapping("/usage/{name}")
-    public int getFoodItemRecipeUsage(@PathVariable String name) {
-        FoodItem foodItem = foodItemRepo.findById(name).orElseThrow();
+    @GetMapping("/usage/{id}")
+    public int getFoodItemRecipeUsage(@PathVariable Long id) {
+        FoodItem foodItem = foodItemRepo.findById(id).orElseThrow();
         return ingredientRepo.countFoodItemRecipeUsages(foodItem);
-
     }
 }
 

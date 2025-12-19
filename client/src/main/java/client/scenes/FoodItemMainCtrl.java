@@ -128,11 +128,11 @@ public class FoodItemMainCtrl {
 
                 Optional<ButtonType> result2 = alertUsedInRecipe.showAndWait();
                 if(result2.isPresent() && result2.get() == ButtonType.OK){
-                    serverUtils.deleteFoodItem(selectedFoodItem.getName());
+                    serverUtils.deleteFoodItem(selectedFoodItem.getId());
                     refreshFoodItems();
                 }
             } else {
-                serverUtils.deleteFoodItem(selectedFoodItem.getName());
+                serverUtils.deleteFoodItem(selectedFoodItem.getId());
                 refreshFoodItems();
             }
         }
