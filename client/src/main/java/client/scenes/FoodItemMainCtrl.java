@@ -102,6 +102,7 @@ public class FoodItemMainCtrl {
     @FXML
     public void deleteFoodItem() {
         FoodItem selectedFoodItem = foodItemList.getSelectionModel().getSelectedItem();
+        int recipeUsages = serverUtils.getFoodItemRecipeUsage(selectedFoodItem);
 
         if(selectedFoodItem == null) {
             Alert noSelection = new Alert(Alert.AlertType.WARNING);
@@ -119,8 +120,21 @@ public class FoodItemMainCtrl {
 
         Optional<ButtonType> result = alert.showAndWait();
         if(result.isPresent() && result.get() == ButtonType.OK){
-            serverUtils.deleteFoodItem(selectedFoodItem.getName());
-            refreshFoodItems();
+            if(recipeUsages > 0) {
+                Alert alertUsedInRecipe = new Alert(Alert.AlertType.CONFIRMATION);
+                alertUsedInRecipe.setTitle("Item Deleted is used in recipe(s)");
+                alertUsedInRecipe.setHeaderText("The item you want to delete is used in one or more recipes. Are you really sure you want to delete it?");
+                alertUsedInRecipe.setContentText("Do you want to delete the item " + selectedFoodItem.getName() + " which is used in one or more recipes?");
+
+                Optional<ButtonType> result2 = alertUsedInRecipe.showAndWait();
+                if(result2.isPresent() && result2.get() == ButtonType.OK){
+                    serverUtils.deleteFoodItem(selectedFoodItem.getName());
+                    refreshFoodItems();
+                }
+            } else {
+                serverUtils.deleteFoodItem(selectedFoodItem.getName());
+                refreshFoodItems();
+            }
         }
 
     }
