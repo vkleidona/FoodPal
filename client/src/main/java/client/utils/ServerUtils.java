@@ -128,4 +128,10 @@ public class ServerUtils {
                 .request(APPLICATION_JSON)
                 .put(Entity.entity(foodItem, APPLICATION_JSON), FoodItem.class);
     }
+
+    public int getFoodItemRecipeUsage(FoodItem foodItem) {
+        return ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER).path("api/ingredients/usage/" + foodItem.getName())
+                .request(APPLICATION_JSON).get(Integer.class);
+    }
 }

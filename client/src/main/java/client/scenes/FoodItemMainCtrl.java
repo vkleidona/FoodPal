@@ -29,6 +29,8 @@ public class FoodItemMainCtrl {
     private Label fatsLabel;
     @FXML
     private Button mainMenuButton;
+    @FXML
+    private Label recipeUsages;
 
     private final MainCtrl mainCtrl;
     private final ServerUtils serverUtils;
@@ -75,6 +77,7 @@ public class FoodItemMainCtrl {
     public void updateFoodDetails(FoodItem item) {
         if (item == null){
             foodNameLabel.setText("Select food item to see details");
+            recipeUsages.setText("");
             nutritionLabel.setText("");
             kcalLabel.setText("");
             carbsLabel.setText("");
@@ -82,6 +85,7 @@ public class FoodItemMainCtrl {
             fatsLabel.setText("");
         } else {
             foodNameLabel.setText("Food Name: " + item.getName());
+            recipeUsages.setText("Used in " + serverUtils.getFoodItemRecipeUsage(item) + " recipe(s)");
             nutritionLabel.setText("Nutritional values per 100g:");
             kcalLabel.setText("Kcal: " + item.getKcal());
             carbsLabel.setText("Carbohydrates: " + item.getCarbs());
