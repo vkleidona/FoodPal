@@ -230,7 +230,9 @@ public class MainUICtrl {
         mainCtrl.showEditInstructions(recipe);
     }
 
-    private void handleGoToFoodItems() { System.out.println("Go to Food Items placeholder"); }
+    private void handleGoToFoodItems() {
+        mainCtrl.showFoodItemMain();
+    }
 
     /**
      * The Shopping List is connected to the corresponding interface

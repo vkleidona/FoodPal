@@ -31,7 +31,7 @@ public class FoodItemController {
 
     @GetMapping(path = { "", "/"})
     public List<FoodItem> getAllFoodItems() {
-        return repo.findAll();
+        return repo.findAllByOrderByNameAsc();
     }
 
     @DeleteMapping("/{name}")
