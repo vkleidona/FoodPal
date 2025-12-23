@@ -9,7 +9,9 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
+//import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import recipes.FoodItem;
 import recipes.Recipe;
 import recipes.Ingredient;
 
@@ -19,7 +21,10 @@ import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+//import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainUICtrl {
@@ -90,7 +95,15 @@ public class MainUICtrl {
 
         // Placeholders for edit buttons
         editNameButton.setOnAction(e -> handleEditName());
-        editIngredientsButton.setOnAction(e -> handleEditIngredients());
+        editIngredientsButton.setOnAction(e -> {
+            int selectedIndex = recipeListView.getSelectionModel().getSelectedIndex();
+            if (selectedIndex >= 0 && selectedIndex < currentRecipes.size()) {
+                handleEditIngredients(currentRecipes.get(selectedIndex));
+            }
+            else{
+                System.out.println("Please select a recipe to edit");
+            }
+        });
         editInstructionsButton.setOnAction(e -> {
             int selectedIndex = recipeListView.getSelectionModel().getSelectedIndex();
             if (selectedIndex >= 0 && selectedIndex < currentRecipes.size()) {
@@ -220,7 +233,13 @@ public class MainUICtrl {
 
     // Placeholder methods for edit buttons
     private void handleEditName() { System.out.println("Edit name placeholder"); }
-    private void handleEditIngredients() { System.out.println("Edit ingredients placeholder"); }
+    private void handleEditIngredients(Recipe recipe) {
+        if(recipe == null){
+            System.out.println("Recipe is null");
+            return;
+        }
+        mainCtrl.showEditIngredients(recipe);
+    }
 
     private void handleEditInstructions(Recipe recipe) {
         if(recipe == null){
@@ -256,6 +275,49 @@ public class MainUICtrl {
     public Recipe getSelectedRecipe () {
         return selectedRecipe;
     }
+    @FXML
+    public void downloadRecipe() {
+        int index = recipeListView.getSelectionModel().getSelectedIndex();
+        if (index < 0 || index >= currentRecipes.size()) return;
+        Recipe selectedRecipe = currentRecipes.get(index);
+
+        String content = "Recipe: " + selectedRecipe.getName() + "\n\n";
+        content += "Ingredients:\n";
+
+        if (selectedRecipe.getIngredients() != null) {
+            for (int i = 0; i < selectedRecipe.getIngredients().size(); i++) {
+                content += String.valueOf(i + 1) + ". ";
+                content += selectedRecipe.getIngredients().get(i).toString();
+                content += "\n";
+            }
+        }
+
+        content += "Instructions:\n";
+
+        if (selectedRecipe.getInstructions() != null) {
+            for (int i = 0; i < selectedRecipe.getInstructions().size(); i++) {
+                content += "Step " + String.valueOf(i + 1) + ": ";
+                content += selectedRecipe.getInstructions().get(i);
+                content += "\n";
+            }
+        }
+
+        /* THIS COULD POSSIBLY BE USED SO THAT THE USER IS ASKED WHERE TO SAVE THE FILE INSTEAD OF BLINDLY SAVING IT INTO THE
+        PROJECT FOLDER
+
+        FileChooser fileChooser = new  FileChooser();
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Recipe", "*.txt"));  //ensures the file is saved as txt
+
+        Stage stage = (Stage) addRecipeButton.getScene().getWindow();
+        File file = fileChooser.showSaveDialog(stage);
+         */
+
+        try (FileWriter fw = new FileWriter(selectedRecipe.getName() + ".txt")) {
+            fw.write(content);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     @FXML
     public void handleInformation(ActionEvent actionEvent) {
@@ -290,4 +352,7 @@ public class MainUICtrl {
 
         mainCtrl.showInformation(selectedRecipe);
     }
+
+
+
 }

@@ -64,22 +64,18 @@ public class Main extends Application {
         var foodItemMain = FXML.load
                 (FoodItemMainCtrl.class, "client", "scenes", "FoodItemMain.fxml");
 
-        var shoppingListMain = FXML.load
-                (ShoppingListMainCtrl.class, "client", "scenes", "ShoppingListMainUI.fxml");
+        var editIngredients = FXML.load(EditIngredientsCtrl.class, "client", "scenes", "EditIngredients.fxml");
+
+        var shoppingListMain = FXML.load(ShoppingListMainCtrl.class, "client", "scenes", "ShoppingListMainUI.fxml");
+
         var addRecipeToShoppingList = FXML.load
                 (AddRecipeToShoppingListCtrl.class, "client", "scenes", "AddRecipeToShoppingList.fxml");
 
         var mainCtrl = INJECTOR.getInstance(MainCtrl.class);
         mainCtrl.initialize(primaryStage, overview, add, mainUI, editInstructions,
-                createRecipe, addFoodItem, foodItemMain, shoppingListMain, addRecipeToShoppingList, information);
+                createRecipe, addFoodItem, foodItemMain, editIngredients, shoppingListMain, addRecipeToShoppingList, information);
 	}
 
-    /**
-     * Stores the ingredients of the current shopping list in a file
-     * when the application is stopped
-     * @throws Exception - a FileNotFoundException might be thrown in case the
-     * file has not been found
-     */
     @Override
     public void stop() throws Exception {
         ShoppingList.getShoppingList().storeFile();

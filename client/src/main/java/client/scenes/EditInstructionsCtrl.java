@@ -5,10 +5,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextInputDialog;
-import javafx.stage.Stage;
 import recipes.Recipe;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,11 +18,6 @@ public class EditInstructionsCtrl {
     public ListView<String> instructionList;
     private ObservableList<String> steps;
     private Recipe currentRecipe;
-
-    @FXML private Button exitButton;
-    @FXML private Button minimizeButton;
-    @FXML private Button maximizeButton;
-    @FXML private Button refreshButton;
 
     // ServerUtils to communicate with the backend
     private final client.utils.ServerUtils server;
@@ -43,19 +36,10 @@ public class EditInstructionsCtrl {
 
 
 
-    public void initializeTopButtons(){
-        exitButton.setOnAction(e -> System.exit(0));
-        minimizeButton.setOnAction(e -> ((Stage) exitButton.getScene().getWindow()).setIconified(true));
-        maximizeButton.setOnAction(e -> {
-            Stage stage = (Stage) exitButton.getScene().getWindow();
-            stage.setMaximized(!stage.isMaximized());
-        });
-        //refreshButton.setOnAction();
-    }
+   
 
     /**
-     * TO DO: Modify MainCtrl so that it calls the following method when the user switches to the edit instructions screen
-     * It loads the existing instructions into the list.
+     *
      * @param recipe : the recipe we are currently working on
      */
     public void initializeData(Recipe recipe) {
