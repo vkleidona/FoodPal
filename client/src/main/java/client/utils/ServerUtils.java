@@ -115,17 +115,24 @@ public class ServerUtils {
                 .get(new GenericType<List<FoodItem>>() {});
     }
 
-    public void deleteFoodItem(String name) {
+    public void deleteFoodItem(Long id) {
         ClientBuilder.newClient(new ClientConfig())
-                .target(SERVER).path("api/fooditems/" + name)
+                .target(SERVER).path("api/fooditems/" + id)
                 .request(APPLICATION_JSON)
                 .delete();
     }
 
-    public FoodItem updateFoodItem(String name, FoodItem foodItem) {
+    public FoodItem updateFoodItem(Long id, FoodItem foodItem) {
+        foodItem.setId(id);
         return ClientBuilder.newClient(new ClientConfig())
-                .target(SERVER).path("api/fooditems/" + foodItem.getName())
+                .target(SERVER).path("api/fooditems/" + foodItem.getId())
                 .request(APPLICATION_JSON)
                 .put(Entity.entity(foodItem, APPLICATION_JSON), FoodItem.class);
+    }
+
+    public int getFoodItemRecipeUsage(FoodItem foodItem) {
+        return ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER).path("api/ingredients/usage/" + foodItem.getId())
+                .request(APPLICATION_JSON).get(Integer.class);
     }
 }

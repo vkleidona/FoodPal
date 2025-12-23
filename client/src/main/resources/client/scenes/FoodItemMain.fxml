@@ -42,6 +42,7 @@
                   <Insets top="20.0" />
                </padding>
             </Label>
+            <Label fx:id="recipeUsages" text="Used in x recipe(s)" />
             <Label fx:id="nutritionLabel" text="Nutritional values per 100g:">
                <padding>
                   <Insets top="30.0" />

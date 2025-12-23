@@ -52,7 +52,7 @@ public class AddFoodItemCtrl {
     }
 
     @FXML
-    public void confirmChanges(){
+    public void confirmChanges() {
         try {
             FoodItem newItem = new FoodItem(
                     foodItemName.getText(),
@@ -70,10 +70,21 @@ public class AddFoodItemCtrl {
             fatsValue.clear();
 
             // Save to server
-            if(editingItem == null) {
+            if (editingItem == null) {
                 serverUtils.addFoodItem(newItem);
             } else {
-                serverUtils.updateFoodItem(editingItem.getName(), newItem);
+                try {
+                    FoodItem updated = serverUtils.updateFoodItem(editingItem.getId(), newItem);
+                } catch (jakarta.ws.rs.ClientErrorException e) {
+                    if (e.getResponse().getStatus() == 409) {
+                        Alert invalidInput = new Alert(Alert.AlertType.ERROR);
+                        invalidInput.setTitle("Duplicate Name");
+                        invalidInput.setContentText("A food item with the same already exists");
+                        invalidInput.showAndWait();
+                    } else {
+                        e.printStackTrace();
+                    }
+                }
             }
 
             confirmButton.setText("Confirm");
@@ -98,7 +109,7 @@ public class AddFoodItemCtrl {
                 mainCtrl.showFoodItemMain();
             }
 
-        } catch (NumberFormatException e) {
+        } catch(NumberFormatException e){
             Alert invalidInput = new Alert(Alert.AlertType.WARNING);
             invalidInput.setTitle("Error");
             invalidInput.setHeaderText("Invalid Input");

@@ -29,7 +29,7 @@ public class Ingredient implements Serializable {
     the Ingredient table
      */
     @ManyToOne(cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "foodType", referencedColumnName = "name")
+    @JoinColumn(name = "fooditem_id")
     private FoodItem foodType;
 
     private double quantity;
@@ -43,9 +43,8 @@ public class Ingredient implements Serializable {
     @Column(name = "quantity_in_grams")
     private double quantityInGrams;
 
-    @ManyToOne(cascade = CascadeType.ALL, optional = false)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "RECIPE_ID", referencedColumnName = "ID")
-
     @com.fasterxml.jackson.annotation.JsonBackReference
     private Recipe recipe;
 
