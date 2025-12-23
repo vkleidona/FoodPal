@@ -61,6 +61,9 @@ public class MainCtrl implements MainCtrlMethods {
     private FoodItemMainCtrl foodItemMainCtrl;
     private Scene foodItemMain;
 
+    private EditIngredientsCtrl editIngredientsCtrl;
+    private Scene editIngredients;
+
     //screen 6
     private InformationCtrl informationCtrl;
     private Scene informationScene;
@@ -74,7 +77,7 @@ public class MainCtrl implements MainCtrlMethods {
     public void initialize(Stage primaryStage, Pair<QuoteOverviewCtrl, Parent> overview,
                            Pair<AddQuoteCtrl, Parent> add, Pair<MainUICtrl, Parent> mainMenu, Pair<EditInstructionsCtrl, Parent>
                                    editInstructions, Pair<CreateRecipeCtrl, Parent> createRecipe, Pair<AddFoodItemCtrl, Parent>
-                                   addFoodItem, Pair<FoodItemMainCtrl, Parent> foodItemMain,
+                                   addFoodItem, Pair<FoodItemMainCtrl, Parent> foodItemMain,  Pair<EditIngredientsCtrl, Parent> editIngredients,
                                     Pair <ShoppingListMainCtrl, Parent> shoppingListMain,
                                     Pair <AddRecipeToShoppingListCtrl, Parent> addRecipeToShoppingList,
                                     Pair <InformationCtrl, Parent> information) {
@@ -101,6 +104,9 @@ public class MainCtrl implements MainCtrlMethods {
 
         this.foodItemMainCtrl = foodItemMain.getKey();
         this.foodItemMain = new Scene(foodItemMain.getValue());
+
+        this.editIngredientsCtrl = editIngredients.getKey();
+        this.editIngredients = new Scene(editIngredients.getValue());
 
         this.shoppingListMainCtrl = shoppingListMain.getKey();
         this.shoppingListMainScene = new Scene(shoppingListMain.getValue());
@@ -156,6 +162,12 @@ public class MainCtrl implements MainCtrlMethods {
         primaryStage.setScene(editInstructions);
     }
 
+    public void showEditIngredients(Recipe recipe) {
+        editIngredientsCtrl.initialize(recipe);
+        primaryStage.setTitle("Edit Ingredients");
+        primaryStage.setScene(editIngredients);
+    }
+
     public void showCreateRecipe() {
         primaryStage.setTitle("Create Recipe");
         primaryStage.setScene(createRecipe);
@@ -163,6 +175,26 @@ public class MainCtrl implements MainCtrlMethods {
 
     public void showAddFoodItem() {
         primaryStage.setTitle("Add Food Item");
+        primaryStage.setScene(addFoodItem);
+    }
+
+    /**
+     * Switches to the Add FoodItem entry from the ShoppingList
+     * @param foodItemEntry - the name of the entered ingredient in the ShoppingList
+     */
+    public void showAddFoodItemFromShoppingList(String foodItemEntry) {
+        primaryStage.setTitle("Add Food Item");
+        addFoodItemCtrl.accessFromTheShoppingList(foodItemEntry);
+        primaryStage.setScene(addFoodItem);
+    }
+
+    /**
+     * Switches to the Add FoodItem entry from the ShoppingList
+     * @param foodItemEntry - the name of the entered ingredient in the ShoppingList
+     */
+    public void showAddFoodItemFromAddRecipeToShoppingList(String foodItemEntry) {
+        primaryStage.setTitle("Add Food Item");
+        addFoodItemCtrl.accessFromAddRecipeToTheShoppingList(foodItemEntry);
         primaryStage.setScene(addFoodItem);
     }
 
@@ -176,9 +208,26 @@ public class MainCtrl implements MainCtrlMethods {
      */
     public void showShoppingList() {
         primaryStage.setTitle("Shopping List");
-        shoppingListMainCtrl.getS().loadFile();
         shoppingListMainCtrl.refreshInterface();
         primaryStage.setScene(shoppingListMainScene);
+    }
+
+    /**
+     * Returns to the dialog box for the ShoppingList
+     * @param ingredientName - the fresh name which is applied to the ingredient
+     */
+    public void showShoppingListDialogBox(String ingredientName) {
+        primaryStage.setTitle("Shopping List");
+        shoppingListMainCtrl.restoreIngredient(ingredientName);
+    }
+
+    /**
+     * Returns to the dialog box for AddRecipeToShoppingList
+     * @param ingredientName - the fresh name which is applied to the ingredient
+     */
+    public void showAddRecipeToShoppingListDialogBox(String ingredientName) {
+        primaryStage.setTitle("Add Recipe to Shopping List");
+        addRecipeToShoppingListCtrl.restoreIngredient(ingredientName);
     }
 
     /**

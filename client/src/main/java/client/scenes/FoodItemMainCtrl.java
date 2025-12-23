@@ -14,21 +14,23 @@ import java.util.Optional;
 public class FoodItemMainCtrl {
 
     @FXML
-    private ListView<FoodItem> foodItemList;
+    public ListView<FoodItem> foodItemList;
     @FXML
-    private Label foodNameLabel;
+    public Label foodNameLabel;
     @FXML
-    private Label nutritionLabel;
+    public Label nutritionLabel;
     @FXML
-    private Label kcalLabel;
+    public Label kcalLabel;
     @FXML
-    private Label carbsLabel;
+    public Label carbsLabel;
     @FXML
-    private Label proteinsLabel;
+    public Label proteinsLabel;
     @FXML
-    private Label fatsLabel;
+    public Label fatsLabel;
     @FXML
     private Button mainMenuButton;
+    @FXML
+    public Label recipeUsages;
 
     private final MainCtrl mainCtrl;
     private final ServerUtils serverUtils;
@@ -75,6 +77,7 @@ public class FoodItemMainCtrl {
     public void updateFoodDetails(FoodItem item) {
         if (item == null){
             foodNameLabel.setText("Select food item to see details");
+            recipeUsages.setText("");
             nutritionLabel.setText("");
             kcalLabel.setText("");
             carbsLabel.setText("");
@@ -82,6 +85,7 @@ public class FoodItemMainCtrl {
             fatsLabel.setText("");
         } else {
             foodNameLabel.setText("Food Name: " + item.getName());
+            recipeUsages.setText("Used in " + serverUtils.getFoodItemRecipeUsage(item) + " recipe(s)");
             nutritionLabel.setText("Nutritional values per 100g:");
             kcalLabel.setText("Kcal: " + item.getKcal());
             carbsLabel.setText("Carbohydrates: " + item.getCarbs());
@@ -98,6 +102,7 @@ public class FoodItemMainCtrl {
     @FXML
     public void deleteFoodItem() {
         FoodItem selectedFoodItem = foodItemList.getSelectionModel().getSelectedItem();
+        int recipeUsages = serverUtils.getFoodItemRecipeUsage(selectedFoodItem);
 
         if(selectedFoodItem == null) {
             Alert noSelection = new Alert(Alert.AlertType.WARNING);
@@ -115,8 +120,21 @@ public class FoodItemMainCtrl {
 
         Optional<ButtonType> result = alert.showAndWait();
         if(result.isPresent() && result.get() == ButtonType.OK){
-            serverUtils.deleteFoodItem(selectedFoodItem.getName());
-            refreshFoodItems();
+            if(recipeUsages > 0) {
+                Alert alertUsedInRecipe = new Alert(Alert.AlertType.CONFIRMATION);
+                alertUsedInRecipe.setTitle("Item Deleted is used in recipe(s)");
+                alertUsedInRecipe.setHeaderText("The item you want to delete is used in one or more recipes. Are you really sure you want to delete it?");
+                alertUsedInRecipe.setContentText("Do you want to delete the item " + selectedFoodItem.getName() + " which is used in one or more recipes?");
+
+                Optional<ButtonType> result2 = alertUsedInRecipe.showAndWait();
+                if(result2.isPresent() && result2.get() == ButtonType.OK){
+                    serverUtils.deleteFoodItem(selectedFoodItem.getId());
+                    refreshFoodItems();
+                }
+            } else {
+                serverUtils.deleteFoodItem(selectedFoodItem.getId());
+                refreshFoodItems();
+            }
         }
 
     }
