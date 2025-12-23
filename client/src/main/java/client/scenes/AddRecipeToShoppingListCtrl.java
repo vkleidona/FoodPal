@@ -17,6 +17,7 @@ import shopping.ShoppingList;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class AddRecipeToShoppingListCtrl {
 
@@ -39,6 +40,9 @@ public class AddRecipeToShoppingListCtrl {
     private Recipe recipeToAdd;
 
     private ShoppingList shoppingList;
+
+    private Ingredient currentIngredient;
+    private int selectedIndex;
 
     /**
      * Constructor for the AddRecipeToShoppingList controller class
@@ -100,6 +104,7 @@ public class AddRecipeToShoppingListCtrl {
      */
     public void showDialog(Ingredient ingredient) {
         boolean editing = !(ingredient==null);
+        boolean addingNewFoodItem = !(currentIngredient == null);
         Dialog <Ingredient> dialogBox = new Dialog<>();
         dialogBox.setTitle("Change ingredient");
 
@@ -109,6 +114,10 @@ public class AddRecipeToShoppingListCtrl {
 
         // The OK Button is initially disabled
         okButton.setDisable(true);
+
+        if (addingNewFoodItem) {
+            okButton.setDisable(false);
+        }
 
         // Setting up the three parameters the user has to enter
         TextField foodItemField = new TextField();
@@ -170,11 +179,11 @@ public class AddRecipeToShoppingListCtrl {
 
                 // If the FoodItem hasn't been found, show an alert
                 if (foodItem == null) {
-                    Alert nonExistentItemAlert = new Alert(Alert.AlertType.ERROR);
-                    nonExistentItemAlert.setTitle("Food item not found.");
-                    nonExistentItemAlert.
-                            setContentText("Food Item does not exist in the database.");
-                    nonExistentItemAlert.showAndWait();
+                    if (ingredient == null) {
+
+                    }else{
+                        askToAddFoodItem(ingredient, input);
+                    }
                     return null;
                 }
 
@@ -206,11 +215,17 @@ public class AddRecipeToShoppingListCtrl {
 
         // We edit the ingredients in the list itself
         int indexClicked = recipeIngredientsObservableList.indexOf(ingredient);
+        if (!addingNewFoodItem) {
+            selectedIndex = indexClicked;
+        }
 
         dialogBox.showAndWait().ifPresent(result -> {
             if (editing) {
                 if (indexClicked >= 0) {
                     recipeIngredientsObservableList.set(indexClicked, ingredient);
+                }
+                if (indexClicked == -1) {
+                    recipeIngredientsObservableList.set(selectedIndex, ingredient);
                 }
             }else{
                 addIngredientToList(result);
@@ -272,5 +287,57 @@ public class AddRecipeToShoppingListCtrl {
                 List.of("g", "kg", "L", "mL", "oz", "lb", "fl oz", "cup", "tbsp", "tsp",
                         "slice", "clove", "stick", "pinch", "dash", "jar", "-");
         choiceBox.getItems().addAll(availableMeasurementTypes);
+    }
+
+    /**
+     * If the user wants to add a Food Item which is not in the database,
+     * they get redirected to this method which asks for confirmation to add the food item
+     * @param ingredient - the Ingredient to be added as a FoodItem
+     * @param foodItemEntry - what the user has entered for food item
+     */
+    public void askToAddFoodItem (Ingredient ingredient, String foodItemEntry) {
+        Dialog <ButtonType> dialogBox = new Dialog<>();
+        dialogBox.setTitle("Food Item not found");
+        dialogBox.setContentText("""
+                The ingredient you are adding is not known to us.
+                
+                Do you wish to add it?""");
+
+        dialogBox.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        Optional<ButtonType> buttonType = dialogBox.showAndWait();
+        if (buttonType.isPresent() && buttonType.get() == ButtonType.OK) {
+            if (ingredient == null) {
+                mainCtrl.showAddFoodItemFromAddRecipeToShoppingList(foodItemEntry);
+            }else{
+                saveCurrentIngredient(ingredient, foodItemEntry);
+            }
+        }else{
+            mainCtrl.showAddFoodItem();
+        }
+    }
+
+    /**
+     * Saves the current ingredient before jumping to AddFoodItemUI
+     * @param ingredient - the ingredient to be saved
+     * @param foodItemEntry - the FoodItem to be added
+     */
+    public void saveCurrentIngredient (Ingredient ingredient, String foodItemEntry) {
+        if (ingredient.getMeasurement() == null) {
+            ingredient.setMeasurement("");
+        }
+        currentIngredient = new Ingredient(ingredient.getQuantity(), ingredient.getMeasurement());
+        mainCtrl.showAddFoodItemFromAddRecipeToShoppingList(foodItemEntry);
+    }
+
+    /**
+     * Restores the ingredient
+     * (and sets the name to the new food item which was added to the database)
+     * @param ingredientName - the new Food Item added to the database
+     */
+    public void restoreIngredient(String ingredientName) {
+        currentIngredient = new Ingredient(0.0, "g");
+        currentIngredient.setFoodType(serverUtils.searchForFoodItem(ingredientName));
+        mainCtrl.showAddRecipeToShoppingList();
+        showDialog(currentIngredient);
     }
 }

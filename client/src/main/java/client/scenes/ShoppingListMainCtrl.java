@@ -2,7 +2,6 @@ package client.scenes;
 
 import client.utils.ServerUtils;
 import jakarta.inject.Inject;
-import javafx.beans.InvalidationListener;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -38,8 +37,10 @@ public class ShoppingListMainCtrl {
     private ListView <Ingredient> ingredientsListView;
     private ObservableList<Ingredient> ingredientsObservableList;
 
-    // I require a public ShoppingList to access it when loading
     private ShoppingList s;
+
+    private Ingredient currentIngredient;
+    private int selectedIndex;
 
     private final ServerUtils server;
     private final MainCtrl mainCtrl;
@@ -115,6 +116,7 @@ public class ShoppingListMainCtrl {
     public void refreshInterface () {
         // I added this method, as now the ShoppingList is accessed from 2 places
         // and I need to refresh the interface to display the most recent version
+        s.loadFile();
         List<Ingredient> ingredientList = s.getIngredients();
 
         // initializes the ingredients if uninitialized
@@ -187,7 +189,9 @@ public class ShoppingListMainCtrl {
      * @param ingredient - Ingredient to be edited
      */
     public void showDialog(Ingredient ingredient) {
+
         boolean editing = !(ingredient==null);
+        boolean addingNewFoodItem = !(currentIngredient == null);
         Dialog <Ingredient> dialogBox = new Dialog<>();
         dialogBox.setTitle("Change ingredient");
 
@@ -197,6 +201,10 @@ public class ShoppingListMainCtrl {
 
         // The OK Button is initially disabled
         okButton.setDisable(true);
+
+        if (addingNewFoodItem) {
+            okButton.setDisable(false);
+        }
 
         // Setting up the three parameters the user has to enter
         TextField foodItemField = new TextField();
@@ -250,6 +258,7 @@ public class ShoppingListMainCtrl {
         foodItemField.textProperty().addListener(inputValidator);
         quantityField.textProperty().addListener(inputValidator);
         unitChoice.valueProperty().addListener(inputValidator);
+
         dialogBox.setResultConverter(button -> {
             if (button == ButtonType.OK) {
 
@@ -259,11 +268,7 @@ public class ShoppingListMainCtrl {
 
                 // If the FoodItem hasn't been found, show an alert
                 if (foodItem == null) {
-                    Alert nonExistentItemAlert = new Alert(Alert.AlertType.ERROR);
-                    nonExistentItemAlert.setTitle("Food item not found.");
-                    nonExistentItemAlert.
-                            setContentText("Food Item does not exist in the database.");
-                    nonExistentItemAlert.showAndWait();
+                    askToAddFoodItem(ingredient, input);
                     return null;
                 }
 
@@ -295,11 +300,21 @@ public class ShoppingListMainCtrl {
 
         // We edit the ingredients in the list itself
         int indexClicked = ingredientsObservableList.indexOf(ingredient);
+        if (!addingNewFoodItem) {
+            selectedIndex = indexClicked;
+        }
 
         dialogBox.showAndWait().ifPresent(result -> {
             if (editing) {
                 if (indexClicked >= 0) {
                     ingredientsObservableList.set(indexClicked, ingredient);
+                    s.storeFile();
+                    refreshInterface();
+                }
+                if (indexClicked == -1) {
+                    ingredientsObservableList.set(selectedIndex, ingredient);
+                    s.setIngredient(selectedIndex, ingredient);
+                    s.storeFile();
                 }
             }else{
                 addIngredientToShoppingList(result);
@@ -325,5 +340,57 @@ public class ShoppingListMainCtrl {
                 List.of("g", "kg", "L", "mL", "oz", "lb", "fl oz", "cup", "tbsp", "tsp",
                         "slice", "clove", "stick", "pinch", "dash", "jar", "-");
         choiceBox.getItems().addAll(availableMeasurementTypes);
+    }
+
+    /**
+     * If the user wants to add a Food Item which is not in the database,
+     * they get redirected to this method which asks for confirmation to add the food item
+     * @param ingredient - the Ingredient to be added as a FoodItem
+     * @param foodItemEntry - what the user has entered for food item
+     */
+    public void askToAddFoodItem (Ingredient ingredient, String foodItemEntry) {
+        Dialog <ButtonType> dialogBox = new Dialog<>();
+        dialogBox.setTitle("Food Item not found");
+        dialogBox.setContentText("""
+                The ingredient you are adding is not known to us.
+                
+                Do you wish to add it?""");
+
+        dialogBox.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        Optional <ButtonType> buttonType = dialogBox.showAndWait();
+        if (buttonType.isPresent() && buttonType.get() == ButtonType.OK) {
+            if (ingredient == null) {
+                mainCtrl.showAddFoodItemFromShoppingList(foodItemEntry);
+            }else{
+                saveCurrentIngredient(ingredient, foodItemEntry);
+            }
+        }else{
+            mainCtrl.showAddFoodItem();
+        }
+    }
+
+    /**
+     * Saves the current ingredient before jumping to AddFoodItemUI
+     * @param ingredient - the ingredient to be saved
+     * @param foodItemEntry - the FoodItem to be added
+     */
+    public void saveCurrentIngredient (Ingredient ingredient, String foodItemEntry) {
+        if (ingredient.getMeasurement() == null) {
+            ingredient.setMeasurement("");
+        }
+        currentIngredient = new Ingredient(ingredient.getQuantity(), ingredient.getMeasurement());
+        mainCtrl.showAddFoodItemFromShoppingList(foodItemEntry);
+    }
+
+    /**
+     * Restores the ingredient
+     * (and sets the name to the new food item which was added to the database)
+     * @param ingredientName - the new Food Item added to the database
+     */
+    public void restoreIngredient(String ingredientName) {
+        currentIngredient = new Ingredient(0.0, "g");
+        currentIngredient.setFoodType(server.searchForFoodItem(ingredientName));
+        mainCtrl.showShoppingList();
+        showDialog(currentIngredient);
     }
 }
