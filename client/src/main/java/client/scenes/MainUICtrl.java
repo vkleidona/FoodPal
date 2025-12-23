@@ -2,12 +2,15 @@ package client.scenes;
 
 import client.utils.ServerUtils;
 import jakarta.inject.Inject;
+import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 //import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -52,7 +55,7 @@ public class MainUICtrl {
     @FXML private Label servingsLabel;
 
     private final Client client = ClientBuilder.newClient();
-    private final String recipeEndpointUrl = "http://localhost:8080/recipes";
+    private final String recipeEndpointUrl = "http://localhost:8080/api/recipes";
 
     private List<Recipe> currentRecipes;
     private Recipe selectedRecipe;
@@ -60,13 +63,20 @@ public class MainUICtrl {
     private final ServerUtils server;
     private final MainCtrl mainCtrl;
 
-
+    /**
+     * A constructor for the MainUI Controller class, using dependency injection
+     * @param server - the injected instance of the ServerUtils
+     * @param mainCtrl - the injected instance of the Main Controller
+     */
     @Inject
     public MainUICtrl (ServerUtils server, MainCtrl mainCtrl) {
         this.server = server;
         this.mainCtrl = mainCtrl;
     }
 
+    /**
+     * Initializes the main UI by loading all recipes
+     */
     @FXML
     public void initialize() {
         loadRecipes();
@@ -129,9 +139,9 @@ public class MainUICtrl {
 
             // Select first recipe if exists
             if (!currentRecipes.isEmpty()) {
-                selectedRecipe = currentRecipes.get(0);
+                selectedRecipe = currentRecipes.getFirst();
                 recipeListView.getSelectionModel().select(0);
-                displayRecipe(currentRecipes.get(0));
+                displayRecipe(currentRecipes.getFirst());
             } else {
                 clearRecipeDisplay();
             }
@@ -170,31 +180,6 @@ public class MainUICtrl {
     }
 
     private void openCreateRecipeUI() {
-        /*try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/client/scenes/creatingRecipe.fxml"));
-            Parent root = loader.load();
-            Stage stage = new Stage();
-            stage.setTitle("Create Recipe");
-            stage.setScene(new Scene(root));
-            stage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/client/scenes/creatingRecipe.fxml"));
-            Parent root = loader.load();
-
-            // use a control that exists in MainUICtrl
-            Stage stage = (Stage) addRecipeButton.getScene().getWindow();
-
-            stage.setScene(new Scene(root));
-            stage.setTitle("Create Recipe");
-            stage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-*/
         mainCtrl.showCreateRecipe();
     }
 
@@ -231,8 +216,48 @@ public class MainUICtrl {
         });
     }
 
-    // Placeholder methods for edit buttons
-    private void handleEditName() { System.out.println("Edit name placeholder"); }
+    /**
+     * Handles the functionality of the Edit Name button
+     */
+    private void handleEditName() {
+
+        refreshSelectedRecipe();
+
+        Dialog <String> dialogBox = new Dialog<>();
+        dialogBox.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        Button okButton = (Button) dialogBox.getDialogPane().lookupButton(ButtonType.OK);
+        okButton.setDisable(false);
+
+        TextField nameField = new TextField(selectedRecipe.getName());
+        Label nameLabel = new Label ("Name:");
+
+        HBox hBox = new HBox();
+        hBox.setSpacing(15);
+        hBox.setPadding(new Insets(20));
+        hBox.getChildren().addAll(nameLabel, nameField);
+        dialogBox.getDialogPane().setContent(hBox);
+
+        ChangeListener<String> emptyNameValidator = (obs, old, newVal) -> {
+            okButton.setDisable(nameField.getText().isEmpty());
+        };
+
+        dialogBox.setResultConverter(button -> {
+            if (button == ButtonType.OK) {
+                return nameField.getText();
+            }
+            return null;
+        });
+
+        int indexClicked = currentRecipes.indexOf(selectedRecipe);
+
+        dialogBox.showAndWait().ifPresent(result -> {
+            if (indexClicked >= 0) {
+                selectedRecipe.setName(result);
+                server.updateRecipe(selectedRecipe);
+            }
+        });
+    }
+
     private void handleEditIngredients(Recipe recipe) {
         if(recipe == null){
             System.out.println("Recipe is null");
@@ -355,6 +380,14 @@ public class MainUICtrl {
         mainCtrl.showInformation(selectedRecipe);
     }
 
-
+    /**
+     * A method for refreshing the selected recipe, so the parameter can be safely used
+     */
+    public void refreshSelectedRecipe() {
+        int selectedIndex = recipeListView.getSelectionModel().getSelectedIndex();
+        if (selectedIndex >= 0 && selectedIndex < currentRecipes.size()) {
+            selectedRecipe = currentRecipes.get(selectedIndex);
+        }
+    }
 
 }

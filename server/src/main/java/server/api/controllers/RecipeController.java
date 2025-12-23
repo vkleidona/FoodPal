@@ -1,6 +1,9 @@
 package server.api.controllers;
 
+import jakarta.persistence.*;
+import jakarta.ws.rs.Consumes;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import recipes.*;
@@ -15,7 +18,7 @@ import java.util.Optional;
 @RestController
 // /recipes: endpoint, prepares it
 // to handle all requests sent to "/recipes"
-@RequestMapping("/recipes")
+@RequestMapping("api/recipes")
 public class RecipeController {
 
     @Autowired
@@ -98,4 +101,31 @@ public class RecipeController {
 
         return ResponseEntity.ok(saved);
     }
+
+    @PutMapping(path = "/{id}")
+    public ResponseEntity <Recipe> updateRecipe (@PathVariable("id") Long id,
+                                                 @RequestBody Recipe updatedRecipe) {
+        if (recipeRepository.findById(id).isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        System.out.println("Received Update for Name: " + updatedRecipe.getName());
+
+        recipeRepository.findById(id).map(oldRecipe -> {
+            oldRecipe.setName(updatedRecipe.getName());
+            oldRecipe.setServings(updatedRecipe.getServings());
+            oldRecipe.setInstructions(updatedRecipe.getInstructions());
+            oldRecipe.getIngredients().clear();
+            if (updatedRecipe.getIngredients()!=null) {
+                updatedRecipe.getIngredients().forEach(ingredient -> ingredient.setRecipe(oldRecipe));
+                oldRecipe.getIngredients().addAll(updatedRecipe.getIngredients());
+            }
+            Recipe newRecipe = recipeRepository.save(oldRecipe);
+            return ResponseEntity.ok(newRecipe);
+        });
+
+        return ResponseEntity.ok().build();
+    }
+
+
 }

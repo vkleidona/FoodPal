@@ -65,7 +65,7 @@ public class RecipeControllerTest {
         String json = objectMapper.writeValueAsString(recipe);
 
         // sending the POST request
-        mockMvc.perform(post("/recipes")
+        mockMvc.perform(post("/api/recipes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
                 .andExpect(status().isOk());
