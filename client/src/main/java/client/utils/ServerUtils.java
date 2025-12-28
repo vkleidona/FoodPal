@@ -94,12 +94,19 @@ public class ServerUtils {
      * @param foodType - String entered by the user which we will search for FoodType
      * @return FoodItem - the corresponding FoodItem
      */
-    public FoodItem searchForFoodItem (String foodType) {
+    public FoodItem getFoodItemByName (String foodType) {
         return ClientBuilder.newClient(new ClientConfig()).
                 target(SERVER).path("api/fooditems/search").
                 queryParam("name", foodType).
                 request(APPLICATION_JSON).
                 get(FoodItem.class);
+    }
+
+    public List<Recipe> getAllRecipes () {
+        return ClientBuilder.newClient(new ClientConfig()).
+                target(SERVER).path("api/recipes")
+                .request(MediaType.APPLICATION_JSON)
+                .get(new GenericType<List<Recipe>>() {});
     }
 
     public FoodItem addFoodItem(FoodItem foodItem) {
