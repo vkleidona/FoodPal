@@ -31,8 +31,6 @@ import static org.testfx.api.FxAssert.verifyThat;
 public class ShoppingListMainCtrlTest extends ApplicationTest {
 
     private ShoppingListMainCtrl shoppingListMainCtrl;
-    private ServerUtils serverUtils;
-    private MainCtrl mainCtrl;
 
     /**
      * If the display is not available, we skip the tests
@@ -51,6 +49,9 @@ public class ShoppingListMainCtrlTest extends ApplicationTest {
      */
     @Override
     public void start (Stage stage) throws IOException {
+
+        ServerUtils serverUtils;
+        MainCtrl mainCtrl;
 
         // We try to find the controller class at the specified path
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/client/scenes/ShoppingListMainUI.fxml"));
@@ -244,8 +245,8 @@ public class ShoppingListMainCtrlTest extends ApplicationTest {
 
         ObservableList <Ingredient> ingredientObservableList = lookup("#ingredientsObservableList").query();
 
-        // We assert that the element has been deleted and the size has been changed
-        assertEquals(0, ingredientObservableList.size());
+        assertEquals(0, ingredientObservableList.size(),
+                "The ingredient should be deleted from the Shopping List which now should have 0 ingredients");
     }
 
     /**
