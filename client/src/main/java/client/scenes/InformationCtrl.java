@@ -21,6 +21,7 @@ public class InformationCtrl {
     @FXML private Label fatsLabel;
     @FXML private TextField servingsField;
     @FXML private VBox ingredientsContainer;
+    @FXML private TextField caloriesRecipe;
 
     private final MainCtrl mainCtrl;
     private final ServerUtils serverUtils;
@@ -62,6 +63,12 @@ public class InformationCtrl {
         } else {
             servingsField.setText("1");
             recipe.setServings(1);
+        }
+
+        if (recipe.getIngredients() != null) {
+            for (Ingredient ing : recipe.getIngredients()) {
+                optimizeIngredientUnit(ing);
+            }
         }
 
         // render Ingredients List
@@ -173,16 +180,66 @@ public class InformationCtrl {
     }
 
     /**
+     *  Scaling logic: User changes Total Calories -> Scale Servings & Ingredients
+     */
+    @FXML
+    public void handleCaloriesRecipe() {
+        try {
+            double newTotalCalories = Double.parseDouble(caloriesRecipe.getText());
+            if (newTotalCalories < 0) return;
+
+            // 1. Calculate current total calories to determine scale factor
+            double currentTotalCalories = 0;
+            if (currentRecipe.getIngredients() != null) {
+                for (Ingredient ing : currentRecipe.getIngredients()) {
+                    FoodItem food = ing.getFoodType();
+                    if (food != null) {
+                        currentTotalCalories += (ing.getQuantityInGrams() / 100.0) * food.getKcal();
+                    }
+                }
+            }
+
+            if (currentTotalCalories == 0) return;
+
+            // determine Scale Factor
+            double scaleFactor = newTotalCalories / currentTotalCalories;
+
+            // update Servings (Rounded)
+            int newServings = (int) Math.round(currentRecipe.getServings() * scaleFactor);
+            if (newServings < 1) newServings = 1;
+
+            currentRecipe.setServings(newServings);
+            servingsField.setText(String.valueOf(newServings));
+
+            // scale all ingredients
+            for (Ingredient ing : currentRecipe.getIngredients()) {
+                scaleIngredient(ing, scaleFactor);
+            }
+
+            // refresh UI
+            renderIngredientsList();
+            calculateAndShowNutrition();
+
+        } catch (NumberFormatException e) {
+            // ignore invalid input
+            calculateAndShowNutrition(); // reset field to correct value
+        }
+    }
+
+    /**
      * Helper to scale a single ingredient's visual quantity and internal grams.
      */
     private void scaleIngredient(Ingredient ing, double scaleFactor) {
-        // update visual quantity
+        // 1. Update visual quantity
         double newQty = ing.getQuantity() * scaleFactor;
         ing.setQuantity(newQty);
 
-        // update internal grams
+        // 2. Update internal grams (essential for nutrition calc)
         double newGrams = ing.getQuantityInGrams() * scaleFactor;
         ing.setQuantityInGrams(newGrams);
+
+        // 3. Optimize Unit (Auto-scale g -> kg, etc.)
+        optimizeIngredientUnit(ing);
     }
 
     /**
@@ -216,6 +273,8 @@ public class InformationCtrl {
             }
         }
 
+        caloriesRecipe.setText(String.format("%.0f", totalCal));
+
         // Calculate values per 100g of the final dish
         if (totalWeightInGrams > 0) {
             // Formula: (Total Nutrient / Total Weight) * 100
@@ -232,5 +291,44 @@ public class InformationCtrl {
             fatsLabel.setText("Fats per 100g: 0.0 g");
         }
     }
+
+    /**
+     * Automatically converts units based on quantity thresholds.
+     * Examples:
+     * - 1500 g -> 1.5 kg
+     * - 0.5 kg -> 500 g
+     */
+    private void optimizeIngredientUnit(Ingredient ing) {
+        String unit = ing.getMeasurement().toLowerCase();
+        double qty = ing.getQuantity();
+
+        // Metric Mass: g <-> kg
+        if (unit.equals("g") && qty >= 1000) {
+            ing.setMeasurement("kg");
+            ing.setQuantity(qty / 1000.0);
+        } else if (unit.equals("kg") && qty < 1) {
+            ing.setMeasurement("g");
+            ing.setQuantity(qty * 1000.0);
+        }
+
+        // Metric Volume: ml <-> l
+        else if (unit.equals("ml") && qty >= 1000) {
+            ing.setMeasurement("l");
+            ing.setQuantity(qty / 1000.0);
+        } else if (unit.equals("l") && qty < 1) {
+            ing.setMeasurement("ml");
+            ing.setQuantity(qty * 1000.0);
+        }
+
+        // Imperial Mass: oz <-> lb (1 lb = 16 oz)
+        else if (unit.equals("oz") && qty >= 16) {
+            ing.setMeasurement("lb");
+            ing.setQuantity(qty / 16.0);
+        } else if (unit.equals("lb") && qty < 1) {
+            ing.setMeasurement("oz");
+            ing.setQuantity(qty * 16.0);
+        }
+    }
+
 
 }

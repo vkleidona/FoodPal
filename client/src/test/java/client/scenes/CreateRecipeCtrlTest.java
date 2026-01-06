@@ -4,6 +4,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -23,6 +24,7 @@ public class CreateRecipeCtrlTest extends ApplicationTest {
         Assumptions.assumeTrue(display != null && !display.isEmpty(),
                 "Skipping JavaFX UI tests because DISPLAY is not available (CI)");
     }
+
 
 
     private CreateRecipeCtrl controller;
@@ -233,24 +235,78 @@ public class CreateRecipeCtrlTest extends ApplicationTest {
         assertTrue(wasRecipeSent, "Recipe SHOULD be sent if user clicks OK");
     }
 
-
-
-
-
-
-/*
+    /**
+     * Tests that the 'x' button correctly removes an ingredient row.
+     */
     @Test
-    public void testCancelClearsForm() {
-        // Type something
-        clickOn("#nameTextField").write("Mistake Recipe");
-        verifyThat("#nameTextField", hasText("Mistake Recipe"));
+    public void testDeleteIngredient() {
+        // Add two ingredients
+        clickOn("#addIngredientButton");
+        clickOn("#addIngredientButton");
 
-        // Click Cancel
-        clickOn("#cancelButton");
+        VBox ingredientsBox = lookup("#ingredientsVBox").query();
+        assertEquals(2, ingredientsBox.getChildren().size(), "Should have 2 rows initially");
 
-        // Verify it is gone
-        verifyThat("#nameTextField", hasText(""));
+        // Click the 'x' button on the first row
+        // The structure is HBox -> [Combo, Text, Choice, Text, Text, Button]
+        // The delete button is the last child in the HBox
+        HBox firstRow = (HBox) ingredientsBox.getChildren().get(0);
+        clickOn(firstRow.getChildren().get(firstRow.getChildren().size() - 1));
+
+        // Wait for UI update
+        WaitForAsyncUtils.waitForFxEvents();
+
+        assertEquals(1, ingredientsBox.getChildren().size(), "One row should remain after deletion");
     }
 
- */
+    @Test
+    public void testBuildRecipeHelper() {
+        java.util.List<String> names = java.util.Arrays.asList("Apple", "Banana");
+        java.util.List<Integer> quantities = java.util.Arrays.asList(1, 2);
+        java.util.List<String> units = java.util.Arrays.asList("piece", "kg");
+        java.util.List<String> instructions = java.util.Arrays.asList("Step 1", "Step 2");
+
+        Recipe r = controller.buildRecipe("Test Helper", names, quantities, units, instructions);
+
+        assertNotNull(r);
+        assertEquals("Test Helper", r.getName());
+        assertEquals(2, r.getIngredients().size());
+        assertEquals("Apple", r.getIngredients().get(0).getFoodType().getName());
+        assertEquals(1, r.getIngredients().get(0).getQuantity());
+        assertEquals("piece", r.getIngredients().get(0).getMeasurement());
+        assertEquals(2, r.getInstructions().size());
+        assertEquals("Step 1", r.getInstructions().get(0));
+    }
+
+    @Test
+    public void testHandleRefreshUpdatesComboBoxes() {
+        // 1. Add an ingredient row
+        clickOn("#addIngredientButton");
+
+        // 2. Inject a new ServerService that returns a specific item
+        controller.setServerService(new ServerService() {
+            @Override
+            public java.util.List<recipes.FoodItem> getAllFoodItems() {
+                java.util.List<recipes.FoodItem> list = new java.util.ArrayList<>();
+                list.add(new recipes.FoodItem("New Server Item", 0,0,0,0));
+                return list;
+            }
+            @Override public void sendRecipe(Recipe r) {}
+            @Override public java.util.List<recipes.FoodItem> getFoodItems() { return new java.util.ArrayList<>(); }
+        });
+
+        // 3. Call handleRefresh explicitly (since we might not have a button for it in the test UI)
+        javafx.application.Platform.runLater(() -> controller.handleRefresh());
+        WaitForAsyncUtils.waitForFxEvents();
+
+        // 4. Verify the ComboBox now contains "New Server Item"
+        VBox ingredientsBox = lookup("#ingredientsVBox").query();
+        HBox row = (HBox) ingredientsBox.getChildren().get(0);
+        @SuppressWarnings("unchecked")
+        ComboBox<String> nameBox = (ComboBox<String>) row.getChildren().get(0);
+
+        assertTrue(nameBox.getItems().contains("New Server Item"), "ComboBox should contain updated items from server");
+        assertTrue(nameBox.getItems().contains("+ Create New Food Item..."), "ComboBox should still have create option");
+    }
+
 }
