@@ -16,6 +16,7 @@ import jakarta.ws.rs.client.ClientBuilder;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,7 +79,7 @@ public class EditIngredientsCtrl{
 
     // the client cannot call server methods directly
     private final Client client = ClientBuilder.newClient(new ClientConfig());
-    private final String recipeEndpointUrl = "http://localhost:8080/recipes";
+    private final String recipeEndpointUrl = "http://localhost:8080/api/recipes";
 
     private Recipe recipe;
     private Ingredient lastClickedIngredient = null;
@@ -212,6 +213,7 @@ public class EditIngredientsCtrl{
         inputQuantity.setText(String.valueOf(lastClickedIngredient.getQuantity()));
 
         String unit = lastClickedIngredient.getMeasurement();
+        inputMeasurement.getItems().clear();
 
         if(METRIC_UNITS.contains(unit)){
             metric.setSelected(true);
@@ -265,32 +267,56 @@ public class EditIngredientsCtrl{
     void addIngredient() {
         errorLabel.setText("");
 
+        String name = inputFoodName.getValue();
+        if (name == null || name.trim().isEmpty()) {
+            name = inputFoodName.getEditor().getText();
+        }
+
+        // 2. STOP if we still don't have a name (This prevents the crash!)
+        if (name == null || name.trim().isEmpty()) {
+            errorLabel.setText("Please select or type a food name.");
+            return;
+        }
+
         // If the ingredient is already in the list don't add it again.
         for(Ingredient ingredient : listOfIngredients.getItems()){
-            if (inputFoodName.getEditor().getText().equals(ingredient.getFoodType().getName())) {
+            if (name.equals(ingredient.getFoodType().getName())) {
                 errorLabel.setText("Food is already in the list.");
                 return;
             }
         }
 
+        List<FoodItem> allItems = server.getAllFoodItems();
+        FoodItem selectedFoodItem = null;
+
+        for(FoodItem item: allItems){
+            if(item.getName().equalsIgnoreCase(name)){
+                selectedFoodItem = item;
+                break;
+            }
+        }
+
+        if(selectedFoodItem == null){
+            selectedFoodItem = new FoodItem(name);
+        }
         // Try making the new ingredient.
         try {
             double quantity = Double.parseDouble(inputQuantity.getText());
-            FoodItem foodItem = new FoodItem(inputFoodName.getEditor().getText());
             String measurement = inputMeasurement.getValue();
 
-            Ingredient ingredient = new Ingredient(foodItem, quantity, measurement);
+            Ingredient ingredient = new Ingredient(selectedFoodItem, quantity, measurement);
             ingredient.setRecipe(recipe);
-            System.out.println(recipe);
+
             listOfIngredients.getItems().add(ingredient);
 
             listOfIngredients.refresh();
+            resetForm();
         } catch (NumberFormatException e) {
             // If the given quantity cannot be parsed to a double give error.
             errorLabel.setText("Quantity must be a double.");
         }
 
-        resetForm();
+
     }
 
     /**
@@ -320,15 +346,11 @@ public class EditIngredientsCtrl{
      */
     @FXML
     public void applyEdit() {
-        try {
-            Recipe done = client.target(recipeEndpointUrl)
-                    .path("/ingredients/set/" + recipe.getId())
-                    .request(APPLICATION_JSON)
-                    .post(Entity.entity(listOfIngredients.getItems(), APPLICATION_JSON), Recipe.class);
-            // Return to the mainUI
+        try{
+            recipe.setIngredients(new ArrayList<>(listOfIngredients.getItems()));
+            server.updateRecipe(recipe);
             closeUI();
-        } catch (Exception e) {
-            // Exceptions
+        }catch(Exception e){
             e.printStackTrace();
         }
     }
