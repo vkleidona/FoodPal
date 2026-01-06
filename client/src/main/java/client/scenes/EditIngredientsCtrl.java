@@ -16,7 +16,9 @@ import jakarta.ws.rs.client.ClientBuilder;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /*
@@ -66,7 +68,13 @@ public class EditIngredientsCtrl{
     @FXML
     private TextField inputQuantity;
     @FXML
-    private TextField inputMeasurement;
+    private ComboBox<String> inputMeasurement;
+    @FXML
+    private RadioButton metric;
+    @FXML
+    private RadioButton imperial;
+    @FXML
+    private RadioButton common;
 
     // the client cannot call server methods directly
     private final Client client = ClientBuilder.newClient(new ClientConfig());
@@ -78,6 +86,35 @@ public class EditIngredientsCtrl{
     private MainCtrl mainCtrl;
     private client.utils.ServerUtils server;
 
+    private static final List<String> METRIC_UNITS = List.of("g", "kg", "ml", "l");
+    private static final List<String> IMPERIAL_UNITS = List.of("oz", "lb", "fl oz", "cup", "tbsp", "tsp");
+    private static final List<String> COMMON_UNITS = List.of("pinch", "dash", "stick", "clove", "slice", "can", "jar");
+
+    private static final Map<String, Double> UNIT_TO_GRAMS = new HashMap<>();
+    static {
+        // Metric
+        UNIT_TO_GRAMS.put("g", 1.0);
+        UNIT_TO_GRAMS.put("kg", 1000.0);
+        UNIT_TO_GRAMS.put("ml", 1.0);      // approx
+        UNIT_TO_GRAMS.put("l", 1000.0);
+
+        // Imperial / US
+        UNIT_TO_GRAMS.put("oz", 28.35);
+        UNIT_TO_GRAMS.put("lb", 453.59);
+        UNIT_TO_GRAMS.put("fl oz", 29.57);
+        UNIT_TO_GRAMS.put("cup", 240.0);   // standard US cup approx
+        UNIT_TO_GRAMS.put("tbsp", 15.0);
+        UNIT_TO_GRAMS.put("tsp", 5.0);
+
+        // Common / Kitchen Units
+        UNIT_TO_GRAMS.put("pinch", 0.36);
+        UNIT_TO_GRAMS.put("dash", 0.72);
+        UNIT_TO_GRAMS.put("stick", 113.0);
+        UNIT_TO_GRAMS.put("clove", 5.0);
+        UNIT_TO_GRAMS.put("slice", 30.0);
+        UNIT_TO_GRAMS.put("can", 400.0);
+        UNIT_TO_GRAMS.put("jar", 450.0);
+    }
 
     @Inject
     public EditIngredientsCtrl(MainCtrl mainCtrl, client.utils.ServerUtils server) {
@@ -124,11 +161,35 @@ public class EditIngredientsCtrl{
 
         //Reset the inputs so the "Name" field isn't stuck as disabled
         resetForm();
+
+        ToggleGroup unitGroup = new ToggleGroup();
+        metric.setToggleGroup(unitGroup);
+        imperial.setToggleGroup(unitGroup);
+        common.setToggleGroup(unitGroup);
     }
+
+    @FXML
+    private void handleSystemChange(){
+        if (metric.isSelected()) {
+            inputMeasurement.getItems().clear();
+            inputMeasurement.getItems().addAll("g", "kg", "ml", "l");
+            inputMeasurement.setValue("g");
+        } else if (imperial.isSelected()) {
+            inputMeasurement.getItems().clear();
+            inputMeasurement.getItems().addAll("oz", "lb", "fl oz", "cup", "tbsp", "tsp");
+            inputMeasurement.setValue("oz");
+        } else if(common.isSelected()) {
+            inputMeasurement.getItems().clear();
+            inputMeasurement.getItems().addAll("slice", "clove", "stick", "pinch", "dash", "jar", "other");
+            inputMeasurement.setValue("stick");
+        }
+    }
+
+    @FXML
     private void resetForm() {
         inputFoodName.setValue(null);
         inputQuantity.clear();
-        inputMeasurement.clear();
+        inputMeasurement.setValue(null);
         inputFoodName.setDisable(false); // Enable it so we can add new items
         lastClickedIngredient = null;
         listOfIngredients.getSelectionModel().clearSelection();
@@ -149,8 +210,20 @@ public class EditIngredientsCtrl{
             inputFoodName.setValue(lastClickedIngredient.getFoodType().getName());
         }
         inputQuantity.setText(String.valueOf(lastClickedIngredient.getQuantity()));
-        inputMeasurement.setText(String.valueOf(lastClickedIngredient.getMeasurement()));
 
+        String unit = lastClickedIngredient.getMeasurement();
+
+        if(METRIC_UNITS.contains(unit)){
+            metric.setSelected(true);
+            inputMeasurement.getItems().addAll("g", "kg", "ml", "l");
+        }else if(IMPERIAL_UNITS.contains(unit)){
+            imperial.setSelected(true);
+            inputMeasurement.getItems().addAll("oz", "lb", "fl oz", "cup", "tbsp", "tsp");
+        }else if(COMMON_UNITS.contains(unit)){
+            common.setSelected(true);
+            inputMeasurement.getItems().addAll("slice", "clove", "stick", "pinch", "dash", "jar", "other");
+        }
+        inputMeasurement.setValue(unit);
         inputFoodName.setDisable(true);
     }
 
@@ -178,7 +251,7 @@ public class EditIngredientsCtrl{
                 } catch (NumberFormatException e) {
                     errorLabel.setText("Quantity must be a double.");
                 }
-                ingredient.setMeasurement(inputMeasurement.getText());
+                ingredient.setMeasurement(inputMeasurement.getValue());
 
                 // Refresh the table with the updates values.
                 listOfIngredients.refresh();
@@ -204,7 +277,7 @@ public class EditIngredientsCtrl{
         try {
             double quantity = Double.parseDouble(inputQuantity.getText());
             FoodItem foodItem = new FoodItem(inputFoodName.getEditor().getText());
-            String measurement = inputMeasurement.getText();
+            String measurement = inputMeasurement.getValue();
 
             Ingredient ingredient = new Ingredient(foodItem, quantity, measurement);
             ingredient.setRecipe(recipe);
