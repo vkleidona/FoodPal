@@ -1,6 +1,7 @@
 package server.api.controllers;
 
 import jakarta.persistence.*;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -80,26 +81,26 @@ public class RecipeController {
     }
 
     // Currently does not work. I think?
-    @PostMapping(path = "/ingredients/set/{recipeId}")
+    @PutMapping(path = "/ingredients/set/{recipeId}")
     public ResponseEntity<Recipe> setAllIngredients(@RequestBody List<Ingredient> ingredients,
                                                     @PathVariable Long recipeId) {
-        if (recipeId < 0 || !recipeRepository.existsById(recipeId)) {
+        if (recipeRepository.findById(recipeId).isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
-        Recipe currentRecipe = recipeRepository.findById(recipeId).get();
+        return recipeRepository.findById(recipeId).map(currentRecipe -> {
+            currentRecipe.getIngredients().clear();
 
-        ingredientRepository.deleteAll(currentRecipe.getIngredients());
-
-        currentRecipe.setIngredients(new ArrayList<>());
-
-        for  (Ingredient ingredient : ingredients) {
-            currentRecipe.addIngredient(ingredient);
-        }
-
-        Recipe saved = recipeRepository.save(currentRecipe);
-
-        return ResponseEntity.ok(saved);
+            if (ingredients!=null) {
+                ingredients.forEach(ingredient -> ingredient.setRecipe(currentRecipe));
+                currentRecipe.getIngredients().addAll(ingredients);
+            }
+            currentRecipe.getIngredients().forEach(i ->
+                    System.out.println("Ingredient: " + i.getMeasurement() + ", recipe=" + i.getRecipe())
+            );
+            Recipe saved = recipeRepository.save(currentRecipe);
+            return ResponseEntity.ok(saved);
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping(path = "/{id}")
@@ -108,8 +109,6 @@ public class RecipeController {
         if (recipeRepository.findById(id).isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-
-        System.out.println("Received Update for Name: " + updatedRecipe.getName());
 
         recipeRepository.findById(id).map(oldRecipe -> {
             oldRecipe.setName(updatedRecipe.getName());

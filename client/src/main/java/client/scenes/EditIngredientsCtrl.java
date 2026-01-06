@@ -211,6 +211,7 @@ public class EditIngredientsCtrl{
             inputFoodName.setValue(lastClickedIngredient.getFoodType().getName());
         }
         inputQuantity.setText(String.valueOf(lastClickedIngredient.getQuantity()));
+        inputMeasurement.setText(String.valueOf(lastClickedIngredient.getMeasurement()));
 
         String unit = lastClickedIngredient.getMeasurement();
         inputMeasurement.getItems().clear();
@@ -267,56 +268,39 @@ public class EditIngredientsCtrl{
     void addIngredient() {
         errorLabel.setText("");
 
-        String name = inputFoodName.getValue();
-        if (name == null || name.trim().isEmpty()) {
-            name = inputFoodName.getEditor().getText();
-        }
-
-        // 2. STOP if we still don't have a name (This prevents the crash!)
-        if (name == null || name.trim().isEmpty()) {
-            errorLabel.setText("Please select or type a food name.");
-            return;
-        }
-
         // If the ingredient is already in the list don't add it again.
         for(Ingredient ingredient : listOfIngredients.getItems()){
-            if (name.equals(ingredient.getFoodType().getName())) {
+            if (inputFoodName.getEditor().getText().equals(ingredient.getFoodType().getName())) {
                 errorLabel.setText("Food is already in the list.");
                 return;
             }
         }
 
-        List<FoodItem> allItems = server.getAllFoodItems();
-        FoodItem selectedFoodItem = null;
-
-        for(FoodItem item: allItems){
-            if(item.getName().equalsIgnoreCase(name)){
-                selectedFoodItem = item;
-                break;
-            }
-        }
-
-        if(selectedFoodItem == null){
-            selectedFoodItem = new FoodItem(name);
-        }
         // Try making the new ingredient.
         try {
             double quantity = Double.parseDouble(inputQuantity.getText());
-            String measurement = inputMeasurement.getValue();
 
-            Ingredient ingredient = new Ingredient(selectedFoodItem, quantity, measurement);
+            String foodName = inputFoodName.getEditor().getText();
+            FoodItem foodItem = server.getFoodItemByName(foodName);
+            if (foodItem==null) {
+                foodItem = new FoodItem(foodName);
+            }
+            String measurement = inputMeasurement.getText();
+
+            Ingredient ingredient = new Ingredient(foodItem, quantity, measurement);
+            recipe.addIngredient(ingredient);
             ingredient.setRecipe(recipe);
-
+            // to be removed
+            System.out.println(recipe);
             listOfIngredients.getItems().add(ingredient);
 
             listOfIngredients.refresh();
-            resetForm();
         } catch (NumberFormatException e) {
             // If the given quantity cannot be parsed to a double give error.
             errorLabel.setText("Quantity must be a double.");
         }
 
-
+        resetForm();
     }
 
     /**
@@ -346,11 +330,15 @@ public class EditIngredientsCtrl{
      */
     @FXML
     public void applyEdit() {
-        try{
-            recipe.setIngredients(new ArrayList<>(listOfIngredients.getItems()));
-            server.updateRecipe(recipe);
+        try {
+            Recipe done = client.target(recipeEndpointUrl)
+                    .path("/ingredients/set/" + recipe.getId())
+                    .request(APPLICATION_JSON)
+                    .put(Entity.entity(listOfIngredients.getItems(), APPLICATION_JSON), Recipe.class);
+            // Return to the mainUI
             closeUI();
-        }catch(Exception e){
+        } catch (Exception e) {
+            // Exceptions
             e.printStackTrace();
         }
     }
