@@ -211,7 +211,6 @@ public class EditIngredientsCtrl{
             inputFoodName.setValue(lastClickedIngredient.getFoodType().getName());
         }
         inputQuantity.setText(String.valueOf(lastClickedIngredient.getQuantity()));
-        inputMeasurement.setText(String.valueOf(lastClickedIngredient.getMeasurement()));
 
         String unit = lastClickedIngredient.getMeasurement();
         inputMeasurement.getItems().clear();
@@ -285,7 +284,7 @@ public class EditIngredientsCtrl{
             if (foodItem==null) {
                 foodItem = new FoodItem(foodName);
             }
-            String measurement = inputMeasurement.getText();
+            String measurement = inputMeasurement.getValue();
 
             Ingredient ingredient = new Ingredient(foodItem, quantity, measurement);
             recipe.addIngredient(ingredient);
