@@ -128,9 +128,7 @@ public class MainUICtrl {
 
     private void loadRecipes() {
         try {
-            currentRecipes = client.target(recipeEndpointUrl)
-                    .request(MediaType.APPLICATION_JSON)
-                    .get(new GenericType<List<Recipe>>() {});
+            currentRecipes = server.getAllRecipes();
 
             recipeListView.getItems().clear();
             for (Recipe r : currentRecipes) {

@@ -264,7 +264,7 @@ public class ShoppingListMainCtrl {
 
                 // Searches the server for the entered FoodItem
                 String input = foodItemField.getText().trim();
-                FoodItem foodItem = server.searchForFoodItem(input);
+                FoodItem foodItem = server.getFoodItemByName(input);
 
                 // If the FoodItem hasn't been found, show an alert
                 if (foodItem == null) {
@@ -389,7 +389,7 @@ public class ShoppingListMainCtrl {
      */
     public void restoreIngredient(String ingredientName) {
         currentIngredient = new Ingredient(0.0, "g");
-        currentIngredient.setFoodType(server.searchForFoodItem(ingredientName));
+        currentIngredient.setFoodType(server.getFoodItemByName(ingredientName));
         mainCtrl.showShoppingList();
         showDialog(currentIngredient);
     }

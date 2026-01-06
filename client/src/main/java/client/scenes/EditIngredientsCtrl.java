@@ -70,14 +70,13 @@ public class EditIngredientsCtrl{
 
     // the client cannot call server methods directly
     private final Client client = ClientBuilder.newClient(new ClientConfig());
-    private final String recipeEndpointUrl = "http://localhost:8080/recipes";
+    private final String recipeEndpointUrl = "http://localhost:8080/api/recipes";
 
     private Recipe recipe;
     private Ingredient lastClickedIngredient = null;
 
     private MainCtrl mainCtrl;
     private client.utils.ServerUtils server;
-
 
     @Inject
     public EditIngredientsCtrl(MainCtrl mainCtrl, client.utils.ServerUtils server) {
@@ -203,11 +202,18 @@ public class EditIngredientsCtrl{
         // Try making the new ingredient.
         try {
             double quantity = Double.parseDouble(inputQuantity.getText());
-            FoodItem foodItem = new FoodItem(inputFoodName.getEditor().getText());
+
+            String foodName = inputFoodName.getEditor().getText();
+            FoodItem foodItem = server.getFoodItemByName(foodName);
+            if (foodItem==null) {
+                foodItem = new FoodItem(foodName);
+            }
             String measurement = inputMeasurement.getText();
 
             Ingredient ingredient = new Ingredient(foodItem, quantity, measurement);
+            recipe.addIngredient(ingredient);
             ingredient.setRecipe(recipe);
+            // to be removed
             System.out.println(recipe);
             listOfIngredients.getItems().add(ingredient);
 
@@ -251,7 +257,7 @@ public class EditIngredientsCtrl{
             Recipe done = client.target(recipeEndpointUrl)
                     .path("/ingredients/set/" + recipe.getId())
                     .request(APPLICATION_JSON)
-                    .post(Entity.entity(listOfIngredients.getItems(), APPLICATION_JSON), Recipe.class);
+                    .put(Entity.entity(listOfIngredients.getItems(), APPLICATION_JSON), Recipe.class);
             // Return to the mainUI
             closeUI();
         } catch (Exception e) {

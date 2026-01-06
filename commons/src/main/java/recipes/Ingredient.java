@@ -28,7 +28,7 @@ public class Ingredient implements Serializable {
     Jpa automatically adds a foreign key column called recipeId to
     the Ingredient table
      */
-    @ManyToOne(cascade = CascadeType.PERSIST)
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "fooditem_id")
     private FoodItem foodType;
 
@@ -44,7 +44,7 @@ public class Ingredient implements Serializable {
     private double quantityInGrams;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "RECIPE_ID", referencedColumnName = "ID")
+    @JoinColumn(name = "RECIPE_ID")
     @com.fasterxml.jackson.annotation.JsonBackReference
     private Recipe recipe;
 
