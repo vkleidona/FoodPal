@@ -44,7 +44,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox prefHeight="573.0" prefWidth="806.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.scenes.InformationCtrl">
+<VBox prefHeight="491.0" prefWidth="803.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.scenes.InformationCtrl">
   <children>
     <MenuBar prefHeight="58.0" prefWidth="658.0" VBox.vgrow="NEVER">
       <menus>
@@ -85,7 +85,7 @@
         </Menu>
       </menus>
     </MenuBar>
-    <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefHeight="561.0" prefWidth="806.0" VBox.vgrow="ALWAYS">
+    <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefHeight="407.0" prefWidth="781.0" VBox.vgrow="ALWAYS">
       <children>
             <Label fx:id="caloriesLabel" layoutX="25.0" layoutY="11.0" text="Calories per 100g:">
                <font>
@@ -107,18 +107,24 @@
                   <Font size="16.0" />
                </font>
             </Label>
-            <Button layoutX="740.0" layoutY="498.0" mnemonicParsing="false" onAction="#handleCancel" text="Cancel" />
-            <Label layoutX="555.0" layoutY="11.0" text="Servings:">
+            <Button layoutX="733.0" layoutY="380.0" mnemonicParsing="false" onAction="#handleCancel" text="Cancel" />
+            <Label layoutX="523.0" layoutY="11.0" text="Servings:">
                <font>
                   <Font size="16.0" />
                </font>
             </Label>
-            <ScrollPane layoutX="21.0" layoutY="151.0" prefHeight="336.0" prefWidth="763.0">
+            <ScrollPane layoutX="21.0" layoutY="151.0" prefHeight="220.0" prefWidth="764.0">
                <content>
-                  <VBox fx:id="ingredientsContainer" prefHeight="324.0" prefWidth="759.0" />
+                  <VBox fx:id="ingredientsContainer" prefHeight="218.0" prefWidth="732.0" />
                </content>
             </ScrollPane>
-            <TextField fx:id="servingsField" layoutX="635.0" layoutY="11.0" onAction="#handleServingsChange" prefHeight="26.0" prefWidth="30.0" />
+            <TextField fx:id="servingsField" layoutX="607.0" layoutY="10.0" onAction="#handleServingsChange" prefHeight="26.0" prefWidth="30.0" />
+            <Label layoutX="523.0" layoutY="43.0" text="Calories per recipe:">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Label>
+            <TextField fx:id="caloriesRecipe" layoutX="676.0" layoutY="43.0" onAction="#handleCaloriesRecipe" prefHeight="26.0" prefWidth="82.0" />
       </children>
     </AnchorPane>
   </children>
