@@ -169,7 +169,7 @@ public class CreateRecipeCtrl {
 
             // build Ingredients List (throws Exception if invalid)
             List<Ingredient> ingredients = buildIngredientsList(recipe);
-            if (ingredients == null) return; // validation failed inside helper
+            if (ingredients == null) return; // validation failed inside helpera
             recipe.setIngredients(ingredients);
 
             if (servings != null) {

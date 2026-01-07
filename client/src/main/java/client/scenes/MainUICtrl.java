@@ -29,6 +29,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class MainUICtrl {
 
@@ -62,6 +63,7 @@ public class MainUICtrl {
 
     private final ServerUtils server;
     private final MainCtrl mainCtrl;
+    private ServerService serverService;
 
     /**
      * A constructor for the MainUI Controller class, using dependency injection
@@ -72,6 +74,11 @@ public class MainUICtrl {
     public MainUICtrl (ServerUtils server, MainCtrl mainCtrl) {
         this.server = server;
         this.mainCtrl = mainCtrl;
+        this.serverService = new RealServerService();
+    }
+
+    public void setServerService(ServerService serverService) {
+        this.serverService = serverService;
     }
 
     /**
@@ -300,6 +307,7 @@ public class MainUICtrl {
     public Recipe getSelectedRecipe () {
         return selectedRecipe;
     }
+
     @FXML
     public void downloadRecipe() {
         int index = recipeListView.getSelectionModel().getSelectedIndex();
@@ -341,6 +349,27 @@ public class MainUICtrl {
             fw.write(content);
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    @FXML
+    public void cloneRecipe(){
+        int index = recipeListView.getSelectionModel().getSelectedIndex();
+        if (index < 0 || index >= currentRecipes.size()) return;
+        Recipe selectedRecipe = currentRecipes.get(index);
+
+        TextInputDialog dialog = new TextInputDialog("Copy of " + selectedRecipe.getName());
+        dialog.setTitle("Clone Recipe");
+        dialog.setHeaderText("Create a new copy");
+        dialog.setContentText("Enter a name for the new recipe");
+
+        Optional<String> result = dialog.showAndWait();
+
+        if(result.isPresent()){
+            String newName = result.get();
+            Recipe cloneRecipe =  new Recipe(selectedRecipe);
+            cloneRecipe.setName(newName);
+            serverService.sendRecipe(cloneRecipe);
         }
     }
 
