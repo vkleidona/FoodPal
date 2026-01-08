@@ -418,13 +418,19 @@ public class MainUICtrl {
             }
         }
 
-        List<Recipe> recipes = new ArrayList<>();
+        List<Recipe> recipes = null;
         for (String term : trimmedRecipeTerms) {
-            recipes.addAll(server.searchRecipesByName(term));
+            List<Recipe> termResults = server.searchRecipesByTerm(term);
 
-            recipes.addAll(server.searchRecipesByIngredient(term));
+            if (recipes == null) {
+                recipes = termResults;
+            } else {
+                recipes.retainAll(termResults);
+            }
 
-            recipes.addAll(server.searchRecipesByInstruction(term));
+//            recipes.addAll(server.searchRecipesByName(term));
+//            recipes.addAll(server.searchRecipesByIngredient(term));
+//            recipes.addAll(server.searchRecipesByInstruction(term));
         }
         currentRecipes = recipes;
 

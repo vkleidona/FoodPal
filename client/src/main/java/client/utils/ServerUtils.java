@@ -133,6 +133,14 @@ public class ServerUtils {
                 .get(new GenericType<List<Recipe>>() {});
     }
 
+    public List<Recipe> searchRecipesByTerm(String term){
+        return ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER).path("api/recipes/searchByTerm")
+                .queryParam("keyword", term)
+                .request(APPLICATION_JSON)
+                .get(new GenericType<List<Recipe>>() {});
+    }
+
     public FoodItem addFoodItem(FoodItem foodItem) {
         return ClientBuilder.newClient(new ClientConfig())
                 .target(SERVER).path("api/fooditems")

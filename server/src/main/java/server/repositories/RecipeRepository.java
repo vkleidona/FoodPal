@@ -22,4 +22,13 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long> {
     @Query("SELECT DISTINCT r FROM Recipe AS r JOIN r.instructions AS instr " +
             "WHERE LOWER(instr) LIKE LOWER(CONCAT('%', :instructionTerm, '%'))")
     List<Recipe> findAllByInstruction(@Param("instructionTerm") String instructionTerm);
+
+    @Query("SELECT DISTINCT r FROM Recipe AS r " +
+            "JOIN r.ingredients AS i " +
+            "JOIN i.foodType AS f " +
+            "JOIN r.instructions AS instr " +
+            "WHERE LOWER(r.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(f.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(instr) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    List<Recipe> findAllByTerm(@Param("keyword") String keyword);
 }
