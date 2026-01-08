@@ -68,6 +68,7 @@
                <Font size="14.0" />
             </font>
          </Label>
+         <Button layoutX="372.0" layoutY="493.0" mnemonicParsing="false" onAction="#cloneRecipe" prefHeight="25.0" prefWidth="74.0" text="Clone" />
 
         </AnchorPane>
     </center>
