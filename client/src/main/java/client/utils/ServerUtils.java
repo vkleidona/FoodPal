@@ -102,6 +102,10 @@ public class ServerUtils {
                 get(FoodItem.class);
     }
 
+    /**
+     * Gets all recipes in the database
+     * @return List <Recipe> - returns a List of all recipes
+     */
     public List<Recipe> getAllRecipes () {
         return ClientBuilder.newClient(new ClientConfig()).
                 target(SERVER).path("api/recipes")
