@@ -125,6 +125,14 @@ public class ServerUtils {
                 .get(new GenericType<List<Recipe>>() {});
     }
 
+    public List<Recipe> searchRecipesByInstruction(String instructionTerm){
+        return ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER).path("api/recipes/searchByInstruction")
+                .queryParam("instructionTerm", instructionTerm)
+                .request(APPLICATION_JSON)
+                .get(new GenericType<List<Recipe>>() {});
+    }
+
     public FoodItem addFoodItem(FoodItem foodItem) {
         return ClientBuilder.newClient(new ClientConfig())
                 .target(SERVER).path("api/fooditems")

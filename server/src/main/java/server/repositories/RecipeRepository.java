@@ -16,7 +16,10 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long> {
     // find recipes which contain ingredient where the name of that ingredient is the same as
     // the name entered in the search.
     @Query("SELECT DISTINCT r FROM Recipe AS r JOIN r.ingredients AS i JOIN i.foodType AS f " +
-            "WHERE LOWER(f.name) LIKE LOWER(:ingredientName)")
+            "WHERE LOWER(f.name) LIKE LOWER(CONCAT('%', :ingredientName, '%'))")
     List<Recipe> findAllByIngredientName(@Param("ingredientName") String ingredientName);
 
+    @Query("SELECT DISTINCT r FROM Recipe AS r JOIN r.instructions AS instr " +
+            "WHERE LOWER(instr) LIKE LOWER(CONCAT('%', :instructionTerm, '%'))")
+    List<Recipe> findAllByInstruction(@Param("instructionTerm") String instructionTerm);
 }

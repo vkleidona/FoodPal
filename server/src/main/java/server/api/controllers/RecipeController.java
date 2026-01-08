@@ -136,5 +136,10 @@ public class RecipeController {
         return recipeRepository.findAllByIngredientName(ingredientName);
     }
 
+    @GetMapping("/searchByInstruction")
+    public List<Recipe> searchRecipesByInstruction(@RequestParam String instructionTerm) {
+        return recipeRepository.findAllByInstruction(instructionTerm);
+    }
+
 
 }
