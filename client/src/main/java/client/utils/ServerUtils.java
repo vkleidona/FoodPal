@@ -111,8 +111,16 @@ public class ServerUtils {
 
     public List<Recipe> searchRecipesByName(String recipeName) {
         return ClientBuilder.newClient(new ClientConfig())
-                .target(SERVER).path("api/recipes/search")
-                .queryParam("searchQuery", recipeName)
+                .target(SERVER).path("api/recipes/searchByName")
+                .queryParam("name", recipeName)
+                .request(APPLICATION_JSON)
+                .get(new GenericType<List<Recipe>>() {});
+    }
+
+    public List<Recipe> searchRecipesByIngredient(String name){
+        return ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER).path("api/recipes/searchByIngredient")
+                .queryParam("ingredientName", name)
                 .request(APPLICATION_JSON)
                 .get(new GenericType<List<Recipe>>() {});
     }

@@ -126,9 +126,14 @@ public class RecipeController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/search")
-    public List<Recipe> searchRecipes(@RequestParam String searchQuery) {
-        return recipeRepository.findAllByName(searchQuery);
+    @GetMapping("/searchByName")
+    public List<Recipe> searchRecipesByName(@RequestParam String name) {
+        return recipeRepository.findAllByName(name);
+    }
+
+    @GetMapping("/searchByIngredient")
+    public List<Recipe> searchRecipesByIngredient(@RequestParam String ingredientName) {
+        return recipeRepository.findAllByIngredientName(ingredientName);
     }
 
 

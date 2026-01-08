@@ -421,6 +421,8 @@ public class MainUICtrl {
         List<Recipe> recipes = new ArrayList<>();
         for (String term : trimmedRecipeTerms) {
             recipes.addAll(server.searchRecipesByName(term));
+
+            recipes.addAll(server.searchRecipesByIngredient(term));
         }
         currentRecipes = recipes;
 
