@@ -7,6 +7,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import org.springframework.http.HttpStatus;
 import recipes.FoodItem;
 
 public class AddFoodItemCtrl {
@@ -71,7 +72,16 @@ public class AddFoodItemCtrl {
 
             // Save to server
             if (editingItem == null) {
-                serverUtils.addFoodItem(newItem);
+                try {
+                    serverUtils.addFoodItem(newItem);
+                } catch (jakarta.ws.rs.ClientErrorException e) {
+                    if (e.getResponse().getStatus() == HttpStatus.CONFLICT.value()) {
+                        Alert invalidInput = new Alert(Alert.AlertType.ERROR);
+                        invalidInput.setTitle("Duplicate Name");
+                        invalidInput.setContentText("A food item with this name already exists.");
+                        invalidInput.showAndWait();
+                    }
+                }
             } else {
                 try {
                     FoodItem updated = serverUtils.updateFoodItem(editingItem.getId(), newItem);

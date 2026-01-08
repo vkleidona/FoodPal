@@ -427,10 +427,6 @@ public class MainUICtrl {
             } else {
                 recipes.retainAll(termResults);
             }
-
-//            recipes.addAll(server.searchRecipesByName(term));
-//            recipes.addAll(server.searchRecipesByIngredient(term));
-//            recipes.addAll(server.searchRecipesByInstruction(term));
         }
         currentRecipes = recipes;
 

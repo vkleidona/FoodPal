@@ -20,7 +20,7 @@
             <Button fx:id="minimizeButton" text="_" />
             <Button fx:id="maximizeButton" text="[]" />
             <Button fx:id="exitButton" text="X" />
-         <TextField fx:id="RecipeSearchBar" onAction="#searchForRecipe" prefHeight="26.0" prefWidth="534.0" promptText="Search for recipes" />
+         <TextField fx:id="RecipeSearchBar" onAction="#searchForRecipe" prefHeight="26.0" prefWidth="534.0" promptText="Search for recipes, for complex searches: use comma's so seperate keywords" />
         </HBox>
     </top>
 
