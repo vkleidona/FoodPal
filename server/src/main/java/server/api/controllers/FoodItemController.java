@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import recipes.FoodItem;
 import server.repositories.FoodItemRepository;
 
-import java.lang.annotation.Repeatable;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,10 +21,22 @@ public class FoodItemController {
     @Autowired
     private SimpMessagingTemplate messageTemplate;
 
-    public FoodItemController(FoodItemRepository repo) {
+    /**
+     * A constructor for the FoodItemController class
+     * @param repo - the repository which is to be saved
+     * @param messageTemplate - the communication tool to push server changes to the client
+     */
+    @Autowired
+    public FoodItemController(FoodItemRepository repo, SimpMessagingTemplate messageTemplate) {
         this.repo = repo;
+        this.messageTemplate = messageTemplate;
     }
 
+    /**
+     * Creates a new FoodItem
+     * @param foodItem - the FoodItem item to be saved
+     * @return ResponseEntity <FoodItem> - a response containing the FoodItem and the status
+     */
     @PostMapping(path = { "", "/" })
     public ResponseEntity<FoodItem> addFoodItem(@RequestBody FoodItem foodItem) {
 
@@ -39,11 +50,20 @@ public class FoodItemController {
         return ResponseEntity.ok(saved);
     }
 
+    /**
+     * Retrieves all FoodItems from the database
+     * @return List <FoodItem> - a List of all FoodItems from the database
+     */
     @GetMapping(path = { "", "/"})
     public List<FoodItem> getAllFoodItems() {
         return repo.findAllByOrderByNameAsc();
     }
 
+    /**
+     * Deletes a FoodItem from the database
+     * @param id - the id of the FoodItem entity to be deleted
+     * @return ResponseEntity - returns whether the method was a success or a failure
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteFoodItem(@PathVariable Long id) {
         if (!repo.existsById(id)) {
@@ -55,8 +75,16 @@ public class FoodItemController {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * Saves updates to FoodItem in the database
+     * @param id - the id of the FoodItem to be saved
+     * @param updatedItem - the new version of the FoodItem
+     * @return ResponseEntity - returns either the updated FoodItem
+     * or a warning for unsuccessful operation
+     */
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateFoodItem(@PathVariable Long id, @RequestBody FoodItem updatedItem) {
+    public ResponseEntity<?> updateFoodItem(@PathVariable Long id,
+                                            @RequestBody FoodItem updatedItem) {
 
         Optional<FoodItem> foodItem = repo.findById(id);
         if (foodItem.isEmpty()) {
@@ -64,7 +92,8 @@ public class FoodItemController {
         }
 
         if (repo.existsByNameAndIdNot(updatedItem.getName(), id)) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("A fooditem with the same already exists");
+            return ResponseEntity.status(HttpStatus.CONFLICT).
+                    body("A food item with the same already exists");
         }
 
         FoodItem item = foodItem.get();
@@ -76,7 +105,7 @@ public class FoodItemController {
 
         FoodItem saved = repo.save(item);
         messageTemplate.convertAndSend("/topic/food_items", saved);
-        messageTemplate.convertAndSend("/topic/food_items/" + item.getId(), saved);
+        messageTemplate.convertAndSend("/topic/food_items/" + saved.getId(), saved);
         return ResponseEntity.ok(saved);
     }
 
