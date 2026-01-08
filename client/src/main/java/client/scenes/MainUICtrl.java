@@ -29,6 +29,7 @@ import jakarta.ws.rs.core.Response;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MainUICtrl {
@@ -408,7 +409,19 @@ public class MainUICtrl {
             return;
         }
 
-        List<Recipe> recipes = server.searchRecipesByName(searchQuery);
+        String[] recipeTerms = searchQuery.split(",");
+        List<String> trimmedRecipeTerms = new ArrayList<>();
+        for(String term : recipeTerms){
+            String editedTerm = term.trim();
+            if (!editedTerm.isEmpty()){
+                trimmedRecipeTerms.add(editedTerm);
+            }
+        }
+
+        List<Recipe> recipes = new ArrayList<>();
+        for (String term : trimmedRecipeTerms) {
+            recipes.addAll(server.searchRecipesByName(term));
+        }
         currentRecipes = recipes;
 
         recipeListView.getSelectionModel().clearSelection();
