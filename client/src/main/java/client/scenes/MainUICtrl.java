@@ -1,8 +1,13 @@
 package client.scenes;
 
+import client.network.WebSocketService;
 import client.utils.ServerUtils;
 import jakarta.inject.Inject;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
+import javafx.collections.ObservableSet;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -57,7 +62,7 @@ public class MainUICtrl {
     private final Client client = ClientBuilder.newClient();
     private final String recipeEndpointUrl = "http://localhost:8080/api/recipes";
 
-    private List<Recipe> currentRecipes;
+    private ObservableList<Recipe> currentRecipes;
     private Recipe selectedRecipe;
 
     private final ServerUtils server;
@@ -79,8 +84,16 @@ public class MainUICtrl {
      */
     @FXML
     public void initialize() {
-        loadRecipes();
 
+        // The recipe list matches the initial server one
+        this.currentRecipes = WebSocketService.getInstance().getMasterRecipeList();
+        // Immediately set currentRecipes to match the changes from the server
+        // The recipe list view gets updated every time a change from the server is sensed
+        currentRecipes.addListener((ListChangeListener<Recipe>) c -> {
+            Platform.runLater(this::updateRecipeListView);
+        });
+
+        initialRecipeFetch();
         // Sidebar selection updates main UI
         recipeListView.getSelectionModel().selectedIndexProperty().addListener((obs, oldVal, newVal) -> {
             int index = newVal.intValue();
@@ -97,7 +110,7 @@ public class MainUICtrl {
             Stage stage = (Stage) exitButton.getScene().getWindow();
             stage.setMaximized(!stage.isMaximized());
         });
-        refreshButton.setOnAction(e -> loadRecipes());
+        refreshButton.setOnAction(e -> initialRecipeFetch());
 
         // Bottom sidebar buttons
         addRecipeButton.setOnAction(e -> openCreateRecipeUI());
@@ -126,27 +139,45 @@ public class MainUICtrl {
         foodItemButton.setOnAction(e -> handleGoToFoodItems());
     }
 
-    private void loadRecipes() {
-        try {
-            currentRecipes = server.getAllRecipes();
+    /**
+     * Loads the recipes initially from the master list using a standard GET request
+     */
+    public void initialRecipeFetch () {
+        // Gets all initial recipes from the server
+        List <Recipe> fetched = server.getAllRecipes();
 
-            recipeListView.getItems().clear();
-            for (Recipe r : currentRecipes) {
-                recipeListView.getItems().add(r.getName());
+        // The master recipe list is set to match the server ones
+        // The initial display of the recipes is also triggered
+        Platform.runLater(() -> WebSocketService.getInstance().
+                getMasterRecipeList().setAll(fetched));
+        if (!currentRecipes.isEmpty()) {
+            selectedRecipe = currentRecipes.getFirst();
+            recipeListView.getSelectionModel().select(0);
+            displayRecipe(currentRecipes.getFirst());
+        } else {
+            clearRecipeDisplay();
+        }
+    }
+
+    /**
+     * Refreshes the List View
+     */
+    public void updateRecipeListView () {
+        // Updates the sidebar when it senses changes in the database
+        recipeListView.getItems().clear();
+        for (Recipe r : currentRecipes) {
+            recipeListView.getItems().add(r.getName());
+        }
+
+        // Updates the recipe with all of its parameters
+        if (selectedRecipe != null) {
+            for (Recipe currentRecipe : currentRecipes) {
+                if (currentRecipe.getId().equals(selectedRecipe.getId())) {
+                    selectedRecipe = currentRecipe;
+                    displayRecipe(selectedRecipe);
+                    break;
+                }
             }
-
-            // Select first recipe if exists
-            if (!currentRecipes.isEmpty()) {
-                selectedRecipe = currentRecipes.getFirst();
-                recipeListView.getSelectionModel().select(0);
-                displayRecipe(currentRecipes.getFirst());
-            } else {
-                clearRecipeDisplay();
-            }
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
@@ -203,7 +234,6 @@ public class MainUICtrl {
 
                     if (serverResponse.getStatus() == 204) {
                         System.out.println("Recipe deleted successfully");
-                        loadRecipes(); // refresh sidebar
                     } else {
                         System.out.println("Failed to delete recipe: " + serverResponse.getStatus());
                     }

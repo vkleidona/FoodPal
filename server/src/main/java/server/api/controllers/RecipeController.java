@@ -99,7 +99,7 @@ public class RecipeController {
     public ResponseEntity<Void> deleteRecipe(@PathVariable Long id) {
         if (recipeRepository.existsById(id)) {
             recipeRepository.deleteById(id);
-            messageTemplate.convertAndSend("/topic/recipes", "DELETED_"+id);
+            messageTemplate.convertAndSend("/topic/recipes/delete", id);
             return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.notFound().build();

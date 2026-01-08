@@ -71,7 +71,7 @@ public class FoodItemController {
         }
 
         repo.deleteById(id);
-        messageTemplate.convertAndSend("/topic/food_items", "DELETED_"+id);
+        messageTemplate.convertAndSend("/topic/food_items/delete", id);
         return ResponseEntity.ok().build();
     }
 
