@@ -54,6 +54,8 @@ public class MainUICtrl {
 
     @FXML private Label servingsLabel;
 
+    @FXML private TextField RecipeSearchBar;
+
     private final Client client = ClientBuilder.newClient();
     private final String recipeEndpointUrl = "http://localhost:8080/api/recipes";
 
@@ -385,6 +387,26 @@ public class MainUICtrl {
         int selectedIndex = recipeListView.getSelectionModel().getSelectedIndex();
         if (selectedIndex >= 0 && selectedIndex < currentRecipes.size()) {
             selectedRecipe = currentRecipes.get(selectedIndex);
+        }
+    }
+
+    public void searchForRecipe() {
+        String searchQuery = RecipeSearchBar.getText().trim();
+
+        if (searchQuery.isEmpty()) {
+            recipeListView.getSelectionModel().clearSelection();
+            recipeListView.getItems().clear();
+            currentRecipes.clear();
+            return;
+        }
+
+        List<Recipe> recipes = server.searchRecipesByName(searchQuery);
+        currentRecipes = recipes;
+
+        recipeListView.getSelectionModel().clearSelection();
+        recipeListView.getItems().clear();
+        for (Recipe r : recipes) {
+            recipeListView.getItems().add(r.getName());
         }
     }
 

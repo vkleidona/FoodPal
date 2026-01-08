@@ -102,10 +102,18 @@ public class ServerUtils {
                 get(FoodItem.class);
     }
 
-    public List<Recipe> getAllRecipes () {
+    public List<Recipe> getAllRecipes() {
         return ClientBuilder.newClient(new ClientConfig()).
                 target(SERVER).path("api/recipes")
                 .request(MediaType.APPLICATION_JSON)
+                .get(new GenericType<List<Recipe>>() {});
+    }
+
+    public List<Recipe> searchRecipesByName(String recipeName) {
+        return ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER).path("api/recipes/search")
+                .queryParam("searchQuery", recipeName)
+                .request(APPLICATION_JSON)
                 .get(new GenericType<List<Recipe>>() {});
     }
 
