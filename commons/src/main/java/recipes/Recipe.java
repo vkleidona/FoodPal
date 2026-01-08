@@ -68,6 +68,23 @@ public class Recipe implements Serializable {
         this.instructions = new ArrayList<>();
     }
 
+    public Recipe(Recipe other){
+        this.name = other.name;
+
+        this.ingredients = new ArrayList<>();
+        List<Ingredient> old = other.getIngredients();
+        if (old != null){
+            for(int i=0; i < old.size(); i++){
+                Ingredient current = old.get(i);
+                Ingredient copy = new Ingredient(current.getFoodType(), current.getQuantity(), current.getMeasurement());
+                copy.setRecipe(this);
+                this.ingredients.add(copy);
+            }
+        }
+        this.instructions = new ArrayList<>(other.getInstructions()) ;
+        this.servings = servings;
+    }
+
     public Long getId() {
         return id;
     }
