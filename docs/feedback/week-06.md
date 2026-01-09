@@ -47,4 +47,5 @@ Quick Summary: Good
 - 2 team members absent with no reason given.
 - Those that did appear have distributed work accordingly.
 - It seems relatively speaking contribution is fairly balanced.
+- One still present member has failed this weeks code contributions.
 
