@@ -21,6 +21,7 @@ import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 //import javafx.stage.FileChooser;
@@ -40,6 +41,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -69,6 +71,8 @@ public class MainUICtrl {
     @FXML private VBox instructionsVBox;
 
     @FXML private Label servingsLabel;
+
+    @FXML private TextField RecipeSearchBar;
 
     private final Client client = ClientBuilder.newClient();
     private final String recipeEndpointUrl = "http://localhost:8080/api/recipes";
@@ -178,9 +182,6 @@ public class MainUICtrl {
         recipeListView.setItems(FXCollections.observableArrayList(favorites));
     }
 
-
-
-
     /**
      * A constructor for the MainUI Controller class, using dependency injection
      * @param server - the injected instance of the ServerUtils
@@ -259,6 +260,14 @@ public class MainUICtrl {
             }
         });
         foodItemButton.setOnAction(e -> handleGoToFoodItems());
+
+
+        RecipeSearchBar.setOnKeyPressed(keyEvent -> {
+                    if (keyEvent.getCode() == KeyCode.ESCAPE) {
+                        RecipeSearchBar.clear();
+                        loadRecipes();
+                    }
+                });
 
         // Tell the list: "When you have a Recipe, just show its name (and maybe a star!)"
         recipeListView.setCellFactory(param -> new ListCell<Recipe>() {
@@ -583,6 +592,48 @@ public class MainUICtrl {
         if (selectedIndex >= 0 && selectedIndex < currentRecipes.size()) {
             selectedRecipe = currentRecipes.get(selectedIndex);
         }
+    }
+
+    public void searchForRecipe() {
+        String searchQuery = RecipeSearchBar.getText().trim();
+
+        if (searchQuery.isEmpty()) {
+            recipeListView.getSelectionModel().clearSelection();
+            recipeListView.getItems().clear();
+            currentRecipes.clear();
+            return;
+        }
+
+        String[] recipeTerms = searchQuery.split(",");
+        List<String> trimmedRecipeTerms = new ArrayList<>();
+        for(String term : recipeTerms){
+            String editedTerm = term.trim();
+            if (!editedTerm.isEmpty()){
+                trimmedRecipeTerms.add(editedTerm);
+            }
+        }
+
+        List<Recipe> recipes = null;
+        for (String term : trimmedRecipeTerms) {
+            List<Recipe> termResults = server.searchRecipesByTerm(term);
+
+            if (recipes == null) {
+                recipes = termResults;
+            } else {
+                recipes.retainAll(termResults);
+            }
+        }
+
+        if (favoritesTab.isSelected()) {
+            recipes = recipes.stream()
+                    .filter(r -> favoriteRecipeIds.contains(r.getId()))
+                    .collect(Collectors.toList());
+        }
+
+        currentRecipes = recipes;
+
+        recipeListView.getSelectionModel().clearSelection();
+        recipeListView.getItems().setAll(currentRecipes);
     }
 
 }

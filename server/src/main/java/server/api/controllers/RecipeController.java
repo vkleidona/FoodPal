@@ -164,4 +164,26 @@ public class RecipeController {
         });
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/searchByName")
+    public List<Recipe> searchRecipesByName(@RequestParam String name) {
+        return recipeRepository.findAllByName(name);
+    }
+
+    @GetMapping("/searchByIngredient")
+    public List<Recipe> searchRecipesByIngredient(@RequestParam String ingredientName) {
+        return recipeRepository.findAllByIngredientName(ingredientName);
+    }
+
+    @GetMapping("/searchByInstruction")
+    public List<Recipe> searchRecipesByInstruction(@RequestParam String instructionTerm) {
+        return recipeRepository.findAllByInstruction(instructionTerm);
+    }
+
+    @GetMapping("/searchByTerm")
+    public List<Recipe> searchRecipesByTerm(@RequestParam String keyword) {
+        return recipeRepository.findAllByTerm(keyword);
+    }
+
+
 }
