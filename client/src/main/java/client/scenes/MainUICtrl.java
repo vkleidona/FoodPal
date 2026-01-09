@@ -2,12 +2,18 @@ package client.scenes;
 
 import client.network.WebSocketService;
 import client.utils.ServerUtils;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
+
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableSet;
+
+import javafx.collections.FXCollections;
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -30,14 +36,19 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 //import java.io.File;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.Optional;
 
 public class MainUICtrl {
 
-    @FXML private ListView<String> recipeListView;
+    @FXML private ListView<Recipe> recipeListView; 
 
     @FXML private Button addRecipeButton;
     @FXML private Button deleteRecipeButton;
@@ -67,6 +78,108 @@ public class MainUICtrl {
 
     private final ServerUtils server;
     private final MainCtrl mainCtrl;
+    private ServerService serverService;
+
+    private Set<Long> favoriteRecipeIds = new HashSet<>();
+    private List<Recipe> allLoadedRecipes = new ArrayList<>();
+
+    // File path for saving favorites
+    private static final File FAVORITES_FILE = new File("favorites.json");
+
+    /**
+     * reads a list of favorite recipe IDs from a local file (favorites.json)
+     * and loads them into the application's memory.
+     */
+    private void loadFavorites() {
+        if (!FAVORITES_FILE.exists()) return;
+
+        // Creates a new Jackson ObjectMapper instance, the tool used to
+        // convert between Java objects and JSON text
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            // Reads the file content and converts the JSON data into a Set of Long integers.
+            // The TypeReference is required because Set<Long> is a generic type,
+            // and Java needs this extra help to understand exactly what type of collection to create.
+            favoriteRecipeIds = mapper.readValue(FAVORITES_FILE, new TypeReference<Set<Long>>(){});
+        } catch (IOException e) {
+            e.printStackTrace(); // Handle error properly in production
+        }
+    }
+
+    /**
+     *  takes the current set of favorite recipe IDs from memory and
+     *  writes them into the favorites.json file.
+     */
+    private void saveFavorites() {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            mapper.writeValue(FAVORITES_FILE, favoriteRecipeIds);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML private ToggleButton favoriteButton;
+    @FXML private ToggleButton allRecipesTab;
+    @FXML private ToggleButton favoritesTab;
+
+    @FXML
+    public void toggleFavorite() {
+        Recipe current = recipeListView.getSelectionModel().getSelectedItem();
+        if (current == null) return;
+
+        if (favoriteButton.isSelected()) {
+            favoriteRecipeIds.add(current.getId());
+            favoriteButton.setText("★");
+        } else {
+            boolean removed = favoriteRecipeIds.remove(current.getId());
+            favoriteButton.setText("☆");
+        }
+
+        saveFavorites();
+
+        if (favoritesTab.isSelected()) {
+            // Re-calculate the list of favorites
+            List<Recipe> favorites = allLoadedRecipes.stream()
+                    .filter(r -> favoriteRecipeIds.contains(r.getId()))
+                    .collect(Collectors.toList());
+
+            // Set the new list (this physically removes the item from the UI)
+            recipeListView.setItems(FXCollections.observableArrayList(favorites));
+
+            // Optional: Select the first item or clear selection so the details panel doesn't look weird
+            if (!favorites.isEmpty()) {
+                recipeListView.getSelectionModel().select(0);
+            } else {
+                // clear details panel if list is empty
+            }
+        } else {
+            recipeListView.refresh(); // Just redraw the stars if in "All Recipes"
+        }
+    }
+
+
+    @FXML
+    public void showAllRecipes() {
+        recipeListView.setItems(FXCollections.observableArrayList(allLoadedRecipes));
+    }
+
+    @FXML
+    public void showFavoriteRecipes() {
+
+        List<Recipe> favorites = new ArrayList<>();
+        for (Recipe r : allLoadedRecipes) {
+            if (favoriteRecipeIds.contains(r.getId())) {
+                favorites.add(r);
+            } else {
+
+            }
+        }
+        recipeListView.setItems(FXCollections.observableArrayList(favorites));
+    }
+
+
+
 
     /**
      * A constructor for the MainUI Controller class, using dependency injection
@@ -77,6 +190,11 @@ public class MainUICtrl {
     public MainUICtrl (ServerUtils server, MainCtrl mainCtrl) {
         this.server = server;
         this.mainCtrl = mainCtrl;
+        this.serverService = new RealServerService();
+    }
+
+    public void setServerService(ServerService serverService) {
+        this.serverService = serverService;
     }
 
     /**
@@ -84,6 +202,7 @@ public class MainUICtrl {
      */
     @FXML
     public void initialize() {
+<<<<<<< client/src/main/java/client/scenes/MainUICtrl.java
 
         // The recipe list matches the initial server one
         this.currentRecipes = WebSocketService.getInstance().getMasterRecipeList();
@@ -94,12 +213,19 @@ public class MainUICtrl {
         });
 
         initialRecipeFetch();
+
+        loadFavorites();
+
+        allRecipesTab.setSelected(true);
+
         // Sidebar selection updates main UI
-        recipeListView.getSelectionModel().selectedIndexProperty().addListener((obs, oldVal, newVal) -> {
-            int index = newVal.intValue();
-            if (index >= 0 && index < currentRecipes.size()) {
-                selectedRecipe = currentRecipes.get(index);
-                displayRecipe(selectedRecipe);
+        recipeListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                selectedRecipe = newVal;
+                displayRecipe(newVal);
+                boolean isFav = favoriteRecipeIds.contains(newVal.getId());
+                favoriteButton.setSelected(isFav);
+                favoriteButton.setText(isFav ? "★" : "☆");
             }
         });
 
@@ -119,24 +245,39 @@ public class MainUICtrl {
         // Placeholders for edit buttons
         editNameButton.setOnAction(e -> handleEditName());
         editIngredientsButton.setOnAction(e -> {
-            int selectedIndex = recipeListView.getSelectionModel().getSelectedIndex();
-            if (selectedIndex >= 0 && selectedIndex < currentRecipes.size()) {
-                handleEditIngredients(currentRecipes.get(selectedIndex));
-            }
-            else{
+            if (selectedRecipe != null) {
+                handleEditIngredients(selectedRecipe);
+            } else {
                 System.out.println("Please select a recipe to edit");
             }
         });
+
         editInstructionsButton.setOnAction(e -> {
-            int selectedIndex = recipeListView.getSelectionModel().getSelectedIndex();
-            if (selectedIndex >= 0 && selectedIndex < currentRecipes.size()) {
-                handleEditInstructions(currentRecipes.get(selectedIndex));
-            }
-            else{
+            if (selectedRecipe != null) {
+                handleEditInstructions(selectedRecipe);
+            } else {
                 System.out.println("Please select a recipe to edit");
             }
         });
         foodItemButton.setOnAction(e -> handleGoToFoodItems());
+
+        // Tell the list: "When you have a Recipe, just show its name (and maybe a star!)"
+        recipeListView.setCellFactory(param -> new ListCell<Recipe>() {
+            @Override
+            protected void updateItem(Recipe item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty || item == null || item.getName() == null) {
+                    setText(null);
+                } else {
+                    // Check if it's a favorite to add the star prefix
+                    boolean isFavorite = favoriteRecipeIds.contains(item.getId());
+                    String prefix = isFavorite ? "★ " : "";
+
+                    setText(prefix + item.getName());
+                }
+            }
+        });
     }
 
     /**
@@ -146,6 +287,7 @@ public class MainUICtrl {
         // Gets all initial recipes from the server
         List <Recipe> fetched = server.getAllRecipes();
 
+<<<<<<< client/src/main/java/client/scenes/MainUICtrl.java
         // The master recipe list is set to match the server ones
         // The initial display of the recipes is also triggered
         Platform.runLater(() -> WebSocketService.getInstance().
@@ -163,23 +305,37 @@ public class MainUICtrl {
      * Refreshes the List View
      */
     public void updateRecipeListView () {
-        // Updates the sidebar when it senses changes in the database
-        recipeListView.getItems().clear();
-        for (Recipe r : currentRecipes) {
-            recipeListView.getItems().add(r.getName());
-        }
+        
+        allLoadedRecipes.clear();
+        allLoadedRecipes.addAll(currentRecipes);
 
-        // Updates the recipe with all of its parameters
-        if (selectedRecipe != null) {
-            for (Recipe currentRecipe : currentRecipes) {
-                if (currentRecipe.getId().equals(selectedRecipe.getId())) {
-                    selectedRecipe = currentRecipe;
-                    displayRecipe(selectedRecipe);
-                    break;
+        if (favoritesTab.isSelected()) {
+            // If we are in Favorites tab, run the filter immediately!
+            showFavoriteRecipes();
+        } else {
+            // Only show all recipes if we are in "All Recipes" tab
+            // Updates the sidebar when it senses changes in the database
+            recipeListView.getItems().clear();
+            for (Recipe r : currentRecipes) {
+                recipeListView.getItems().add(r.getName());
+            }
+
+            // Updates the recipe with all of its parameters
+            if (selectedRecipe != null) {
+                for (Recipe currentRecipe : currentRecipes) {
+                    if (currentRecipe.getId().equals(selectedRecipe.getId())) {
+                        selectedRecipe = currentRecipe;
+                        displayRecipe(selectedRecipe);
+                        break;
+                    }
                 }
             }
         }
+
+            if (!recipeListView.getItems().isEmpty()) {
+            }
     }
+
 
     private void displayRecipe(Recipe recipe) {
         recipeNameLabel.setText(recipe.getName());
@@ -330,6 +486,7 @@ public class MainUICtrl {
     public Recipe getSelectedRecipe () {
         return selectedRecipe;
     }
+
     @FXML
     public void downloadRecipe() {
         int index = recipeListView.getSelectionModel().getSelectedIndex();
@@ -371,6 +528,27 @@ public class MainUICtrl {
             fw.write(content);
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    @FXML
+    public void cloneRecipe(){
+        int index = recipeListView.getSelectionModel().getSelectedIndex();
+        if (index < 0 || index >= currentRecipes.size()) return;
+        Recipe selectedRecipe = currentRecipes.get(index);
+
+        TextInputDialog dialog = new TextInputDialog("Copy of " + selectedRecipe.getName());
+        dialog.setTitle("Clone Recipe");
+        dialog.setHeaderText("Create a new copy");
+        dialog.setContentText("Enter a name for the new recipe");
+
+        Optional<String> result = dialog.showAndWait();
+
+        if(result.isPresent()){
+            String newName = result.get();
+            Recipe cloneRecipe =  new Recipe(selectedRecipe);
+            cloneRecipe.setName(newName);
+            serverService.sendRecipe(cloneRecipe);
         }
     }
 
