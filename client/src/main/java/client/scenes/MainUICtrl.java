@@ -263,11 +263,11 @@ public class MainUICtrl {
 
 
         RecipeSearchBar.setOnKeyPressed(keyEvent -> {
-                    if (keyEvent.getCode() == KeyCode.ESCAPE) {
-                        RecipeSearchBar.clear();
-                        loadRecipes();
-                    }
-                });
+            if (keyEvent.getCode() == KeyCode.ESCAPE) {
+                RecipeSearchBar.clear();
+                initialRecipeFetch();
+            }
+        });
 
         // Tell the list: "When you have a Recipe, just show its name (and maybe a star!)"
         recipeListView.setCellFactory(param -> new ListCell<Recipe>() {
@@ -630,7 +630,7 @@ public class MainUICtrl {
                     .collect(Collectors.toList());
         }
 
-        currentRecipes = recipes;
+        currentRecipes = (ObservableList<Recipe>) recipes;
 
         recipeListView.getSelectionModel().clearSelection();
         recipeListView.getItems().setAll(currentRecipes);
