@@ -68,6 +68,7 @@ public class RecipeController {
             } else {
                 foodItem = incoming;
                 foodItemRepository.save(foodItem);
+                //TODO: Fix to send a message
                 messageTemplate.convertAndSend("/topic/food_items", foodItem);
             }
 
@@ -78,6 +79,7 @@ public class RecipeController {
         Recipe saved = recipeRepository.save(recipe);
         MiniUpdate miniUpdate = new MiniUpdate (saved.getId(), saved.getName());
         messageTemplate.convertAndSend("/topic/recipes/" + saved.getId(), saved);
+        messageTemplate.convertAndSend("/topic/recipes/new", saved);
         messageTemplate.convertAndSend("/topic/recipes", miniUpdate);
         return ResponseEntity.ok(saved.getId());
     }

@@ -78,6 +78,14 @@ public class WebSocketService {
      * Subscribes the client to listen to the global channels - for the recipes and FoodItems
      */
     public void subscribeToGlobalTopics () {
+        subscribeToRecipesGlobal();
+        subscribeToFoodItemsGlobal();
+    }
+
+    /**
+     * Subscribes to the global updates to the list
+     */
+    public void subscribeToRecipesGlobal () {
         session.subscribe("/topic/recipes", new StompFrameHandler() {
             @Override
             public Type getPayloadType(StompHeaders headers) {
@@ -91,6 +99,37 @@ public class WebSocketService {
             }
         });
 
+        session.subscribe("/topic/recipes/delete", new StompFrameHandler() {
+            @Override
+            public Type getPayloadType(StompHeaders headers) {
+                return Long.class;
+            }
+
+            @Override
+            public void handleFrame(StompHeaders headers, Object payload) {
+                Long recipeID = (Long) payload;
+                Platform.runLater(() -> removeRecipeFromList(recipeID));
+            }
+        });
+
+        session.subscribe("/topic/recipes/new", new StompFrameHandler() {
+            @Override
+            public Type getPayloadType(StompHeaders headers) {
+                return Recipe.class;
+            }
+
+            @Override
+            public void handleFrame(StompHeaders headers, Object payload) {
+                Recipe recipe = (Recipe) payload;
+                Platform.runLater(() -> masterRecipeList.add(recipe));
+            }
+        });
+    }
+
+    /**
+     * Creates global subscriptions to the list of FoodItems
+     */
+    public void subscribeToFoodItemsGlobal () {
         session.subscribe("/topic/food_items", new StompFrameHandler() {
             @Override
             public Type getPayloadType(StompHeaders headers) {
@@ -115,19 +154,20 @@ public class WebSocketService {
                 Platform.runLater(() -> removeItemFromList(id));
             }
         });
-        session.subscribe("/topic/recipes/delete", new StompFrameHandler() {
+        session.subscribe("/topic/food_items/new", new StompFrameHandler() {
             @Override
             public Type getPayloadType(StompHeaders headers) {
-                return Long.class;
+                return FoodItem.class;
             }
 
             @Override
             public void handleFrame(StompHeaders headers, Object payload) {
-                Long recipeID = (Long) payload;
-                Platform.runLater(() -> removeRecipeFromList(recipeID));
+                FoodItem foodItem = (FoodItem) payload;
+                Platform.runLater(() -> masterFoodItemsList.add(foodItem));
             }
         });
     }
+
 
     /**
      * Synchronizes the FoodItem in the master list by replacing its name

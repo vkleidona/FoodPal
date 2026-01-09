@@ -149,6 +149,8 @@ public class MainUICtrl {
                     .filter(r -> favoriteRecipeIds.contains(r.getId()))
                     .collect(Collectors.toList());
 
+            unsubscribeFromRecipe();
+
             // Set the new list (this physically removes the item from the UI)
             recipeListView.setItems(FXCollections.observableArrayList(favorites));
 
@@ -222,10 +224,7 @@ public class MainUICtrl {
         // Sidebar selection updates main UI
         recipeListView.getSelectionModel().selectedItemProperty().
                 addListener((obs, oldVal, newVal) -> {
-                    if (recipeSubscription != null) {
-                        recipeSubscription.unsubscribe();
-                        recipeSubscription = null;
-                    }
+                    //unsubscribeFromRecipe();
                     if (newVal != null) {
                         selectedRecipe = newVal;
                         selectRecipe(newVal);
@@ -348,9 +347,7 @@ public class MainUICtrl {
         displayRecipe(selectedRecipe);
 
         // If we are currently viewing another recipe, unsubscribe from it
-        if (recipeSubscription != null) {
-            recipeSubscription.unsubscribe();
-        }
+        unsubscribeFromRecipe();
 
         recipeSubscription = WebSocketService.getInstance().
                 subscribeToRecipe(selectedRecipe.getId(), this::displayRecipe);
@@ -409,6 +406,7 @@ public class MainUICtrl {
 
                     if (serverResponse.getStatus() == 204) {
                         System.out.println("Recipe deleted successfully");
+                        unsubscribeFromRecipe();
                     } else {
                         System.out.println("Failed to delete recipe: " + serverResponse.getStatus());
                     }
@@ -422,7 +420,7 @@ public class MainUICtrl {
     /**
      * Handles the functionality of the Edit Name button
      */
-    private void handleEditName() {
+    public void handleEditName() {
 
         refreshSelectedRecipe();
 
@@ -656,5 +654,16 @@ public class MainUICtrl {
         recipeListView.getSelectionModel().clearSelection();
         recipeListView.getItems().setAll(currentRecipes);
     }
+
+    /**
+     * A method for unsubscribing from a recipe every time it is clicked
+     */
+    public void unsubscribeFromRecipe () {
+        if (this.recipeSubscription!= null) {
+            recipeSubscription.unsubscribe();
+            recipeSubscription = null;
+        }
+    }
+
 
 }
