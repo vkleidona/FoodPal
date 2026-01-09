@@ -48,7 +48,7 @@ import java.util.Optional;
 
 public class MainUICtrl {
 
-    @FXML private ListView<String> recipeListView; 
+    @FXML private ListView<Recipe> recipeListView;
 
     @FXML private Button addRecipeButton;
     @FXML private Button deleteRecipeButton;
@@ -140,7 +140,7 @@ public class MainUICtrl {
 
         if (favoritesTab.isSelected()) {
             // Re-calculate the list of favorites
-            List<Recipe> favorites = allLoadedRecipes.stream()
+            List<Recipe> favorites = currentRecipes.stream()
                     .filter(r -> favoriteRecipeIds.contains(r.getId()))
                     .collect(Collectors.toList());
 
@@ -161,14 +161,14 @@ public class MainUICtrl {
 
     @FXML
     public void showAllRecipes() {
-        recipeListView.setItems(FXCollections.observableArrayList(allLoadedRecipes));
+        recipeListView.setItems(FXCollections.observableArrayList(currentRecipes));
     }
 
     @FXML
     public void showFavoriteRecipes() {
 
         List<Recipe> favorites = new ArrayList<>();
-        for (Recipe r : allLoadedRecipes) {
+        for (Recipe r : currentRecipes) {
             if (favoriteRecipeIds.contains(r.getId())) {
                 favorites.add(r);
             } else {
@@ -303,9 +303,6 @@ public class MainUICtrl {
      * Refreshes the List View
      */
     public void updateRecipeListView () {
-        
-        allLoadedRecipes.clear();
-        allLoadedRecipes.addAll(currentRecipes);
 
         if (favoritesTab.isSelected()) {
             // If we are in Favorites tab, run the filter immediately!
@@ -313,10 +310,7 @@ public class MainUICtrl {
         } else {
             // Only show all recipes if we are in "All Recipes" tab
             // Updates the sidebar when it senses changes in the database
-            recipeListView.getItems().clear();
-            for (Recipe r : currentRecipes) {
-                recipeListView.getItems().add(r.getName());
-            }
+            recipeListView.getItems().setAll(currentRecipes);
 
             // Updates the recipe with all of its parameters
             if (selectedRecipe != null) {
@@ -329,9 +323,6 @@ public class MainUICtrl {
                 }
             }
         }
-
-            if (!recipeListView.getItems().isEmpty()) {
-            }
     }
 
 
