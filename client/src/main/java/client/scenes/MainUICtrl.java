@@ -26,6 +26,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 //import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.springframework.messaging.simp.stomp.StompSession;
 import recipes.FoodItem;
 import recipes.Recipe;
 import recipes.Ingredient;
@@ -85,7 +86,7 @@ public class MainUICtrl {
     private ServerService serverService;
 
     private Set<Long> favoriteRecipeIds = new HashSet<>();
-    private List<Recipe> allLoadedRecipes = new ArrayList<>();
+    private StompSession.Subscription recipeSubscription;
 
     // File path for saving favorites
     private static final File FAVORITES_FILE = new File("favorites.json");
@@ -219,15 +220,20 @@ public class MainUICtrl {
         allRecipesTab.setSelected(true);
 
         // Sidebar selection updates main UI
-        recipeListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null) {
-                selectedRecipe = newVal;
-                displayRecipe(newVal);
-                boolean isFav = favoriteRecipeIds.contains(newVal.getId());
-                favoriteButton.setSelected(isFav);
-                favoriteButton.setText(isFav ? "★" : "☆");
-            }
-        });
+        recipeListView.getSelectionModel().selectedItemProperty().
+                addListener((obs, oldVal, newVal) -> {
+                    if (recipeSubscription != null) {
+                        recipeSubscription.unsubscribe();
+                        recipeSubscription = null;
+                    }
+                    if (newVal != null) {
+                        selectedRecipe = newVal;
+                        selectRecipe(newVal);
+                        boolean isFav = favoriteRecipeIds.contains(newVal.getId());
+                        favoriteButton.setSelected(isFav);
+                        favoriteButton.setText(isFav ? "★" : "☆");
+                    }
+                });
 
         // Top bar buttons
         exitButton.setOnAction(e -> System.exit(0));
@@ -302,7 +308,7 @@ public class MainUICtrl {
         if (!currentRecipes.isEmpty()) {
             selectedRecipe = currentRecipes.getFirst();
             recipeListView.getSelectionModel().select(0);
-            displayRecipe(currentRecipes.getFirst());
+            selectRecipe(currentRecipes.getFirst());
         } else {
             clearRecipeDisplay();
         }
@@ -326,7 +332,7 @@ public class MainUICtrl {
                 for (Recipe currentRecipe : currentRecipes) {
                     if (currentRecipe.getId().equals(selectedRecipe.getId())) {
                         selectedRecipe = currentRecipe;
-                        displayRecipe(selectedRecipe);
+                        selectRecipe(selectedRecipe);
                         break;
                     }
                 }
@@ -334,6 +340,21 @@ public class MainUICtrl {
         }
     }
 
+    /**
+     * Selects a recipe from the ListView
+     * @param selectedRecipe - the recipe which was clicked by the user
+     */
+    public void selectRecipe (Recipe selectedRecipe) {
+        displayRecipe(selectedRecipe);
+
+        // If we are currently viewing another recipe, unsubscribe from it
+        if (recipeSubscription != null) {
+            recipeSubscription.unsubscribe();
+        }
+
+        recipeSubscription = WebSocketService.getInstance().
+                subscribeToRecipe(selectedRecipe.getId(), this::displayRecipe);
+    }
 
     private void displayRecipe(Recipe recipe) {
         recipeNameLabel.setText(recipe.getName());
