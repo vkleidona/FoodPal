@@ -102,10 +102,42 @@ public class ServerUtils {
                 get(FoodItem.class);
     }
 
-    public List<Recipe> getAllRecipes () {
+    public List<Recipe> getAllRecipes() {
         return ClientBuilder.newClient(new ClientConfig()).
                 target(SERVER).path("api/recipes")
                 .request(MediaType.APPLICATION_JSON)
+                .get(new GenericType<List<Recipe>>() {});
+    }
+
+    public List<Recipe> searchRecipesByName(String recipeName) {
+        return ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER).path("api/recipes/searchByName")
+                .queryParam("name", recipeName)
+                .request(APPLICATION_JSON)
+                .get(new GenericType<List<Recipe>>() {});
+    }
+
+    public List<Recipe> searchRecipesByIngredient(String name){
+        return ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER).path("api/recipes/searchByIngredient")
+                .queryParam("ingredientName", name)
+                .request(APPLICATION_JSON)
+                .get(new GenericType<List<Recipe>>() {});
+    }
+
+    public List<Recipe> searchRecipesByInstruction(String instructionTerm){
+        return ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER).path("api/recipes/searchByInstruction")
+                .queryParam("instructionTerm", instructionTerm)
+                .request(APPLICATION_JSON)
+                .get(new GenericType<List<Recipe>>() {});
+    }
+
+    public List<Recipe> searchRecipesByTerm(String term){
+        return ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER).path("api/recipes/searchByTerm")
+                .queryParam("keyword", term)
+                .request(APPLICATION_JSON)
                 .get(new GenericType<List<Recipe>>() {});
     }
 

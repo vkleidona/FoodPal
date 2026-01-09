@@ -29,6 +29,12 @@ public class FoodItemController {
             return ResponseEntity.badRequest().build();
         }
 
+        if(repo.findByName(foodItem.getName()).isPresent()) {
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(foodItem);
+        }
+
         FoodItem saved = repo.save(foodItem);
         return ResponseEntity.ok(saved);
     }

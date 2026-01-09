@@ -4,6 +4,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -16,11 +17,12 @@
 
     <!-- Top bar with window controls -->
     <top>
-        <HBox spacing="10">
+        <HBox prefHeight="69.0" prefWidth="842.0" spacing="10">
             <Button fx:id="refreshButton" text="⟳" />
             <Button fx:id="minimizeButton" text="_" />
             <Button fx:id="maximizeButton" text="[]" />
             <Button fx:id="exitButton" text="X" />
+         <TextField fx:id="RecipeSearchBar" onAction="#searchForRecipe" prefHeight="26.0" prefWidth="534.0" promptText="Search for recipes, for complex searches: use comma's so seperate keywords" />
         </HBox>
     </top>
 
