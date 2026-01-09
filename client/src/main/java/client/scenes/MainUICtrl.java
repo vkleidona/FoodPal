@@ -86,6 +86,8 @@ public class MainUICtrl {
     private ServerService serverService;
 
     private Set<Long> favoriteRecipeIds = new HashSet<>();
+
+    private Long lastSubscribedID = null;
     private StompSession.Subscription recipeSubscription;
 
     // File path for saving favorites
@@ -328,13 +330,13 @@ public class MainUICtrl {
 
             // Updates the recipe with all of its parameters
             if (selectedRecipe != null) {
-                for (Recipe currentRecipe : currentRecipes) {
-                    if (currentRecipe.getId().equals(selectedRecipe.getId())) {
-                        selectedRecipe = currentRecipe;
-                        selectRecipe(selectedRecipe);
-                        break;
-                    }
-                }
+                currentRecipes.stream()
+                        .filter(r -> r.getId().equals(selectedRecipe.getId()))
+                        .findFirst()
+                        .ifPresent(updated -> {
+                            this.selectedRecipe = updated;
+                            recipeNameLabel.setText(updated.getName());
+                        });
             }
         }
     }
@@ -347,10 +349,23 @@ public class MainUICtrl {
         displayRecipe(selectedRecipe);
 
         // If we are currently viewing another recipe, unsubscribe from it
-        unsubscribeFromRecipe();
+        if (lastSubscribedID == null || !lastSubscribedID.equals(selectedRecipe.getId())) {
+            unsubscribeFromRecipe();
+        }
 
         recipeSubscription = WebSocketService.getInstance().
-                subscribeToRecipe(selectedRecipe.getId(), this::displayRecipe);
+                subscribeToRecipe(selectedRecipe.getId(), updated -> {
+                    Platform.runLater(() -> {
+                        displayRecipe(updated);
+                        for (int i = 0; i < currentRecipes.size(); i++) {
+                            if (currentRecipes.get(i).getId().equals(updated.getId())) {
+                                currentRecipes.set(i, updated);
+                                break;
+                            }
+                        }
+                    });
+                });
+        lastSubscribedID = selectedRecipe.getId();
     }
 
     private void displayRecipe(Recipe recipe) {

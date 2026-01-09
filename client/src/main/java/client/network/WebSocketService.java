@@ -71,6 +71,20 @@ public class WebSocketService {
 
                 subscribeToGlobalTopics();
             }
+
+            @Override
+            public void handleTransportError(StompSession session, Throwable exception) {
+                System.err.println("!!! TRANSPORT ERROR !!! The connection was lost.");
+                exception.printStackTrace();
+                // In a real app, you would call connect() again here to auto-reconnect
+            }
+
+            @Override
+            public void handleException(StompSession session, StompCommand command,
+                                        StompHeaders headers, byte[] payload, Throwable exception) {
+                System.err.println("!!! STOMP EXCEPTION !!! Error in message processing.");
+                exception.printStackTrace();
+            }
         });
     }
 
@@ -174,7 +188,7 @@ public class WebSocketService {
      * @param update - the updated version of the FoodItem
      */
     public void syncFoodItemNameInList (MiniUpdate update) {
-        for (int i=0; i < masterFoodItemsList.size(); i++) {
+        for (int i = 0; i < masterFoodItemsList.size(); i++) {
             FoodItem f = masterFoodItemsList.get(i);
             if (f.getId().equals(update.getId())) {
                 f.setName(update.getTitle());
@@ -189,7 +203,7 @@ public class WebSocketService {
      * @param update - the updated version of the recipe
      */
     public void syncRecipeNameInList (MiniUpdate update) {
-        for (int i=0; i < masterRecipeList.size(); i++) {
+        for (int i = 0; i < masterRecipeList.size(); i++) {
             Recipe r = masterRecipeList.get(i);
             if (r.getId().equals(update.getId())) {
                 r.setName(update.getTitle());
@@ -204,7 +218,9 @@ public class WebSocketService {
      * @param id - the item to be removed from the list
      */
     public void removeItemFromList (Long id) {
-        masterFoodItemsList.removeIf(x -> x.getId().equals(id));
+        Platform.runLater(() -> {
+            masterFoodItemsList.removeIf(x -> x.getId().equals(id));
+        });
     }
 
     /**
@@ -212,7 +228,9 @@ public class WebSocketService {
      * @param id - the id of the recipe to be removed from the list
      */
     public void removeRecipeFromList (Long id) {
-        masterRecipeList.removeIf(x -> x.getId().equals(id));
+        Platform.runLater(() -> {
+            masterRecipeList.removeIf(x -> x.getId().equals(id));
+        });
     }
 
     /**
