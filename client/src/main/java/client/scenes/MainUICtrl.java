@@ -48,7 +48,7 @@ import java.util.Optional;
 
 public class MainUICtrl {
 
-    @FXML private ListView<Recipe> recipeListView; 
+    @FXML private ListView<String> recipeListView; 
 
     @FXML private Button addRecipeButton;
     @FXML private Button deleteRecipeButton;
