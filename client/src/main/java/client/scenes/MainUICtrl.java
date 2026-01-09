@@ -202,7 +202,6 @@ public class MainUICtrl {
      */
     @FXML
     public void initialize() {
-<<<<<<< client/src/main/java/client/scenes/MainUICtrl.java
 
         // The recipe list matches the initial server one
         this.currentRecipes = WebSocketService.getInstance().getMasterRecipeList();
@@ -287,7 +286,6 @@ public class MainUICtrl {
         // Gets all initial recipes from the server
         List <Recipe> fetched = server.getAllRecipes();
 
-<<<<<<< client/src/main/java/client/scenes/MainUICtrl.java
         // The master recipe list is set to match the server ones
         // The initial display of the recipes is also triggered
         Platform.runLater(() -> WebSocketService.getInstance().
