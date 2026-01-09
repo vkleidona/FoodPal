@@ -127,7 +127,7 @@ public class CreateRecipeCtrl {
             unitChoice.getItems().addAll("oz", "lb", "fl oz", "cup", "tbsp", "tsp");
             unitChoice.setValue("oz");
         } else {
-            unitChoice.getItems().addAll("slice", "clove", "stick", "pinch", "dash", "jar", "other");
+            unitChoice.getItems().addAll("slice", "clove", "stick", "pinch", "dash", "jar");
             unitChoice.setValue("stick");
         }
     }
@@ -169,7 +169,7 @@ public class CreateRecipeCtrl {
 
             // build Ingredients List (throws Exception if invalid)
             List<Ingredient> ingredients = buildIngredientsList(recipe);
-            if (ingredients == null) return; // validation failed inside helper
+            if (ingredients == null) return; // validation failed inside helpera
             recipe.setIngredients(ingredients);
 
             if (servings != null) {
@@ -291,8 +291,6 @@ public class CreateRecipeCtrl {
                 ComboBox<String> nameField = (ComboBox<String>) row.getChildren().get(0);
                 TextField quantityField = (TextField) row.getChildren().get(1);
                 ChoiceBox<String> unitChoice = (ChoiceBox<String>) row.getChildren().get(2);
-                TextField customUnitField = (TextField) row.getChildren().get(3);
-                TextField gramsField = (TextField) row.getChildren().get(4);
 
                 String name = nameField.getValue().trim();
                 String qtyStr = quantityField.getText().trim();
@@ -303,7 +301,7 @@ public class CreateRecipeCtrl {
                     return null;
                 }
 
-                int quantity;
+                double quantity;
                 try {
                     quantity = Integer.parseInt(qtyStr);
                 } catch (NumberFormatException e) {
@@ -316,25 +314,6 @@ public class CreateRecipeCtrl {
                 String selectedUnit = unitChoice.getValue();
                 String finalUnit = selectedUnit;
                 double gramsPerUnit = UNIT_TO_GRAMS.getOrDefault(selectedUnit, 0.0);
-
-                if ("other".equals(selectedUnit)) {
-                    String customName = customUnitField.getText().trim();
-                    String customGrams = gramsField.getText().trim();
-
-                    if (customName.isEmpty() || customGrams.isEmpty()) {
-                        showAlert(Alert.AlertType.ERROR, "Missing Custom Info",
-                                "Fill out custom unit name and grams.");
-                        return null;
-                    }
-                    try {
-                        gramsPerUnit = Double.parseDouble(customGrams);
-                    } catch (NumberFormatException e) {
-                        showAlert(Alert.AlertType.ERROR, "Invalid Grams",
-                                "Custom grams must be a number.");
-                        return null;
-                    }
-                    finalUnit = customName;
-                }
 
                 Ingredient ing = new Ingredient(quantity, finalUnit, quantity * gramsPerUnit);
                 ing.setFoodType(new FoodItem(name, 0, 0, 0, 0));
@@ -475,28 +454,13 @@ public class CreateRecipeCtrl {
             unitChoice.getItems().addAll("oz", "lb", "fl oz", "cup", "tbsp", "tsp");
             unitChoice.setValue("oz");
         } else {
-            unitChoice.getItems().addAll("slice", "clove", "stick", "pinch", "dash", "jar", "other");
+            unitChoice.getItems().addAll("slice", "clove", "stick", "pinch", "dash", "jar");
             unitChoice.setValue("stick");
         }
 
-        // Hidden fields
-        TextField customUnitField = new TextField();
-        customUnitField.setPromptText("Unit Name");
-        customUnitField.setVisible(false); customUnitField.setManaged(false);
-
-        TextField gramsField = new TextField();
-        gramsField.setPromptText("Grams");
-        gramsField.setVisible(false); gramsField.setManaged(false);
-
-        unitChoice.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            boolean isOther = "other".equals(newVal);
-            customUnitField.setVisible(isOther); customUnitField.setManaged(isOther);
-            gramsField.setVisible(isOther); gramsField.setManaged(isOther);
-        });
-
         Button deleteButton = new Button("x");
 
-        HBox row = new HBox(10, foodItemBox, quantityField, unitChoice, customUnitField, gramsField, deleteButton);
+        HBox row = new HBox(10, foodItemBox, quantityField, unitChoice, deleteButton);
 
         foodItemBox.focusedProperty().addListener((obs, o, n) -> { if(n) selectedRow = row; });
         quantityField.focusedProperty().addListener((obs, o, n) -> { if(n) selectedRow = row; });
