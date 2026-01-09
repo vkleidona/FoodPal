@@ -226,7 +226,6 @@ public class MainUICtrl {
         // Sidebar selection updates main UI
         recipeListView.getSelectionModel().selectedItemProperty().
                 addListener((obs, oldVal, newVal) -> {
-                    //unsubscribeFromRecipe();
                     if (newVal != null) {
                         selectedRecipe = newVal;
                         selectRecipe(newVal);

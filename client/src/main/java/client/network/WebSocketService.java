@@ -24,8 +24,8 @@ public class WebSocketService {
 
     // The Lists with the current data - every other list needs to be fetched
     private final ObservableList<Recipe> masterRecipeList = FXCollections.observableArrayList();
-    private final ObservableList<FoodItem> masterFoodItemsList = FXCollections.observableArrayList();
-
+    private final ObservableList<FoodItem> masterFoodItemsList
+            = FXCollections.observableArrayList();
     /**
      * Constructor for the WebSocketService class
      * using dependency injection
@@ -70,20 +70,6 @@ public class WebSocketService {
                 System.out.println("Global connection established.");
 
                 subscribeToGlobalTopics();
-            }
-
-            @Override
-            public void handleTransportError(StompSession session, Throwable exception) {
-                System.err.println("!!! TRANSPORT ERROR !!! The connection was lost.");
-                exception.printStackTrace();
-                // In a real app, you would call connect() again here to auto-reconnect
-            }
-
-            @Override
-            public void handleException(StompSession session, StompCommand command,
-                                        StompHeaders headers, byte[] payload, Throwable exception) {
-                System.err.println("!!! STOMP EXCEPTION !!! Error in message processing.");
-                exception.printStackTrace();
             }
         });
     }
@@ -235,7 +221,7 @@ public class WebSocketService {
 
     /**
      * A method for subscribing to changes in a particular recipe
-     * @param id - the ID of the recipe subscription
+     * @param id - the ID of the recipe which we are subscribing to
      * @param onUpdate - what to do on update
      * @return Subscription - the newly created Subscription object
      */
@@ -250,6 +236,27 @@ public class WebSocketService {
             public void handleFrame(StompHeaders headers, Object payload) {
                 Recipe recipe = (Recipe) payload;
                 Platform.runLater(() -> onUpdate.accept(recipe));
+            }
+        });
+    }
+
+    /**
+     * A method for subscribing to changes in a particular FoodItem
+     * @param id - the ID of the FoodItem we are subscribing to
+     * @param onUpdate - what to do on update
+     * @return Subscription - the newly created Subscription object
+     */
+    public StompSession.Subscription subscribeToFoodItem (Long id, Consumer<FoodItem> onUpdate) {
+        return session.subscribe("/topic/food_items/" + id, new StompFrameHandler() {
+            @Override
+            public Type getPayloadType(StompHeaders headers) {
+                return FoodItem.class;
+            }
+
+            @Override
+            public void handleFrame(StompHeaders headers, Object payload) {
+                FoodItem foodItem = (FoodItem) payload;
+                Platform.runLater(() -> onUpdate.accept(foodItem));
             }
         });
     }

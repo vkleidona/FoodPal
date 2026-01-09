@@ -54,7 +54,8 @@ public class FoodItemController {
         FoodItem saved = repo.save(foodItem);
         MiniUpdate miniUpdate = new MiniUpdate (saved.getId(), saved.getName());
         messageTemplate.convertAndSend("/topic/food_items", miniUpdate);
-        messageTemplate.convertAndSend("/topic/food_items/" + foodItem.getId(), foodItem);
+        messageTemplate.convertAndSend("/topic/food_items/" + foodItem.getId(), saved);
+        messageTemplate.convertAndSend("/topic/food_items/new", saved);
         return ResponseEntity.ok(saved);
     }
 

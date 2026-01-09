@@ -92,7 +92,7 @@ public class FoodItemMainCtrlTest extends ApplicationTest {
 
         ctrl.refreshFoodItems();
 
-        assertEquals(2, ctrl.foodItemList.getItems().size());
-        assertEquals("Banana", ctrl.foodItemList.getItems().get(0).getName());
+        assertEquals(2, ctrl.foodItemListView.getItems().size());
+        assertEquals("Banana", ctrl.foodItemListView.getItems().get(0).getName());
     }
 }
