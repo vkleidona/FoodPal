@@ -1,11 +1,19 @@
 package client.scenes;
 
+import client.network.WebSocketService;
 import client.utils.ServerUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
+
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
+import javafx.collections.ObservableSet;
+
 import javafx.collections.FXCollections;
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -42,7 +50,7 @@ import java.util.Optional;
 
 public class MainUICtrl {
 
-    @FXML private ListView<Recipe> recipeListView; 
+    @FXML private ListView<Recipe> recipeListView;
 
     @FXML private Button addRecipeButton;
     @FXML private Button deleteRecipeButton;
@@ -69,7 +77,7 @@ public class MainUICtrl {
     private final Client client = ClientBuilder.newClient();
     private final String recipeEndpointUrl = "http://localhost:8080/api/recipes";
 
-    private List<Recipe> currentRecipes;
+    private ObservableList<Recipe> currentRecipes;
     private Recipe selectedRecipe;
 
     private final ServerUtils server;
@@ -136,7 +144,7 @@ public class MainUICtrl {
 
         if (favoritesTab.isSelected()) {
             // Re-calculate the list of favorites
-            List<Recipe> favorites = allLoadedRecipes.stream()
+            List<Recipe> favorites = currentRecipes.stream()
                     .filter(r -> favoriteRecipeIds.contains(r.getId()))
                     .collect(Collectors.toList());
 
@@ -157,14 +165,14 @@ public class MainUICtrl {
 
     @FXML
     public void showAllRecipes() {
-        recipeListView.setItems(FXCollections.observableArrayList(allLoadedRecipes));
+        recipeListView.setItems(FXCollections.observableArrayList(currentRecipes));
     }
 
     @FXML
     public void showFavoriteRecipes() {
 
         List<Recipe> favorites = new ArrayList<>();
-        for (Recipe r : allLoadedRecipes) {
+        for (Recipe r : currentRecipes) {
             if (favoriteRecipeIds.contains(r.getId())) {
                 favorites.add(r);
             } else {
@@ -196,8 +204,17 @@ public class MainUICtrl {
     @FXML
     public void initialize() {
 
+        // The recipe list matches the initial server one
+        this.currentRecipes = WebSocketService.getInstance().getMasterRecipeList();
+        // Immediately set currentRecipes to match the changes from the server
+        // The recipe list view gets updated every time a change from the server is sensed
+        currentRecipes.addListener((ListChangeListener<Recipe>) c -> {
+            Platform.runLater(this::updateRecipeListView);
+        });
+
+        initialRecipeFetch();
+
         loadFavorites();
-        loadRecipes();
 
         allRecipesTab.setSelected(true);
 
@@ -219,7 +236,7 @@ public class MainUICtrl {
             Stage stage = (Stage) exitButton.getScene().getWindow();
             stage.setMaximized(!stage.isMaximized());
         });
-        refreshButton.setOnAction(e -> loadRecipes());
+        refreshButton.setOnAction(e -> initialRecipeFetch());
 
         // Bottom sidebar buttons
         addRecipeButton.setOnAction(e -> openCreateRecipeUI());
@@ -246,11 +263,11 @@ public class MainUICtrl {
 
 
         RecipeSearchBar.setOnKeyPressed(keyEvent -> {
-                    if (keyEvent.getCode() == KeyCode.ESCAPE) {
-                        RecipeSearchBar.clear();
-                        loadRecipes();
-                    }
-                });
+            if (keyEvent.getCode() == KeyCode.ESCAPE) {
+                RecipeSearchBar.clear();
+                initialRecipeFetch();
+            }
+        });
 
         // Tell the list: "When you have a Recipe, just show its name (and maybe a star!)"
         recipeListView.setCellFactory(param -> new ListCell<Recipe>() {
@@ -271,27 +288,49 @@ public class MainUICtrl {
         });
     }
 
-    private void loadRecipes() {
-        try {
-            currentRecipes = server.getAllRecipes();
+    /**
+     * Loads the recipes initially from the master list using a standard GET request
+     */
+    public void initialRecipeFetch () {
+        // Gets all initial recipes from the server
+        List <Recipe> fetched = server.getAllRecipes();
 
-            allLoadedRecipes.clear();
-            allLoadedRecipes.addAll(currentRecipes);
+        // The master recipe list is set to match the server ones
+        // The initial display of the recipes is also triggered
+        Platform.runLater(() -> WebSocketService.getInstance().
+                getMasterRecipeList().setAll(fetched));
+        if (!currentRecipes.isEmpty()) {
+            selectedRecipe = currentRecipes.getFirst();
+            recipeListView.getSelectionModel().select(0);
+            displayRecipe(currentRecipes.getFirst());
+        } else {
+            clearRecipeDisplay();
+        }
+    }
 
-            if (favoritesTab.isSelected()) {
-                // If we are in Favorites tab, run the filter immediately!
-                showFavoriteRecipes();
-            } else {
-                // Only show all recipes if we are in "All Recipes" tab
-                recipeListView.getItems().clear();
-                recipeListView.getItems().addAll(currentRecipes);
+    /**
+     * Refreshes the List View
+     */
+    public void updateRecipeListView () {
+
+        if (favoritesTab.isSelected()) {
+            // If we are in Favorites tab, run the filter immediately!
+            showFavoriteRecipes();
+        } else {
+            // Only show all recipes if we are in "All Recipes" tab
+            // Updates the sidebar when it senses changes in the database
+            recipeListView.getItems().setAll(currentRecipes);
+
+            // Updates the recipe with all of its parameters
+            if (selectedRecipe != null) {
+                for (Recipe currentRecipe : currentRecipes) {
+                    if (currentRecipe.getId().equals(selectedRecipe.getId())) {
+                        selectedRecipe = currentRecipe;
+                        displayRecipe(selectedRecipe);
+                        break;
+                    }
+                }
             }
-
-            if (!recipeListView.getItems().isEmpty()) {
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
@@ -349,7 +388,6 @@ public class MainUICtrl {
 
                     if (serverResponse.getStatus() == 204) {
                         System.out.println("Recipe deleted successfully");
-                        loadRecipes(); // refresh sidebar
                     } else {
                         System.out.println("Failed to delete recipe: " + serverResponse.getStatus());
                     }
@@ -592,7 +630,7 @@ public class MainUICtrl {
                     .collect(Collectors.toList());
         }
 
-        currentRecipes = recipes;
+        currentRecipes = (ObservableList<Recipe>) recipes;
 
         recipeListView.getSelectionModel().clearSelection();
         recipeListView.getItems().setAll(currentRecipes);

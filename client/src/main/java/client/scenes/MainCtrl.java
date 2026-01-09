@@ -16,15 +16,25 @@
 package client.scenes;
 
 import client.Main;
+import client.network.WebSocketService;
+import client.utils.ServerUtils;
+import javafx.application.Platform;
+import javafx.collections.ObservableList;
+import javafx.collections.WeakListChangeListener;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.ListView;
 import javafx.stage.Stage;
 import javafx.util.Pair;
+import recipes.FoodItem;
 import recipes.Recipe;
 
 public class MainCtrl implements MainCtrlMethods {
 
     private Stage primaryStage;
+
+    private ObservableList<Recipe> recipes;
+    private ObservableList <FoodItem> foodItems;
 
     private QuoteOverviewCtrl overviewCtrl;
     private Scene overview;
@@ -74,13 +84,35 @@ public class MainCtrl implements MainCtrlMethods {
     private AddRecipeToShoppingListCtrl addRecipeToShoppingListCtrl;
     private Scene addRecipeToShoppingList;
 
+    /**
+     * Sets up the MainCtrl class with all UIs and WebSockets
+     * @param primaryStage - the Stage which hosts the current Scene
+     * @param overview - redundant
+     * @param add - redundant
+     * @param mainMenu - Main Scene of the FoodPal app
+     * @param editInstructions - the Scene for editing instructions
+     * @param createRecipe - the Scene for creating a recipe
+     * @param addFoodItem - the Scene for adding a FoodItem
+     * @param foodItemMain - the Scene for seeing all FoodItems
+     * @param editIngredients - the Scene to edit all Ingredients
+     * @param shoppingListMain - the Scene to see the ShoppingList
+     * @param addRecipeToShoppingList - the Scene to add a recipe to the ShoppingList
+     * @param information - the Information Scene for each Recipe
+     */
     public void initialize(Stage primaryStage, Pair<QuoteOverviewCtrl, Parent> overview,
-                           Pair<AddQuoteCtrl, Parent> add, Pair<MainUICtrl, Parent> mainMenu, Pair<EditInstructionsCtrl, Parent>
-                                   editInstructions, Pair<CreateRecipeCtrl, Parent> createRecipe, Pair<AddFoodItemCtrl, Parent>
-                                   addFoodItem, Pair<FoodItemMainCtrl, Parent> foodItemMain,  Pair<EditIngredientsCtrl, Parent> editIngredients,
+                           Pair<AddQuoteCtrl, Parent> add, Pair<MainUICtrl, Parent> mainMenu,
+                           Pair<EditInstructionsCtrl, Parent>
+                                   editInstructions, Pair<CreateRecipeCtrl, Parent> createRecipe,
+                           Pair<AddFoodItemCtrl, Parent>
+                                   addFoodItem, Pair<FoodItemMainCtrl, Parent> foodItemMain,
+                           Pair<EditIngredientsCtrl, Parent> editIngredients,
                                     Pair <ShoppingListMainCtrl, Parent> shoppingListMain,
                                     Pair <AddRecipeToShoppingListCtrl, Parent> addRecipeToShoppingList,
                                     Pair <InformationCtrl, Parent> information) {
+
+        this.foodItems = WebSocketService.getInstance().getMasterFoodItemsList();
+        this.recipes = WebSocketService.getInstance().getMasterRecipeList();
+
         this.primaryStage = primaryStage;
         this.overviewCtrl = overview.getKey();
         this.overview = new Scene(overview.getValue());
@@ -247,5 +279,13 @@ public class MainCtrl implements MainCtrlMethods {
 
     public FoodItemMainCtrl getFoodItemMainCtrl() {
         return foodItemMainCtrl;
+    }
+
+    public ObservableList<Recipe> getRecipes() {
+        return recipes;
+    }
+
+    public ObservableList<FoodItem> getFoodItems() {
+        return foodItems;
     }
 }

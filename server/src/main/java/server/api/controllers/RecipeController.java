@@ -1,18 +1,15 @@
 package server.api.controllers;
 
 import jakarta.persistence.*;
-import jakarta.transaction.Transactional;
-import jakarta.ws.rs.Consumes;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import recipes.*;
 import server.repositories.FoodItemRepository;
 import server.repositories.RecipeRepository;
 import server.repositories.IngredientRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,6 +27,33 @@ public class RecipeController {
     @Autowired
     private IngredientRepository ingredientRepository;
 
+    @Autowired
+    private SimpMessagingTemplate messageTemplate;
+
+    /**
+     * A Dependency-Injection using constructor for all fields of the controller class
+     * @param recipeRepository - the repository for recipes
+     * @param foodItemRepository - the repository for FoodItems
+     * @param ingredientRepository - the repository for ingredients
+     * @param messageTemplate - the message template used to communicate with the client
+     */
+    @Autowired
+    public RecipeController(RecipeRepository recipeRepository,
+                            FoodItemRepository foodItemRepository,
+                            IngredientRepository ingredientRepository,
+                            SimpMessagingTemplate messageTemplate) {
+        this.recipeRepository = recipeRepository;
+        this.foodItemRepository = foodItemRepository;
+        this.ingredientRepository = ingredientRepository;
+        this.messageTemplate = messageTemplate;
+    }
+
+    /**
+     * Creates a new recipe
+     * @param recipe - the new recipe to be created
+     * @return ResponseEntity <Long> - the ID of the newly added recipe,
+     * as well as a status code for the response
+     */
     @PostMapping(consumes = "application/json")
     // @RequestBody: the JSON format is turned into a Java object
     public ResponseEntity<Long> saveRecipe(@RequestBody Recipe recipe) {
@@ -44,6 +68,7 @@ public class RecipeController {
             } else {
                 foodItem = incoming;
                 foodItemRepository.save(foodItem);
+                messageTemplate.convertAndSend("/topic/food_items", foodItem);
             }
 
             ingredient.setFoodType(foodItem);
@@ -51,36 +76,43 @@ public class RecipeController {
         }
 
         Recipe saved = recipeRepository.save(recipe);
+        messageTemplate.convertAndSend("/topic/recipes/" + saved.getId(), saved);
+        messageTemplate.convertAndSend("/topic/recipes", saved);
         return ResponseEntity.ok(saved.getId());
     }
 
+    /**
+     * Returns a List of all recipes
+     * @return List <Recipe> - returns a list of all Recipe objects
+     */
     @GetMapping
     public List<Recipe> getAllRecipes() {
         return recipeRepository.findAll();
     }
 
-    //Delete a recipe by ID
+    /**
+     * Deletes a recipe from the server by ID
+     * @param id - the ID of the recipe to be deleted
+     * @return ResponseEntity <Void> - sends the status of the request
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteRecipe(@PathVariable Long id) {
         if (recipeRepository.existsById(id)) {
             recipeRepository.deleteById(id);
+            messageTemplate.convertAndSend("/topic/recipes/delete", id);
             return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.notFound().build();
         }
     }
 
-    @GetMapping("/get/{id}")
-    public ResponseEntity<Recipe> getById(@PathVariable("id") long id) {
-        if(id < 0 || !recipeRepository.existsById(id)){
-            return ResponseEntity.notFound().build();
-        }
-        Recipe recipe = recipeRepository.findById(id).get();
-        System.out.println("Recipe: " + recipe);
-        return ResponseEntity.ok(recipe);
-    }
-
-    // Currently does not work. I think?
+    /**
+     * Updates the ingredients of a recipe
+     * @param ingredients - the new List of Ingredients which we provide the recipe
+     * @param recipeId - the recipe to be changed
+     * @return ResponseEntity <Recipe> - the Recipe with the new ingredients,
+     * together with the response's status code
+     */
     @PutMapping(path = "/ingredients/set/{recipeId}")
     public ResponseEntity<Recipe> setAllIngredients(@RequestBody List<Ingredient> ingredients,
                                                     @PathVariable Long recipeId) {
@@ -95,14 +127,19 @@ public class RecipeController {
                 ingredients.forEach(ingredient -> ingredient.setRecipe(currentRecipe));
                 currentRecipe.getIngredients().addAll(ingredients);
             }
-            currentRecipe.getIngredients().forEach(i ->
-                    System.out.println("Ingredient: " + i.getMeasurement() + ", recipe=" + i.getRecipe())
-            );
             Recipe saved = recipeRepository.save(currentRecipe);
+            messageTemplate.convertAndSend("/topic/recipes", saved);
+            messageTemplate.convertAndSend("/topic/recipes/" + saved.getId(), saved);
             return ResponseEntity.ok(saved);
         }).orElse(ResponseEntity.notFound().build());
     }
 
+    /**
+     * Updates an entire recipe (used for changing the name)
+     * @param id - the ID of the recipe to be updated
+     * @param updatedRecipe - the new version of the recipe
+     * @return ResponseEntity <Recipe> - the updated recipe, as well as the response status
+     */
     @PutMapping(path = "/{id}")
     public ResponseEntity <Recipe> updateRecipe (@PathVariable("id") Long id,
                                                  @RequestBody Recipe updatedRecipe) {
@@ -116,13 +153,15 @@ public class RecipeController {
             oldRecipe.setInstructions(updatedRecipe.getInstructions());
             oldRecipe.getIngredients().clear();
             if (updatedRecipe.getIngredients()!=null) {
-                updatedRecipe.getIngredients().forEach(ingredient -> ingredient.setRecipe(oldRecipe));
+                updatedRecipe.getIngredients().
+                        forEach(ingredient -> ingredient.setRecipe(oldRecipe));
                 oldRecipe.getIngredients().addAll(updatedRecipe.getIngredients());
             }
             Recipe newRecipe = recipeRepository.save(oldRecipe);
+            messageTemplate.convertAndSend("/topic/recipes", newRecipe);
+            messageTemplate.convertAndSend("/topic/recipes" + newRecipe.getId(), newRecipe);
             return ResponseEntity.ok(newRecipe);
         });
-
         return ResponseEntity.ok().build();
     }
 

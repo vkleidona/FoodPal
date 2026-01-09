@@ -20,6 +20,7 @@ import static com.google.inject.Guice.createInjector;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
+import client.network.WebSocketService;
 import client.scenes.*;
 import com.google.inject.Injector;
 
@@ -41,6 +42,8 @@ public class Main extends Application {
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
+
+        WebSocketService.getInstance().connect();
 
 		var serverUtils = INJECTOR.getInstance(ServerUtils.class);
 		if (!serverUtils.isServerAvailable()) {

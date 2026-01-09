@@ -18,11 +18,23 @@ public class IngredientController {
     @Autowired
     private final FoodItemRepository foodItemRepo;
 
-    public IngredientController(IngredientRepository ingredientRepo, FoodItemRepository foodItemRepo) {
+    /**
+     * A dependency injection-using controller for the Ingredient API
+     * @param ingredientRepo - the repository for Ingredients
+     * @param foodItemRepo - the repository for FoodItems
+     */
+    @Autowired
+    public IngredientController(IngredientRepository ingredientRepo,
+                                FoodItemRepository foodItemRepo) {
         this.ingredientRepo = ingredientRepo;
         this.foodItemRepo = foodItemRepo;
     }
 
+    /**
+     * Returns the usage of a FoodItem inside recipes
+     * @param id - the FoodItem from the recipe to be used
+     * @return int - how many times has this FoodItem been used in recipes
+     */
     @GetMapping("/usage/{id}")
     public int getFoodItemRecipeUsage(@PathVariable Long id) {
         FoodItem foodItem = foodItemRepo.findById(id).orElseThrow();
