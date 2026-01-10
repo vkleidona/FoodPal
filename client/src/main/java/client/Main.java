@@ -43,7 +43,8 @@ public class Main extends Application {
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 
-        WebSocketService.getInstance().connect();
+        WebSocketService wss = INJECTOR.getInstance(client.network.WebSocketService.class);
+        wss.connect();
 
 		var serverUtils = INJECTOR.getInstance(ServerUtils.class);
 		if (!serverUtils.isServerAvailable()) {

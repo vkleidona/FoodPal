@@ -1,5 +1,6 @@
 package client.network;
 
+import client.scenes.MainCtrl;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.application.Platform;
@@ -18,7 +19,7 @@ import java.lang.reflect.Type;
 import java.util.function.Consumer;
 
 public class WebSocketService {
-    private static WebSocketService instance;
+
     private StompSession session;
     private final String url = "ws://localhost:8080/ws-updates";
 
@@ -30,15 +31,8 @@ public class WebSocketService {
      * Constructor for the WebSocketService class
      * using dependency injection
      */
-    private WebSocketService () {
+    public WebSocketService () {
 
-    }
-
-    public static WebSocketService getInstance() {
-        if (instance == null) {
-            instance = new WebSocketService();
-        }
-        return instance;
     }
 
     public StompSession getSession() {
@@ -235,7 +229,10 @@ public class WebSocketService {
             @Override
             public void handleFrame(StompHeaders headers, Object payload) {
                 Recipe recipe = (Recipe) payload;
-                Platform.runLater(() -> onUpdate.accept(recipe));
+                Platform.runLater(() -> {
+                    onUpdate.accept(recipe);
+                });
+
             }
         });
     }

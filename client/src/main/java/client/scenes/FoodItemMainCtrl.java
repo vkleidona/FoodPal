@@ -46,17 +46,19 @@ public class FoodItemMainCtrl {
 
     private final MainCtrl mainCtrl;
     private final ServerUtils serverUtils;
+    private final WebSocketService webSocketService;
 
     @Inject
-    public FoodItemMainCtrl(MainCtrl mainCtrl, ServerUtils serverUtils) {
+    public FoodItemMainCtrl(MainCtrl mainCtrl, ServerUtils serverUtils, WebSocketService webSocketService) {
         this.mainCtrl = mainCtrl;
         this.serverUtils = serverUtils;
+        this.webSocketService = webSocketService;
     }
 
     @FXML
     public void initialize() {
 
-        allFoodItems = WebSocketService.getInstance().getMasterFoodItemsList();
+        allFoodItems = webSocketService.getMasterFoodItemsList();
 
         allFoodItems.addListener((ListChangeListener <FoodItem>) c -> {
             Platform.runLater(this::updateListView);
@@ -120,7 +122,7 @@ public class FoodItemMainCtrl {
             unsubscribeFromFoodItem();
         }
 
-        foodItemSubscription = WebSocketService.getInstance().
+        foodItemSubscription = webSocketService.
                 subscribeToFoodItem(currentlySelected.getId(), updated -> {
                     Platform.runLater(() -> {
                         updateFoodDetails(updated);
@@ -234,7 +236,7 @@ public class FoodItemMainCtrl {
             noSelection.showAndWait();
             return;
         }
-
+        mainCtrl.handleFoodItemBeingUpdated(selectedItem);
         mainCtrl.showAddFoodItem();
         mainCtrl.getAddFoodItemCtrl().setEditingItem(selectedItem);
     }
@@ -249,7 +251,7 @@ public class FoodItemMainCtrl {
      */
     public void loadFoodItems () {
         List<FoodItem> allFoodItems = serverUtils.getAllFoodItems();
-        Platform.runLater(() -> WebSocketService.getInstance().
+        Platform.runLater(() -> webSocketService.
                 getMasterFoodItemsList().setAll(allFoodItems));
     }
 

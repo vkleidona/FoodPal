@@ -1,6 +1,7 @@
 package client.scenes;
 
 import com.google.inject.Inject;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -131,6 +132,17 @@ public class EditInstructionsCtrl {
             showAlert("Error", "Failed to save instructions: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Refreshes the content
+     * @param recipe - the recipe's current
+     */
+    public void refreshContent (Recipe recipe) {
+        Platform.runLater(() -> {
+            this.currentRecipe = recipe;
+            instructionList.getItems().setAll(recipe.getInstructions());
+        });
     }
 
 

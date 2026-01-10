@@ -4,6 +4,7 @@ import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.client.Entity;
+import javafx.application.Platform;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import org.glassfish.jersey.client.ClientConfig;
@@ -261,6 +262,17 @@ public class EditIngredientsCtrl{
             }
         }
         resetForm();
+    }
+
+    /**
+     * Refreshes the content
+     * @param recipe - the recipe's current
+     */
+    public void refreshContent (Recipe recipe) {
+        Platform.runLater(() -> {
+            this.recipe = recipe;
+            listOfIngredients.getItems().setAll(recipe.getIngredients());
+        });
     }
 
     @FXML

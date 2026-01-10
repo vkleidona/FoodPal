@@ -84,6 +84,7 @@ public class MainUICtrl {
     private final ServerUtils server;
     private final MainCtrl mainCtrl;
     private ServerService serverService;
+    private WebSocketService webSocketService;
 
     private Set<Long> favoriteRecipeIds = new HashSet<>();
 
@@ -191,11 +192,13 @@ public class MainUICtrl {
      * A constructor for the MainUI Controller class, using dependency injection
      * @param server - the injected instance of the ServerUtils
      * @param mainCtrl - the injected instance of the Main Controller
+     * @param webSocketService - the injected instance of the WebSocketService
      */
     @Inject
-    public MainUICtrl (ServerUtils server, MainCtrl mainCtrl) {
+    public MainUICtrl (ServerUtils server, MainCtrl mainCtrl, WebSocketService webSocketService) {
         this.server = server;
         this.mainCtrl = mainCtrl;
+        this.webSocketService = webSocketService;
         this.serverService = new RealServerService();
     }
 
@@ -210,7 +213,7 @@ public class MainUICtrl {
     public void initialize() {
 
         // The recipe list matches the initial server one
-        this.currentRecipes = WebSocketService.getInstance().getMasterRecipeList();
+        this.currentRecipes = webSocketService.getMasterRecipeList();
         // Immediately set currentRecipes to match the changes from the server
         // The recipe list view gets updated every time a change from the server is sensed
         currentRecipes.addListener((ListChangeListener<Recipe>) c -> {
@@ -303,7 +306,7 @@ public class MainUICtrl {
 
         // The master recipe list is set to match the server ones
         // The initial display of the recipes is also triggered
-        Platform.runLater(() -> WebSocketService.getInstance().
+        Platform.runLater(() -> webSocketService.
                 getMasterRecipeList().setAll(fetched));
         if (!currentRecipes.isEmpty()) {
             selectedRecipe = currentRecipes.getFirst();
@@ -352,10 +355,11 @@ public class MainUICtrl {
             unsubscribeFromRecipe();
         }
 
-        recipeSubscription = WebSocketService.getInstance().
+        recipeSubscription = webSocketService.
                 subscribeToRecipe(selectedRecipe.getId(), updated -> {
                     Platform.runLater(() -> {
                         displayRecipe(updated);
+                        mainCtrl.handleRecipeBeingUpdated(updated);
                         for (int i = 0; i < currentRecipes.size(); i++) {
                             if (currentRecipes.get(i).getId().equals(updated.getId())) {
                                 currentRecipes.set(i, updated);
@@ -413,7 +417,7 @@ public class MainUICtrl {
                 try {
                     long id = selectedRecipe.getId(); // primitive long is fine
                     System.out.println("Deleting recipe with ID: " + id);
-
+                    mainCtrl.handleRecipeBeingDeleted(id);
                     Response serverResponse = client.target(recipeEndpointUrl + "/" + id)
                             .request()
                             .delete();
@@ -443,22 +447,22 @@ public class MainUICtrl {
         Button okButton = (Button) dialogBox.getDialogPane().lookupButton(ButtonType.OK);
         okButton.setDisable(false);
 
-        TextField nameField = new TextField(selectedRecipe.getName());
+        TextField editNameNameField = new TextField(selectedRecipe.getName());
         Label nameLabel = new Label ("Name:");
 
         HBox hBox = new HBox();
         hBox.setSpacing(15);
         hBox.setPadding(new Insets(20));
-        hBox.getChildren().addAll(nameLabel, nameField);
+        hBox.getChildren().addAll(nameLabel, editNameNameField);
         dialogBox.getDialogPane().setContent(hBox);
 
         ChangeListener<String> emptyNameValidator = (obs, old, newVal) -> {
-            okButton.setDisable(nameField.getText().isEmpty());
+            okButton.setDisable(editNameNameField.getText().isEmpty());
         };
 
         dialogBox.setResultConverter(button -> {
             if (button == ButtonType.OK) {
-                return nameField.getText();
+                return editNameNameField.getText();
             }
             return null;
         });

@@ -1,5 +1,6 @@
 package client.scenes;
 
+import client.network.WebSocketService;
 import client.utils.ServerUtils;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -24,6 +25,7 @@ public class FoodItemMainCtrlTest extends ApplicationTest {
     private FoodItemMainCtrl ctrl;
     private ServerUtils serverUtils;
     private MainCtrl mainCtrl;
+    private WebSocketService webSocketService;
 
     @BeforeAll
     static void skipInCiWithoutDisplay() {
@@ -37,10 +39,11 @@ public class FoodItemMainCtrlTest extends ApplicationTest {
         // Mock dependencies
         serverUtils = mock(ServerUtils.class);
         mainCtrl = mock(MainCtrl.class);
+        webSocketService = mock(WebSocketService.class);
 
         // Load FXML and set controller
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/client/scenes/FoodItemMain.fxml"));
-        ctrl = new FoodItemMainCtrl(mainCtrl, serverUtils);
+        ctrl = new FoodItemMainCtrl(mainCtrl, serverUtils, webSocketService);
         loader.setController(ctrl);
         Parent root = loader.load();
 

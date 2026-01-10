@@ -191,5 +191,12 @@ public class AddFoodItemCtrl {
         }
     }
 
+    /**
+     * Refreshes the content with the current FoodItem
+     * @param updated - the current FoodItem
+     */
+    public void refreshContent (FoodItem updated) {
+        setEditingItem(updated);
+    }
 
 }
