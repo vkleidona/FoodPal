@@ -254,6 +254,11 @@ public class WebSocketService {
      * @return Subscription - the newly created Subscription object
      */
     public StompSession.Subscription subscribeToFoodItem (Long id, Consumer<FoodItem> onUpdate) {
+        if (session == null || !session.isConnected()) {
+            System.err.println("Could not subscribe: StompSession is not yet established.");
+            return null;
+        }
+
         return session.subscribe("/topic/food_items/" + id, new StompFrameHandler() {
             @Override
             public Type getPayloadType(StompHeaders headers) {
