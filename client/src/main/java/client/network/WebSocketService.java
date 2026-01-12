@@ -49,6 +49,7 @@ public class WebSocketService {
 
     /**
      * Initial connection of every client to the server
+     * @param onConnected - Runnable which signals to the Main when to run
      */
     public void connect (Runnable onConnected) {
         WebSocketClient client = new StandardWebSocketClient();
