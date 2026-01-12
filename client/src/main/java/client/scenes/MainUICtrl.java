@@ -212,6 +212,17 @@ public class MainUICtrl {
     @FXML
     public void initialize() {
 
+        /**
+        webSocketService.connect(() -> {
+            System.out.println("Connection live! Now it is safe to subscribe.");
+            initialRecipeFetch();
+
+            // If a recipe was already selected by the user during the wait:
+            if (selectedRecipe != null) {
+                selectRecipe(selectedRecipe);
+            }
+        });
+**/
         // The recipe list matches the initial server one
         this.currentRecipes = webSocketService.getMasterRecipeList();
         // Immediately set currentRecipes to match the changes from the server
@@ -220,7 +231,7 @@ public class MainUICtrl {
             Platform.runLater(this::updateRecipeListView);
         });
 
-        initialRecipeFetch();
+        //initialRecipeFetch();
 
         loadFavorites();
 
@@ -355,7 +366,12 @@ public class MainUICtrl {
             unsubscribeFromRecipe();
         }
 
-        recipeSubscription = webSocketService.
+        if (webSocketService.getSession() == null) {
+            System.out.println("Wait: Session not established yet. Detail subscription skipped.");
+            return;
+        }
+
+        StompSession.Subscription sub = webSocketService.
                 subscribeToRecipe(selectedRecipe.getId(), updated -> {
                     Platform.runLater(() -> {
                         displayRecipe(updated);
@@ -368,7 +384,10 @@ public class MainUICtrl {
                         }
                     });
                 });
-        lastSubscribedID = selectedRecipe.getId();
+        if (sub != null) {
+            this.recipeSubscription = sub;
+            this.lastSubscribedID = selectedRecipe.getId();
+        }
     }
 
     private void displayRecipe(Recipe recipe) {

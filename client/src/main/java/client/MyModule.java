@@ -15,20 +15,32 @@
  */
 package client;
 
+import client.network.WebSocketService;
+import client.scenes.*;
 import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.Scopes;
-
-import client.scenes.AddQuoteCtrl;
-import client.scenes.MainCtrl;
-import client.scenes.QuoteOverviewCtrl;
+import recipes.FoodItem;
 
 public class MyModule implements Module {
 
+    /**
+     * Binds all controller classes as singletons
+     * @param binder - the binder which makes the classes singletons
+     */
     @Override
     public void configure(Binder binder) {
         binder.bind(MainCtrl.class).in(Scopes.SINGLETON);
         binder.bind(AddQuoteCtrl.class).in(Scopes.SINGLETON);
         binder.bind(QuoteOverviewCtrl.class).in(Scopes.SINGLETON);
+        binder.bind(WebSocketService.class).in(Scopes.SINGLETON);
+        binder.bind(MainUICtrl.class).in(Scopes.SINGLETON);
+        binder.bind(CreateRecipeCtrl.class).in(Scopes.SINGLETON);
+        binder.bind(EditIngredientsCtrl.class).in(Scopes.SINGLETON);
+        binder.bind(EditInstructionsCtrl.class).in(Scopes.SINGLETON);
+        binder.bind(FoodItemMainCtrl.class).in(Scopes.SINGLETON);
+        binder.bind(InformationCtrl.class).in(Scopes.SINGLETON);
+        binder.bind(ShoppingListMainCtrl.class).in(Scopes.SINGLETON);
+        binder.bind(AddRecipeToShoppingListCtrl.class).in(Scopes.SINGLETON);
     }
 }

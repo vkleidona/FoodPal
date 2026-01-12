@@ -50,7 +50,7 @@ public class WebSocketService {
     /**
      * Initial connection of every client to the server
      */
-    public void connect () {
+    public void connect (Runnable onConnected) {
         WebSocketClient client = new StandardWebSocketClient();
         WebSocketStompClient stompClient = new WebSocketStompClient(client);
 
@@ -64,6 +64,10 @@ public class WebSocketService {
                 System.out.println("Global connection established.");
 
                 subscribeToGlobalTopics();
+
+                if (onConnected != null) {
+                    Platform.runLater(onConnected);
+                }
             }
         });
     }
@@ -220,6 +224,11 @@ public class WebSocketService {
      * @return Subscription - the newly created Subscription object
      */
     public StompSession.Subscription subscribeToRecipe (Long id, Consumer<Recipe> onUpdate) {
+        if (session == null || !session.isConnected()) {
+            System.err.println("Could not subscribe: StompSession is not yet established.");
+            return null;
+        }
+
         return session.subscribe("/topic/recipes/" + id, new StompFrameHandler() {
             @Override
             public Type getPayloadType(StompHeaders headers) {
