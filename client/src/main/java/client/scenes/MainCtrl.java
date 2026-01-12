@@ -18,14 +18,17 @@ package client.scenes;
 import client.Main;
 import client.network.WebSocketService;
 import client.utils.ServerUtils;
+import jakarta.inject.Inject;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.collections.WeakListChangeListener;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ListView;
 import javafx.stage.Stage;
 import javafx.util.Pair;
+import org.springframework.beans.factory.annotation.Autowired;
 import recipes.FoodItem;
 import recipes.Recipe;
 
@@ -46,10 +49,6 @@ public class MainCtrl implements MainCtrlMethods {
     private final RecipeActions recipeActions;
 
     // ADD THIS CONSTRUCTOR
-    @com.google.inject.Inject
-    public MainCtrl(RecipeActions recipeActions) {
-        this.recipeActions = recipeActions;
-    }
 
     //screen 1
     private MainUICtrl mainUICtrl;
@@ -84,6 +83,13 @@ public class MainCtrl implements MainCtrlMethods {
     private AddRecipeToShoppingListCtrl addRecipeToShoppingListCtrl;
     private Scene addRecipeToShoppingList;
 
+    private WebSocketService webSocketService;
+    @Inject
+    public MainCtrl(WebSocketService webSocketService, RecipeActions recipeActions) {
+        this.webSocketService = webSocketService;
+        this.recipeActions = recipeActions;
+    }
+
     /**
      * Sets up the MainCtrl class with all UIs and WebSockets
      * @param primaryStage - the Stage which hosts the current Scene
@@ -110,8 +116,8 @@ public class MainCtrl implements MainCtrlMethods {
                                     Pair <AddRecipeToShoppingListCtrl, Parent> addRecipeToShoppingList,
                                     Pair <InformationCtrl, Parent> information) {
 
-        this.foodItems = WebSocketService.getInstance().getMasterFoodItemsList();
-        this.recipes = WebSocketService.getInstance().getMasterRecipeList();
+        this.foodItems = webSocketService.getMasterFoodItemsList();
+        this.recipes = webSocketService.getMasterRecipeList();
 
         this.primaryStage = primaryStage;
         this.overviewCtrl = overview.getKey();
@@ -287,5 +293,66 @@ public class MainCtrl implements MainCtrlMethods {
 
     public ObservableList<FoodItem> getFoodItems() {
         return foodItems;
+    }
+
+    /**
+     * A method which handles the active recipe being changed
+     * @param updated - the updated recipe
+     */
+    public void handleRecipeBeingUpdated (Recipe updated) {
+        Platform.runLater(() -> {
+            if (editIngredientsCtrl != null && primaryStage.getScene().equals(editIngredients)) {
+                editIngredientsCtrl.refreshContent(updated);
+            }
+            if (editInstructionsCtrl != null && primaryStage.getScene().equals(editInstructions)) {
+                editInstructionsCtrl.refreshContent(updated);
+            }
+        });
+    }
+
+    /**
+     * A method which handles the active recipe being changed
+     * @param updated - the updated recipe
+     */
+    public void handleFoodItemBeingUpdated (FoodItem updated) {
+        Platform.runLater(() -> {
+            if (addFoodItemCtrl != null && primaryStage.getScene().equals(addFoodItem)) {
+                addFoodItemCtrl.refreshContent(updated);
+            }
+        });
+    }
+
+    /**
+     * A method which handles the active recipe being deleted
+     * @param id - the id of the recipe being deleted
+     */
+    public void handleRecipeBeingDeleted (Long id) {
+        Platform.runLater(() -> {
+            webSocketService.removeRecipeFromList(id);
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Recipe removed!");
+            alert.setHeaderText("Selected recipe removed");
+            alert.setContentText("The recipe you are currently editing has been removed");
+            alert.showAndWait();
+
+            showMainMenu();
+        });
+    }
+
+    /**
+     * A method which handles the active food item being deleted
+     * @param id - the food item id being deleted
+     */
+    public void handleFoodItemBeingDeleted (Long id) {
+        Platform.runLater(() -> {
+
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Recipe removed!");
+            alert.setHeaderText("Selected recipe removed");
+            alert.setContentText("The recipe you are currently editing has been removed");
+            alert.showAndWait();
+
+            showMainMenu();
+        });
     }
 }

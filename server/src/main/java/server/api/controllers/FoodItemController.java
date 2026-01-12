@@ -1,5 +1,6 @@
 package server.api.controllers;
 
+import commons.MiniUpdate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,8 +52,10 @@ public class FoodItemController {
         }
 
         FoodItem saved = repo.save(foodItem);
-        messageTemplate.convertAndSend("/topic/food_items", foodItem);
-        messageTemplate.convertAndSend("/topic/food_items/" + foodItem.getId(), foodItem);
+        MiniUpdate miniUpdate = new MiniUpdate (saved.getId(), saved.getName());
+        messageTemplate.convertAndSend("/topic/food_items", miniUpdate);
+        messageTemplate.convertAndSend("/topic/food_items/" + foodItem.getId(), saved);
+        messageTemplate.convertAndSend("/topic/food_items/new", saved);
         return ResponseEntity.ok(saved);
     }
 
@@ -110,7 +113,8 @@ public class FoodItemController {
         item.setFats(updatedItem.getFats());
 
         FoodItem saved = repo.save(item);
-        messageTemplate.convertAndSend("/topic/food_items", saved);
+        MiniUpdate miniUpdate = new MiniUpdate (saved.getId(), saved.getName());
+        messageTemplate.convertAndSend("/topic/food_items", miniUpdate);
         messageTemplate.convertAndSend("/topic/food_items/" + saved.getId(), saved);
         return ResponseEntity.ok(saved);
     }

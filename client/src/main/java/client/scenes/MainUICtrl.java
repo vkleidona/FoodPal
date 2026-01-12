@@ -26,6 +26,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 //import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.springframework.messaging.simp.stomp.StompSession;
 import recipes.FoodItem;
 import recipes.Recipe;
 import recipes.Ingredient;
@@ -83,9 +84,12 @@ public class MainUICtrl {
     private final ServerUtils server;
     private final MainCtrl mainCtrl;
     private ServerService serverService;
+    private WebSocketService webSocketService;
 
     private Set<Long> favoriteRecipeIds = new HashSet<>();
-    private List<Recipe> allLoadedRecipes = new ArrayList<>();
+
+    private Long lastSubscribedID = null;
+    private StompSession.Subscription recipeSubscription;
 
     // File path for saving favorites
     private static final File FAVORITES_FILE = new File("favorites.json");
@@ -148,6 +152,8 @@ public class MainUICtrl {
                     .filter(r -> favoriteRecipeIds.contains(r.getId()))
                     .collect(Collectors.toList());
 
+            unsubscribeFromRecipe();
+
             // Set the new list (this physically removes the item from the UI)
             recipeListView.setItems(FXCollections.observableArrayList(favorites));
 
@@ -186,11 +192,13 @@ public class MainUICtrl {
      * A constructor for the MainUI Controller class, using dependency injection
      * @param server - the injected instance of the ServerUtils
      * @param mainCtrl - the injected instance of the Main Controller
+     * @param webSocketService - the injected instance of the WebSocketService
      */
     @Inject
-    public MainUICtrl (ServerUtils server, MainCtrl mainCtrl) {
+    public MainUICtrl (ServerUtils server, MainCtrl mainCtrl, WebSocketService webSocketService) {
         this.server = server;
         this.mainCtrl = mainCtrl;
+        this.webSocketService = webSocketService;
         this.serverService = new RealServerService();
     }
 
@@ -204,30 +212,42 @@ public class MainUICtrl {
     @FXML
     public void initialize() {
 
+        /**
+        webSocketService.connect(() -> {
+            System.out.println("Connection live! Now it is safe to subscribe.");
+            initialRecipeFetch();
+
+            // If a recipe was already selected by the user during the wait:
+            if (selectedRecipe != null) {
+                selectRecipe(selectedRecipe);
+            }
+        });
+**/
         // The recipe list matches the initial server one
-        this.currentRecipes = WebSocketService.getInstance().getMasterRecipeList();
+        this.currentRecipes = webSocketService.getMasterRecipeList();
         // Immediately set currentRecipes to match the changes from the server
         // The recipe list view gets updated every time a change from the server is sensed
         currentRecipes.addListener((ListChangeListener<Recipe>) c -> {
             Platform.runLater(this::updateRecipeListView);
         });
 
-        initialRecipeFetch();
+        //initialRecipeFetch();
 
         loadFavorites();
 
         allRecipesTab.setSelected(true);
 
         // Sidebar selection updates main UI
-        recipeListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null) {
-                selectedRecipe = newVal;
-                displayRecipe(newVal);
-                boolean isFav = favoriteRecipeIds.contains(newVal.getId());
-                favoriteButton.setSelected(isFav);
-                favoriteButton.setText(isFav ? "★" : "☆");
-            }
-        });
+        recipeListView.getSelectionModel().selectedItemProperty().
+                addListener((obs, oldVal, newVal) -> {
+                    if (newVal != null) {
+                        selectedRecipe = newVal;
+                        selectRecipe(newVal);
+                        boolean isFav = favoriteRecipeIds.contains(newVal.getId());
+                        favoriteButton.setSelected(isFav);
+                        favoriteButton.setText(isFav ? "★" : "☆");
+                    }
+                });
 
         // Top bar buttons
         exitButton.setOnAction(e -> System.exit(0));
@@ -297,12 +317,12 @@ public class MainUICtrl {
 
         // The master recipe list is set to match the server ones
         // The initial display of the recipes is also triggered
-        Platform.runLater(() -> WebSocketService.getInstance().
+        Platform.runLater(() -> webSocketService.
                 getMasterRecipeList().setAll(fetched));
         if (!currentRecipes.isEmpty()) {
             selectedRecipe = currentRecipes.getFirst();
             recipeListView.getSelectionModel().select(0);
-            displayRecipe(currentRecipes.getFirst());
+            selectRecipe(currentRecipes.getFirst());
         } else {
             clearRecipeDisplay();
         }
@@ -323,17 +343,52 @@ public class MainUICtrl {
 
             // Updates the recipe with all of its parameters
             if (selectedRecipe != null) {
-                for (Recipe currentRecipe : currentRecipes) {
-                    if (currentRecipe.getId().equals(selectedRecipe.getId())) {
-                        selectedRecipe = currentRecipe;
-                        displayRecipe(selectedRecipe);
-                        break;
-                    }
-                }
+                currentRecipes.stream()
+                        .filter(r -> r.getId().equals(selectedRecipe.getId()))
+                        .findFirst()
+                        .ifPresent(updated -> {
+                            this.selectedRecipe = updated;
+                            recipeNameLabel.setText(updated.getName());
+                        });
             }
         }
     }
 
+    /**
+     * Selects a recipe from the ListView
+     * @param selectedRecipe - the recipe which was clicked by the user
+     */
+    public void selectRecipe (Recipe selectedRecipe) {
+        displayRecipe(selectedRecipe);
+
+        // If we are currently viewing another recipe, unsubscribe from it
+        if (lastSubscribedID == null || !lastSubscribedID.equals(selectedRecipe.getId())) {
+            unsubscribeFromRecipe();
+        }
+
+        if (webSocketService.getSession() == null) {
+            System.out.println("Wait: Session not established yet. Detail subscription skipped.");
+            return;
+        }
+
+        StompSession.Subscription sub = webSocketService.
+                subscribeToRecipe(selectedRecipe.getId(), updated -> {
+                    Platform.runLater(() -> {
+                        displayRecipe(updated);
+                        mainCtrl.handleRecipeBeingUpdated(updated);
+                        for (int i = 0; i < currentRecipes.size(); i++) {
+                            if (currentRecipes.get(i).getId().equals(updated.getId())) {
+                                currentRecipes.set(i, updated);
+                                break;
+                            }
+                        }
+                    });
+                });
+        if (sub != null) {
+            this.recipeSubscription = sub;
+            this.lastSubscribedID = selectedRecipe.getId();
+        }
+    }
 
     private void displayRecipe(Recipe recipe) {
         recipeNameLabel.setText(recipe.getName());
@@ -381,13 +436,14 @@ public class MainUICtrl {
                 try {
                     long id = selectedRecipe.getId(); // primitive long is fine
                     System.out.println("Deleting recipe with ID: " + id);
-
+                    mainCtrl.handleRecipeBeingDeleted(id);
                     Response serverResponse = client.target(recipeEndpointUrl + "/" + id)
                             .request()
                             .delete();
 
                     if (serverResponse.getStatus() == 204) {
                         System.out.println("Recipe deleted successfully");
+                        unsubscribeFromRecipe();
                     } else {
                         System.out.println("Failed to delete recipe: " + serverResponse.getStatus());
                     }
@@ -401,7 +457,7 @@ public class MainUICtrl {
     /**
      * Handles the functionality of the Edit Name button
      */
-    private void handleEditName() {
+    public void handleEditName() {
 
         refreshSelectedRecipe();
 
@@ -410,22 +466,22 @@ public class MainUICtrl {
         Button okButton = (Button) dialogBox.getDialogPane().lookupButton(ButtonType.OK);
         okButton.setDisable(false);
 
-        TextField nameField = new TextField(selectedRecipe.getName());
+        TextField editNameNameField = new TextField(selectedRecipe.getName());
         Label nameLabel = new Label ("Name:");
 
         HBox hBox = new HBox();
         hBox.setSpacing(15);
         hBox.setPadding(new Insets(20));
-        hBox.getChildren().addAll(nameLabel, nameField);
+        hBox.getChildren().addAll(nameLabel, editNameNameField);
         dialogBox.getDialogPane().setContent(hBox);
 
         ChangeListener<String> emptyNameValidator = (obs, old, newVal) -> {
-            okButton.setDisable(nameField.getText().isEmpty());
+            okButton.setDisable(editNameNameField.getText().isEmpty());
         };
 
         dialogBox.setResultConverter(button -> {
             if (button == ButtonType.OK) {
-                return nameField.getText();
+                return editNameNameField.getText();
             }
             return null;
         });
@@ -635,5 +691,16 @@ public class MainUICtrl {
         recipeListView.getSelectionModel().clearSelection();
         recipeListView.getItems().setAll(currentRecipes);
     }
+
+    /**
+     * A method for unsubscribing from a recipe every time it is clicked
+     */
+    public void unsubscribeFromRecipe () {
+        if (this.recipeSubscription!= null) {
+            recipeSubscription.unsubscribe();
+            recipeSubscription = null;
+        }
+    }
+
 
 }

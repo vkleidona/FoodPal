@@ -43,7 +43,7 @@ public class Main extends Application {
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 
-        WebSocketService.getInstance().connect();
+        var mainCtrl = INJECTOR.getInstance(MainCtrl.class);
 
 		var serverUtils = INJECTOR.getInstance(ServerUtils.class);
 		if (!serverUtils.isServerAvailable()) {
@@ -74,9 +74,14 @@ public class Main extends Application {
         var addRecipeToShoppingList = FXML.load
                 (AddRecipeToShoppingListCtrl.class, "client", "scenes", "AddRecipeToShoppingList.fxml");
 
-        var mainCtrl = INJECTOR.getInstance(MainCtrl.class);
-        mainCtrl.initialize(primaryStage, overview, add, mainUI, editInstructions,
-                createRecipe, addFoodItem, foodItemMain, editIngredients, shoppingListMain, addRecipeToShoppingList, information);
+        WebSocketService wss = INJECTOR.getInstance(client.network.WebSocketService.class);
+        wss.connect(() -> {
+            System.out.println("Session established! Starting UI...");
+            mainCtrl.initialize(primaryStage, overview, add, mainUI, editInstructions,
+                    createRecipe, addFoodItem, foodItemMain, editIngredients, shoppingListMain, addRecipeToShoppingList, information);;
+
+            mainUI.getKey().initialRecipeFetch();
+        });
 	}
 
     @Override

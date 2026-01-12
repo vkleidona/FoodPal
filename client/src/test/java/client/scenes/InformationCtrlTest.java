@@ -43,7 +43,7 @@ public class InformationCtrlTest extends ApplicationTest {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/client/scenes/InformationUI.fxml"));
 
         loader.setControllerFactory(param -> {
-            MainCtrl mockMainCtrl = new MainCtrl(null) {
+            MainCtrl mockMainCtrl = new MainCtrl(null, null) {
                 @Override
                 public void showMainMenu() {
                     mainMenuShown = true;
