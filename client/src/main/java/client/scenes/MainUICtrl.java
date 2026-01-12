@@ -630,10 +630,11 @@ public class MainUICtrl {
                     .collect(Collectors.toList());
         }
 
-        currentRecipes = (ObservableList<Recipe>) recipes;
+        ObservableList<Recipe> searchResults =
+                FXCollections.observableArrayList(recipes);
 
         recipeListView.getSelectionModel().clearSelection();
-        recipeListView.getItems().setAll(currentRecipes);
+        recipeListView.setItems(searchResults);
     }
 
 }
