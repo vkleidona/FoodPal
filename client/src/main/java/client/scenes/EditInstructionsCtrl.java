@@ -1,6 +1,7 @@
 package client.scenes;
 
 import com.google.inject.Inject;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -11,6 +12,11 @@ import recipes.Recipe;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import client.i18n.LanguageManager;
+import java.util.Locale;
+import java.util.ResourceBundle;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.MenuItem;
 
 public class EditInstructionsCtrl {
 
@@ -18,6 +24,51 @@ public class EditInstructionsCtrl {
     public ListView<String> instructionList;
     private ObservableList<String> steps;
     private Recipe currentRecipe;
+
+    @FXML
+    private MenuButton languageButton;
+
+    @FXML
+    private ResourceBundle resources;
+
+    @FXML
+    public void initialize() {
+        setupLanguageMenu();
+    }
+
+    private void setupLanguageMenu() {
+        languageButton.getItems().clear();
+
+        MenuItem enItem = new MenuItem("English");
+        enItem.setOnAction(e -> changeLanguage(new Locale("en")));
+
+        MenuItem nlItem = new MenuItem("Nederlands");
+        nlItem.setOnAction(e -> changeLanguage(new Locale("nl")));
+
+        MenuItem roItem = new MenuItem("Română");
+        roItem.setOnAction(e -> changeLanguage(new Locale("ro")));
+
+        languageButton.getItems().addAll(enItem, nlItem, roItem);
+
+        Locale current = LanguageManager.getLocale();
+        switch (current.getLanguage()) {
+            case "nl" -> languageButton.setText("Nederlands");
+            case "ro" -> languageButton.setText("Română");
+            default -> languageButton.setText("English");
+        }
+    }
+
+    private void changeLanguage(Locale newLocale) {
+        LanguageManager.setLocale(newLocale);
+        switch (newLocale.getLanguage()) {
+            case "nl" -> languageButton.setText("Nederlands");
+            case "ro" -> languageButton.setText("Română");
+            default -> languageButton.setText("English");
+        }
+        mainCtrl.reloadScenesForNewLanguage();
+    }
+
+
 
     // ServerUtils to communicate with the backend
     private final client.utils.ServerUtils server;
@@ -64,9 +115,9 @@ public class EditInstructionsCtrl {
     @FXML
     public void addInstruction() {
         TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Add Instruction");
-        dialog.setHeaderText("Enter a new step:");
-        dialog.setContentText("Step:");
+        dialog.setTitle(resources.getString("editInstructions.dialog.add.title"));
+        dialog.setHeaderText(resources.getString("editInstructions.dialog.add.header"));
+        dialog.setContentText(resources.getString("editInstructions.dialog.add.content"));
 
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(step -> {
@@ -76,40 +127,44 @@ public class EditInstructionsCtrl {
         });
     }
 
+
     /**
      * The method behind the edit button
      */
     @FXML
     public void editInstruction() {
-        int selectedIdx = instructionList.getSelectionModel().getSelectedIndex(); //get the row number selected
+        int selectedIdx = instructionList.getSelectionModel().getSelectedIndex();
         if (selectedIdx < 0) {
-            showAlert("No Selection", "Please select a step to edit.");
+            showAlert(resources.getString("editInstructions.alert.noSelection.title"),
+                    resources.getString("editInstructions.alert.noSelection.edit"));
             return;
         }
 
-        String currentStep = steps.get(selectedIdx); //get the row
+        String currentStep = steps.get(selectedIdx);
         TextInputDialog dialog = new TextInputDialog(currentStep);
-        dialog.setTitle("Edit Instruction");
-        dialog.setHeaderText("Edit the selected step:");
+        dialog.setTitle(resources.getString("editInstructions.dialog.edit.title"));
+        dialog.setHeaderText(resources.getString("editInstructions.dialog.edit.header"));
 
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(newStep -> {
             if (!newStep.trim().isEmpty()) {
-                steps.set(selectedIdx, newStep.trim()); //set the new row
+                steps.set(selectedIdx, newStep.trim());
             }
         });
     }
+
 
     /**
      * The method behind the delete button
      */
     @FXML
     public void deleteInstruction() {
-        int selectedIdx = instructionList.getSelectionModel().getSelectedIndex(); //get the row number selected
+        int selectedIdx = instructionList.getSelectionModel().getSelectedIndex();
         if (selectedIdx >= 0) {
-            steps.remove(selectedIdx);  //remove the selected row from the steps
+            steps.remove(selectedIdx);
         } else {
-            showAlert("No Selection", "Please select a step to delete.");
+            showAlert(resources.getString("editInstructions.alert.noSelection.title"),
+                    resources.getString("editInstructions.alert.noSelection.delete"));
         }
     }
 
@@ -128,9 +183,21 @@ public class EditInstructionsCtrl {
             returnToMainUI();
 
         } catch (Exception e) {
-            showAlert("Error", "Failed to save instructions: " + e.getMessage());
+            showAlert(resources.getString("editInstructions.alert.error.title"),
+                    resources.getString("editInstructions.alert.error.saveFailed") + " " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Refreshes the content
+     * @param recipe - the recipe's current
+     */
+    public void refreshContent (Recipe recipe) {
+        Platform.runLater(() -> {
+            this.currentRecipe = recipe;
+            instructionList.getItems().setAll(recipe.getInstructions());
+        });
     }
 
 

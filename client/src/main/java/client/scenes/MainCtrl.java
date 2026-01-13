@@ -18,20 +18,30 @@ package client.scenes;
 import client.Main;
 import client.network.WebSocketService;
 import client.utils.ServerUtils;
+import jakarta.inject.Inject;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.collections.WeakListChangeListener;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ListView;
 import javafx.stage.Stage;
 import javafx.util.Pair;
+import client.MyFXML;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.util.Pair;
+import org.springframework.beans.factory.annotation.Autowired;
 import recipes.FoodItem;
 import recipes.Recipe;
 
 public class MainCtrl implements MainCtrlMethods {
 
     private Stage primaryStage;
+
+    private final MyFXML fxml;
+
 
     private ObservableList<Recipe> recipes;
     private ObservableList <FoodItem> foodItems;
@@ -42,14 +52,8 @@ public class MainCtrl implements MainCtrlMethods {
     private AddQuoteCtrl addCtrl;
     private Scene add;
 
-    // ADD THIS FIELD
     private final RecipeActions recipeActions;
 
-    // ADD THIS CONSTRUCTOR
-    @com.google.inject.Inject
-    public MainCtrl(RecipeActions recipeActions) {
-        this.recipeActions = recipeActions;
-    }
 
     //screen 1
     private MainUICtrl mainUICtrl;
@@ -84,6 +88,14 @@ public class MainCtrl implements MainCtrlMethods {
     private AddRecipeToShoppingListCtrl addRecipeToShoppingListCtrl;
     private Scene addRecipeToShoppingList;
 
+    private WebSocketService webSocketService;
+    @Inject
+    public MainCtrl(MyFXML fxml, WebSocketService webSocketService, RecipeActions recipeActions) {
+        this.fxml = fxml;
+        this.webSocketService = webSocketService;
+        this.recipeActions = recipeActions;
+    }
+
     /**
      * Sets up the MainCtrl class with all UIs and WebSockets
      * @param primaryStage - the Stage which hosts the current Scene
@@ -110,8 +122,8 @@ public class MainCtrl implements MainCtrlMethods {
                                     Pair <AddRecipeToShoppingListCtrl, Parent> addRecipeToShoppingList,
                                     Pair <InformationCtrl, Parent> information) {
 
-        this.foodItems = WebSocketService.getInstance().getMasterFoodItemsList();
-        this.recipes = WebSocketService.getInstance().getMasterRecipeList();
+        this.foodItems = webSocketService.getMasterFoodItemsList();
+        this.recipes = webSocketService.getMasterRecipeList();
 
         this.primaryStage = primaryStage;
         this.overviewCtrl = overview.getKey();
@@ -288,4 +300,138 @@ public class MainCtrl implements MainCtrlMethods {
     public ObservableList<FoodItem> getFoodItems() {
         return foodItems;
     }
+
+    /**
+     * A method which handles the active recipe being changed
+     * @param updated - the updated recipe
+     */
+    public void handleRecipeBeingUpdated (Recipe updated) {
+        Platform.runLater(() -> {
+            if (editIngredientsCtrl != null && primaryStage.getScene().equals(editIngredients)) {
+                editIngredientsCtrl.refreshContent(updated);
+            }
+            if (editInstructionsCtrl != null && primaryStage.getScene().equals(editInstructions)) {
+                editInstructionsCtrl.refreshContent(updated);
+            }
+        });
+    }
+
+    /**
+     * A method which handles the active recipe being changed
+     * @param updated - the updated recipe
+     */
+    public void handleFoodItemBeingUpdated (FoodItem updated) {
+        Platform.runLater(() -> {
+            if (addFoodItemCtrl != null && primaryStage.getScene().equals(addFoodItem)) {
+                addFoodItemCtrl.refreshContent(updated);
+            }
+        });
+    }
+
+    /**
+     * A method which handles the active recipe being deleted
+     * @param id - the id of the recipe being deleted
+     */
+    public void handleRecipeBeingDeleted (Long id) {
+        Platform.runLater(() -> {
+            webSocketService.removeRecipeFromList(id);
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Recipe removed!");
+            alert.setHeaderText("Selected recipe removed");
+            alert.setContentText("The recipe you are currently editing has been removed");
+            alert.showAndWait();
+
+            showMainMenu();
+        });
+    }
+
+    /**
+     * A method which handles the active food item being deleted
+     * @param id - the food item id being deleted
+     */
+    public void handleFoodItemBeingDeleted (Long id) {
+        Platform.runLater(() -> {
+
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Recipe removed!");
+            alert.setHeaderText("Selected recipe removed");
+            alert.setContentText("The recipe you are currently editing has been removed");
+            alert.showAndWait();
+
+            showMainMenu();
+        });
+    }
+
+    /**
+     * Reloads all main scenes in the currently selected language.
+     */
+    public void reloadScenesForNewLanguage() {
+
+        // Main UI
+        Pair<MainUICtrl, Parent> mainPair =
+                fxml.load(MainUICtrl.class, "client", "scenes", "MainUI.fxml");
+        this.mainUICtrl = mainPair.getKey();
+        this.mainMenu = new Scene(mainPair.getValue());
+
+        // Add Food Item
+        Pair<AddFoodItemCtrl, Parent> addFoodItemPair =
+                fxml.load(AddFoodItemCtrl.class, "client", "scenes", "AddFoodItem.fxml");
+        this.addFoodItemCtrl = addFoodItemPair.getKey();
+        this.addFoodItem = new Scene(addFoodItemPair.getValue());
+
+        // Add Recipe To Shopping List
+        Pair<AddRecipeToShoppingListCtrl, Parent> addRecipeToShoppingListPair =
+                fxml.load(AddRecipeToShoppingListCtrl.class, "client", "scenes", "AddRecipeToShoppingList.fxml");
+        this.addRecipeToShoppingListCtrl = addRecipeToShoppingListPair.getKey();
+        this.addRecipeToShoppingList = new Scene(addRecipeToShoppingListPair.getValue());
+
+        // Create Recipe
+        Pair<CreateRecipeCtrl, Parent> createRecipePair =
+                fxml.load(CreateRecipeCtrl.class, "client", "scenes", "creatingRecipe.fxml");
+        this.createRecipeCtrl = createRecipePair.getKey();
+        this.createRecipe = new Scene(createRecipePair.getValue());
+        this.createRecipeCtrl.setRecipeActions(this.recipeActions);
+        this.createRecipeCtrl.setMainCtrl(this);
+
+        // Edit Ingredients
+        Pair<EditIngredientsCtrl, Parent> editIngredientsPair =
+                fxml.load(EditIngredientsCtrl.class, "client", "scenes", "EditIngredients.fxml");
+        this.editIngredientsCtrl = editIngredientsPair.getKey();
+        this.editIngredients = new Scene(editIngredientsPair.getValue());
+
+        // Edit Instructions
+        Pair<EditInstructionsCtrl, Parent> editInstructionsPair =
+                fxml.load(EditInstructionsCtrl.class, "client", "scenes", "EditInstructions.fxml");
+        this.editInstructionsCtrl = editInstructionsPair.getKey();
+        this.editInstructions = new Scene(editInstructionsPair.getValue());
+
+        // Food Item Main
+        Pair<FoodItemMainCtrl, Parent> foodItemMainPair =
+                fxml.load(FoodItemMainCtrl.class, "client", "scenes", "FoodItemMain.fxml");
+        this.foodItemMainCtrl = foodItemMainPair.getKey();
+        this.foodItemMain = new Scene(foodItemMainPair.getValue());
+
+        // Information UI
+        Pair<InformationCtrl, Parent> informationPair =
+                fxml.load(InformationCtrl.class, "client", "scenes", "InformationUI.fxml");
+        this.informationCtrl = informationPair.getKey();
+        this.informationScene = new Scene(informationPair.getValue());
+
+        // Shopping List Main UI
+        Pair<ShoppingListMainCtrl, Parent> shoppingListMainPair =
+                fxml.load(ShoppingListMainCtrl.class, "client", "scenes", "ShoppingListMainUI.fxml");
+        this.shoppingListMainCtrl = shoppingListMainPair.getKey();
+        this.shoppingListMainScene = new Scene(shoppingListMainPair.getValue());
+
+        // Finally, show the main menu again
+        showMainMenu();
+    }
+
+    // this constructor is for tests
+    public MainCtrl() {
+        this.fxml = null;
+        this.webSocketService = null;
+        this.recipeActions = null;
+    }
+
 }

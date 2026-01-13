@@ -1,45 +1,38 @@
 package client.network;
 
+import client.scenes.MainCtrl;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import commons.MiniUpdate;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
-import org.springframework.messaging.simp.stomp.StompFrameHandler;
-import org.springframework.messaging.simp.stomp.StompHeaders;
-import org.springframework.messaging.simp.stomp.StompSession;
-import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
+import org.springframework.messaging.simp.stomp.*;
 import org.springframework.web.socket.client.WebSocketClient;
-import org.springframework.web.socket.client.WebSocketConnectionManager;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 import recipes.FoodItem;
 import recipes.Recipe;
 
 import java.lang.reflect.Type;
-import java.util.List;
+import java.util.function.Consumer;
 
 public class WebSocketService {
-    private static WebSocketService instance;
+
     private StompSession session;
     private final String url = "ws://localhost:8080/ws-updates";
 
     // The Lists with the current data - every other list needs to be fetched
     private final ObservableList<Recipe> masterRecipeList = FXCollections.observableArrayList();
-    private final ObservableList<FoodItem> masterFoodItemsList = FXCollections.observableArrayList();
-
+    private final ObservableList<FoodItem> masterFoodItemsList
+            = FXCollections.observableArrayList();
     /**
      * Constructor for the WebSocketService class
      * using dependency injection
      */
-    private WebSocketService () {
+    public WebSocketService () {
 
-    }
-
-    public static WebSocketService getInstance() {
-        if (instance == null) {
-            instance = new WebSocketService();
-        }
-        return instance;
     }
 
     public StompSession getSession() {
@@ -54,7 +47,11 @@ public class WebSocketService {
         return masterFoodItemsList;
     }
 
-    public void connect () {
+    /**
+     * Initial connection of every client to the server
+     * @param onConnected - Runnable which signals to the Main when to run
+     */
+    public void connect (Runnable onConnected) {
         WebSocketClient client = new StandardWebSocketClient();
         WebSocketStompClient stompClient = new WebSocketStompClient(client);
 
@@ -68,6 +65,10 @@ public class WebSocketService {
                 System.out.println("Global connection established.");
 
                 subscribeToGlobalTopics();
+
+                if (onConnected != null) {
+                    Platform.runLater(onConnected);
+                }
             }
         });
     }
@@ -76,19 +77,41 @@ public class WebSocketService {
      * Subscribes the client to listen to the global channels - for the recipes and FoodItems
      */
     public void subscribeToGlobalTopics () {
-        session.subscribe("/topic/food_items", new StompFrameHandler() {
+        subscribeToRecipesGlobal();
+        subscribeToFoodItemsGlobal();
+    }
+
+    /**
+     * Subscribes to the global updates to the list
+     */
+    public void subscribeToRecipesGlobal () {
+        session.subscribe("/topic/recipes", new StompFrameHandler() {
             @Override
             public Type getPayloadType(StompHeaders headers) {
-                return FoodItem.class;
+                return MiniUpdate.class;
             }
 
             @Override
             public void handleFrame(StompHeaders headers, Object payload) {
-                FoodItem item = (FoodItem) payload;
-                Platform.runLater(() -> syncItemInList(item));
+                MiniUpdate miniUpdate = (MiniUpdate) payload;
+                Platform.runLater(() -> syncRecipeNameInList(miniUpdate));
             }
         });
-        session.subscribe("/topic/recipes", new StompFrameHandler() {
+
+        session.subscribe("/topic/recipes/delete", new StompFrameHandler() {
+            @Override
+            public Type getPayloadType(StompHeaders headers) {
+                return Long.class;
+            }
+
+            @Override
+            public void handleFrame(StompHeaders headers, Object payload) {
+                Long recipeID = (Long) payload;
+                Platform.runLater(() -> removeRecipeFromList(recipeID));
+            }
+        });
+
+        session.subscribe("/topic/recipes/new", new StompFrameHandler() {
             @Override
             public Type getPayloadType(StompHeaders headers) {
                 return Recipe.class;
@@ -97,7 +120,25 @@ public class WebSocketService {
             @Override
             public void handleFrame(StompHeaders headers, Object payload) {
                 Recipe recipe = (Recipe) payload;
-                Platform.runLater(() -> syncRecipeInList(recipe));
+                Platform.runLater(() -> masterRecipeList.add(recipe));
+            }
+        });
+    }
+
+    /**
+     * Creates global subscriptions to the list of FoodItems
+     */
+    public void subscribeToFoodItemsGlobal () {
+        session.subscribe("/topic/food_items", new StompFrameHandler() {
+            @Override
+            public Type getPayloadType(StompHeaders headers) {
+                return MiniUpdate.class;
+            }
+
+            @Override
+            public void handleFrame(StompHeaders headers, Object payload) {
+                MiniUpdate miniUpdate = (MiniUpdate) payload;
+                Platform.runLater(() -> syncFoodItemNameInList(miniUpdate));
             }
         });
         session.subscribe("/topic/food_items/delete", new StompFrameHandler() {
@@ -112,35 +153,124 @@ public class WebSocketService {
                 Platform.runLater(() -> removeItemFromList(id));
             }
         });
-        session.subscribe("/topic/recipes/delete", new StompFrameHandler() {
+        session.subscribe("/topic/food_items/new", new StompFrameHandler() {
             @Override
             public Type getPayloadType(StompHeaders headers) {
-                return Long.class;
+                return FoodItem.class;
             }
 
             @Override
             public void handleFrame(StompHeaders headers, Object payload) {
-                Long recipeID = (Long) payload;
-                Platform.runLater(() -> removeRecipeFromList(recipeID));
+                FoodItem foodItem = (FoodItem) payload;
+                Platform.runLater(() -> masterFoodItemsList.add(foodItem));
             }
         });
     }
 
-    public void syncItemInList (FoodItem foodItem) {
-        masterFoodItemsList.removeIf(x -> x.getId().equals(foodItem.getId()));
-        masterFoodItemsList.add(foodItem);
+
+    /**
+     * Synchronizes the FoodItem in the master list by replacing its name
+     * @param update - the updated version of the FoodItem
+     */
+    public void syncFoodItemNameInList (MiniUpdate update) {
+        for (int i = 0; i < masterFoodItemsList.size(); i++) {
+            FoodItem f = masterFoodItemsList.get(i);
+            if (f.getId().equals(update.getId())) {
+                f.setName(update.getTitle());
+                masterFoodItemsList.set(i, f);
+                return;
+            }
+        }
     }
 
-    public void syncRecipeInList (Recipe recipe) {
-        masterRecipeList.removeIf(x -> x.getId().equals(recipe.getId()));
-        masterRecipeList.add(recipe);
+    /**
+     * Synchronizes the recipe in the master list by replacing its name
+     * @param update - the updated version of the recipe
+     */
+    public void syncRecipeNameInList (MiniUpdate update) {
+        for (int i = 0; i < masterRecipeList.size(); i++) {
+            Recipe r = masterRecipeList.get(i);
+            if (r.getId().equals(update.getId())) {
+                r.setName(update.getTitle());
+                masterRecipeList.set(i, r);
+                return;
+            }
+        }
     }
 
+    /**
+     * Removes a food item from the master list
+     * @param id - the item to be removed from the list
+     */
     public void removeItemFromList (Long id) {
-        masterFoodItemsList.removeIf(x -> x.getId().equals(id));
+        Platform.runLater(() -> {
+            masterFoodItemsList.removeIf(x -> x.getId().equals(id));
+        });
     }
 
+    /**
+     * Remove a recipe from the master list
+     * @param id - the id of the recipe to be removed from the list
+     */
     public void removeRecipeFromList (Long id) {
-        masterRecipeList.removeIf(x -> x.getId().equals(id));
+        Platform.runLater(() -> {
+            masterRecipeList.removeIf(x -> x.getId().equals(id));
+        });
     }
+
+    /**
+     * A method for subscribing to changes in a particular recipe
+     * @param id - the ID of the recipe which we are subscribing to
+     * @param onUpdate - what to do on update
+     * @return Subscription - the newly created Subscription object
+     */
+    public StompSession.Subscription subscribeToRecipe (Long id, Consumer<Recipe> onUpdate) {
+        if (session == null || !session.isConnected()) {
+            System.err.println("Could not subscribe: StompSession is not yet established.");
+            return null;
+        }
+
+        return session.subscribe("/topic/recipes/" + id, new StompFrameHandler() {
+            @Override
+            public Type getPayloadType(StompHeaders headers) {
+                return Recipe.class;
+            }
+
+            @Override
+            public void handleFrame(StompHeaders headers, Object payload) {
+                Recipe recipe = (Recipe) payload;
+                Platform.runLater(() -> {
+                    onUpdate.accept(recipe);
+                });
+
+            }
+        });
+    }
+
+    /**
+     * A method for subscribing to changes in a particular FoodItem
+     * @param id - the ID of the FoodItem we are subscribing to
+     * @param onUpdate - what to do on update
+     * @return Subscription - the newly created Subscription object
+     */
+    public StompSession.Subscription subscribeToFoodItem (Long id, Consumer<FoodItem> onUpdate) {
+        if (session == null || !session.isConnected()) {
+            System.err.println("Could not subscribe: StompSession is not yet established.");
+            return null;
+        }
+
+        return session.subscribe("/topic/food_items/" + id, new StompFrameHandler() {
+            @Override
+            public Type getPayloadType(StompHeaders headers) {
+                return FoodItem.class;
+            }
+
+            @Override
+            public void handleFrame(StompHeaders headers, Object payload) {
+                FoodItem foodItem = (FoodItem) payload;
+                Platform.runLater(() -> onUpdate.accept(foodItem));
+            }
+        });
+    }
+
 }

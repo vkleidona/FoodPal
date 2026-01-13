@@ -1,6 +1,6 @@
 package server.api.controllers;
 
-import jakarta.persistence.*;
+import commons.MiniUpdate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -68,6 +68,7 @@ public class RecipeController {
             } else {
                 foodItem = incoming;
                 foodItemRepository.save(foodItem);
+                //TODO: Fix to send a message
                 messageTemplate.convertAndSend("/topic/food_items", foodItem);
             }
 
@@ -76,8 +77,10 @@ public class RecipeController {
         }
 
         Recipe saved = recipeRepository.save(recipe);
+        MiniUpdate miniUpdate = new MiniUpdate (saved.getId(), saved.getName());
         messageTemplate.convertAndSend("/topic/recipes/" + saved.getId(), saved);
-        messageTemplate.convertAndSend("/topic/recipes", saved);
+        messageTemplate.convertAndSend("/topic/recipes/new", saved);
+        messageTemplate.convertAndSend("/topic/recipes", miniUpdate);
         return ResponseEntity.ok(saved.getId());
     }
 
@@ -128,7 +131,8 @@ public class RecipeController {
                 currentRecipe.getIngredients().addAll(ingredients);
             }
             Recipe saved = recipeRepository.save(currentRecipe);
-            messageTemplate.convertAndSend("/topic/recipes", saved);
+            MiniUpdate miniUpdate = new MiniUpdate (saved.getId(), saved.getName());
+            messageTemplate.convertAndSend("/topic/recipes", miniUpdate);
             messageTemplate.convertAndSend("/topic/recipes/" + saved.getId(), saved);
             return ResponseEntity.ok(saved);
         }).orElse(ResponseEntity.notFound().build());
@@ -151,15 +155,14 @@ public class RecipeController {
             oldRecipe.setName(updatedRecipe.getName());
             oldRecipe.setServings(updatedRecipe.getServings());
             oldRecipe.setInstructions(updatedRecipe.getInstructions());
-            oldRecipe.getIngredients().clear();
-            if (updatedRecipe.getIngredients()!=null) {
-                updatedRecipe.getIngredients().
-                        forEach(ingredient -> ingredient.setRecipe(oldRecipe));
-                oldRecipe.getIngredients().addAll(updatedRecipe.getIngredients());
-            }
+
+            setAllIngredients(updatedRecipe.getIngredients(), oldRecipe.getId());
+
             Recipe newRecipe = recipeRepository.save(oldRecipe);
-            messageTemplate.convertAndSend("/topic/recipes", newRecipe);
-            messageTemplate.convertAndSend("/topic/recipes" + newRecipe.getId(), newRecipe);
+
+            MiniUpdate miniUpdate = new MiniUpdate (newRecipe.getId(), newRecipe.getName());
+            messageTemplate.convertAndSend("/topic/recipes", miniUpdate);
+            messageTemplate.convertAndSend("/topic/recipes/" + newRecipe.getId(), newRecipe);
             return ResponseEntity.ok(newRecipe);
         });
         return ResponseEntity.ok().build();
