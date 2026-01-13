@@ -24,7 +24,7 @@ import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-//import javafx.stage.FileChooser;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import recipes.FoodItem;
 import recipes.Recipe;
@@ -36,7 +36,7 @@ import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-//import java.io.File;
+import java.io.File;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -502,7 +502,7 @@ public class MainUICtrl {
             }
         }
 
-        content += "Instructions:\n";
+        content += "\nInstructions:\n";
 
         if (selectedRecipe.getInstructions() != null) {
             for (int i = 0; i < selectedRecipe.getInstructions().size(); i++) {
@@ -512,20 +512,20 @@ public class MainUICtrl {
             }
         }
 
-        /* THIS COULD POSSIBLY BE USED SO THAT THE USER IS ASKED WHERE TO SAVE THE FILE INSTEAD OF BLINDLY SAVING IT INTO THE
-        PROJECT FOLDER
-
         FileChooser fileChooser = new  FileChooser();
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Recipe", "*.txt"));  //ensures the file is saved as txt
 
+        fileChooser.setInitialFileName((selectedRecipe.getName() + ".txt"));
+
         Stage stage = (Stage) addRecipeButton.getScene().getWindow();
         File file = fileChooser.showSaveDialog(stage);
-         */
 
-        try (FileWriter fw = new FileWriter(selectedRecipe.getName() + ".txt")) {
-            fw.write(content);
-        } catch (IOException e) {
-            e.printStackTrace();
+        if(file!=null) {
+            try (FileWriter fw = new FileWriter(file)) {
+                fw.write(content);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
