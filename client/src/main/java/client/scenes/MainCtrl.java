@@ -28,6 +28,10 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ListView;
 import javafx.stage.Stage;
 import javafx.util.Pair;
+import client.MyFXML;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.util.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import recipes.FoodItem;
 import recipes.Recipe;
@@ -35,6 +39,9 @@ import recipes.Recipe;
 public class MainCtrl implements MainCtrlMethods {
 
     private Stage primaryStage;
+
+    private final MyFXML fxml;
+
 
     private ObservableList<Recipe> recipes;
     private ObservableList <FoodItem> foodItems;
@@ -45,10 +52,8 @@ public class MainCtrl implements MainCtrlMethods {
     private AddQuoteCtrl addCtrl;
     private Scene add;
 
-    // ADD THIS FIELD
     private final RecipeActions recipeActions;
 
-    // ADD THIS CONSTRUCTOR
 
     //screen 1
     private MainUICtrl mainUICtrl;
@@ -85,7 +90,8 @@ public class MainCtrl implements MainCtrlMethods {
 
     private WebSocketService webSocketService;
     @Inject
-    public MainCtrl(WebSocketService webSocketService, RecipeActions recipeActions) {
+    public MainCtrl(MyFXML fxml, WebSocketService webSocketService, RecipeActions recipeActions) {
+        this.fxml = fxml;
         this.webSocketService = webSocketService;
         this.recipeActions = recipeActions;
     }
@@ -355,4 +361,77 @@ public class MainCtrl implements MainCtrlMethods {
             showMainMenu();
         });
     }
+
+    /**
+     * Reloads all main scenes in the currently selected language.
+     */
+    public void reloadScenesForNewLanguage() {
+
+        // Main UI
+        Pair<MainUICtrl, Parent> mainPair =
+                fxml.load(MainUICtrl.class, "client", "scenes", "MainUI.fxml");
+        this.mainUICtrl = mainPair.getKey();
+        this.mainMenu = new Scene(mainPair.getValue());
+
+        // Add Food Item
+        Pair<AddFoodItemCtrl, Parent> addFoodItemPair =
+                fxml.load(AddFoodItemCtrl.class, "client", "scenes", "AddFoodItem.fxml");
+        this.addFoodItemCtrl = addFoodItemPair.getKey();
+        this.addFoodItem = new Scene(addFoodItemPair.getValue());
+
+        // Add Recipe To Shopping List
+        Pair<AddRecipeToShoppingListCtrl, Parent> addRecipeToShoppingListPair =
+                fxml.load(AddRecipeToShoppingListCtrl.class, "client", "scenes", "AddRecipeToShoppingList.fxml");
+        this.addRecipeToShoppingListCtrl = addRecipeToShoppingListPair.getKey();
+        this.addRecipeToShoppingList = new Scene(addRecipeToShoppingListPair.getValue());
+
+        // Create Recipe
+        Pair<CreateRecipeCtrl, Parent> createRecipePair =
+                fxml.load(CreateRecipeCtrl.class, "client", "scenes", "creatingRecipe.fxml");
+        this.createRecipeCtrl = createRecipePair.getKey();
+        this.createRecipe = new Scene(createRecipePair.getValue());
+        this.createRecipeCtrl.setRecipeActions(this.recipeActions);
+        this.createRecipeCtrl.setMainCtrl(this);
+
+        // Edit Ingredients
+        Pair<EditIngredientsCtrl, Parent> editIngredientsPair =
+                fxml.load(EditIngredientsCtrl.class, "client", "scenes", "EditIngredients.fxml");
+        this.editIngredientsCtrl = editIngredientsPair.getKey();
+        this.editIngredients = new Scene(editIngredientsPair.getValue());
+
+        // Edit Instructions
+        Pair<EditInstructionsCtrl, Parent> editInstructionsPair =
+                fxml.load(EditInstructionsCtrl.class, "client", "scenes", "EditInstructions.fxml");
+        this.editInstructionsCtrl = editInstructionsPair.getKey();
+        this.editInstructions = new Scene(editInstructionsPair.getValue());
+
+        // Food Item Main
+        Pair<FoodItemMainCtrl, Parent> foodItemMainPair =
+                fxml.load(FoodItemMainCtrl.class, "client", "scenes", "FoodItemMain.fxml");
+        this.foodItemMainCtrl = foodItemMainPair.getKey();
+        this.foodItemMain = new Scene(foodItemMainPair.getValue());
+
+        // Information UI
+        Pair<InformationCtrl, Parent> informationPair =
+                fxml.load(InformationCtrl.class, "client", "scenes", "InformationUI.fxml");
+        this.informationCtrl = informationPair.getKey();
+        this.informationScene = new Scene(informationPair.getValue());
+
+        // Shopping List Main UI
+        Pair<ShoppingListMainCtrl, Parent> shoppingListMainPair =
+                fxml.load(ShoppingListMainCtrl.class, "client", "scenes", "ShoppingListMainUI.fxml");
+        this.shoppingListMainCtrl = shoppingListMainPair.getKey();
+        this.shoppingListMainScene = new Scene(shoppingListMainPair.getValue());
+
+        // Finally, show the main menu again
+        showMainMenu();
+    }
+
+    // this constructor is for tests
+    public MainCtrl() {
+        this.fxml = null;
+        this.webSocketService = null;
+        this.recipeActions = null;
+    }
+
 }

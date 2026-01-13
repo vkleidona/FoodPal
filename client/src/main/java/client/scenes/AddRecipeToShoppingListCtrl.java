@@ -14,7 +14,10 @@ import recipes.FoodItem;
 import recipes.Ingredient;
 import recipes.Recipe;
 import shopping.ShoppingList;
-
+import client.i18n.LanguageManager;
+import java.util.Locale;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.MenuItem;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +29,9 @@ public class AddRecipeToShoppingListCtrl {
 
     @FXML
     private Button confirmButton;
+
+    @FXML
+    private MenuButton languageButton;
 
     @FXML
     private Button plusButton;
@@ -95,7 +101,41 @@ public class AddRecipeToShoppingListCtrl {
                 }
             }
         });
+
+        setupLanguageMenu();
     }
+
+    private void setupLanguageMenu() {
+        languageButton.getItems().clear();
+
+        MenuItem enItem = new MenuItem("English");
+        enItem.setOnAction(e -> changeLanguage(new Locale("en")));
+
+        MenuItem nlItem = new MenuItem("Nederlands");
+        nlItem.setOnAction(e -> changeLanguage(new Locale("nl")));
+
+        MenuItem roItem = new MenuItem("Română");
+        roItem.setOnAction(e -> changeLanguage(new Locale("ro")));
+
+        languageButton.getItems().addAll(enItem, nlItem, roItem);
+
+        Locale current = LanguageManager.getLocale();
+        switch (current.getLanguage()) {
+            case "nl" -> languageButton.setText("Nederlands");
+            case "ro" -> languageButton.setText("Română");
+            default -> languageButton.setText("English");
+        }
+    }
+
+
+    private void changeLanguage(Locale newLocale) {
+        LanguageManager.setLocale(newLocale);
+        languageButton.setText("nl".equals(newLocale.getLanguage()) ? "Nederlands" : "English");
+
+        mainCtrl.reloadScenesForNewLanguage();
+    }
+
+
 
     /**
      * Handles the functionality for adding / changing an ingredient

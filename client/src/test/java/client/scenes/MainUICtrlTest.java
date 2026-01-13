@@ -14,7 +14,8 @@ import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
 import org.testfx.util.WaitForAsyncUtils;
 import recipes.Recipe;
-
+import client.i18n.LanguageManager;
+import java.util.Locale;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -327,7 +328,7 @@ public class MainUICtrlTest extends ApplicationTest {
         public boolean infoShown = false;
         public boolean foodItemMainShown = false;
 
-        public MockMainCtrl() { super(null, null); }
+        public MockMainCtrl() { super(); }
 
         @Override public void showCreateRecipe() { createRecipeShown = true; }
         @Override public void showEditIngredients(Recipe r) { editIngredientsShown = true; }
