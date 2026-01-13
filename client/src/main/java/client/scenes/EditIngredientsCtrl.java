@@ -167,6 +167,9 @@ public class EditIngredientsCtrl{
         metric.setToggleGroup(unitGroup);
         imperial.setToggleGroup(unitGroup);
         common.setToggleGroup(unitGroup);
+
+        inputFoodName.setEditable(false);
+        inputMeasurement.setEditable(false);
     }
 
     @FXML
@@ -279,7 +282,7 @@ public class EditIngredientsCtrl{
         try {
             double quantity = Double.parseDouble(inputQuantity.getText());
 
-            String foodName = inputFoodName.getEditor().getText();
+            String foodName = inputFoodName.getValue();
             FoodItem foodItem = server.getFoodItemByName(foodName);
             if (foodItem==null) {
                 foodItem = new FoodItem(foodName);
