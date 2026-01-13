@@ -10,10 +10,13 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import recipes.FoodItem;
 import recipes.Ingredient;
 import shopping.ShoppingList;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
@@ -149,7 +152,13 @@ public class ShoppingListMainCtrl {
      */
     @FXML
     public void print () throws IOException {
-        try (FileWriter writer = new FileWriter("shopping_list.txt")) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Shopping_list", "*.txt"));
+
+        Stage stage = (Stage) addIngredientButton.getScene().getWindow();
+        File file = fileChooser.showSaveDialog(stage);
+
+        try (FileWriter writer = new FileWriter(file)) {
             for (Ingredient ingredient : ingredientsObservableList) {
                 writer.write(ingredient.toString());
                 writer.write("\n");
