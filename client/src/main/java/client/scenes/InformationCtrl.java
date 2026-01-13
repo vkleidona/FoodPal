@@ -11,6 +11,12 @@ import javafx.scene.layout.VBox;
 import recipes.FoodItem;
 import recipes.Ingredient;
 import recipes.Recipe;
+import client.i18n.LanguageManager;
+import java.text.MessageFormat;
+import java.util.Locale;
+import java.util.ResourceBundle;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.MenuItem;
 
 public class InformationCtrl {
 
@@ -23,6 +29,12 @@ public class InformationCtrl {
     @FXML private VBox ingredientsContainer;
     @FXML private TextField caloriesRecipe;
 
+    @FXML
+    private MenuButton languageButton;
+
+    @FXML
+    private ResourceBundle resources;
+
     private final MainCtrl mainCtrl;
     private final ServerUtils serverUtils;
     private Recipe currentRecipe;
@@ -32,6 +44,44 @@ public class InformationCtrl {
         this.mainCtrl = mainCtrl;
         this.serverUtils = serverUtils;
     }
+
+    @FXML
+    public void initialize() {
+        setupLanguageMenu();
+    }
+    private void setupLanguageMenu() {
+        languageButton.getItems().clear();
+
+        MenuItem enItem = new MenuItem("English");
+        enItem.setOnAction(e -> changeLanguage(new Locale("en")));
+
+        MenuItem nlItem = new MenuItem("Nederlands");
+        nlItem.setOnAction(e -> changeLanguage(new Locale("nl")));
+
+        MenuItem roItem = new MenuItem("Romana");
+        roItem.setOnAction(e -> changeLanguage(new Locale("ro")));
+
+        languageButton.getItems().addAll(enItem, nlItem, roItem);
+
+        Locale current = LanguageManager.getLocale();
+        switch (current.getLanguage()) {
+            case "nl" -> languageButton.setText("Nederlands");
+            case "ro" -> languageButton.setText("Romana");
+            default -> languageButton.setText("English");
+        }
+    }
+
+    private void changeLanguage(Locale newLocale) {
+        LanguageManager.setLocale(newLocale);
+        switch (newLocale.getLanguage()) {
+            case "nl" -> languageButton.setText("Nederlands");
+            case "ro" -> languageButton.setText("Romana");
+            default -> languageButton.setText("English");
+        }
+        mainCtrl.reloadScenesForNewLanguage();   // no navigation change
+    }
+
+
 
     /**
      * go the main UI
@@ -277,19 +327,34 @@ public class InformationCtrl {
 
         // Calculate values per 100g of the final dish
         if (totalWeightInGrams > 0) {
-            // Formula: (Total Nutrient / Total Weight) * 100
             double factor = 100.0 / totalWeightInGrams;
 
-            caloriesLabel.setText(String.format("Calories per 100g: %.0f", totalCal * factor));
-            proteinsLabel.setText(String.format("Proteins per 100g: %.1f g", totalProt * factor));
-            carbsLabel.setText(String.format("Carbs per 100g: %.1f g", totalCarb * factor));
-            fatsLabel.setText(String.format("Fats per 100g: %.1f g", totalFat * factor));
+            caloriesLabel.setText(MessageFormat.format(
+                    resources.getString("info.caloriesPer100.value"),
+                    totalCal * factor));
+
+            proteinsLabel.setText(MessageFormat.format(
+                    resources.getString("info.proteinsPer100.value"),
+                    totalProt * factor));
+
+            carbsLabel.setText(MessageFormat.format(
+                    resources.getString("info.carbsPer100.value"),
+                    totalCarb * factor));
+
+            fatsLabel.setText(MessageFormat.format(
+                    resources.getString("info.fatsPer100.value"),
+                    totalFat * factor));
         } else {
-            caloriesLabel.setText("Calories per 100g: 0");
-            proteinsLabel.setText("Proteins per 100g: 0.0 g");
-            carbsLabel.setText("Carbs per 100g: 0.0 g");
-            fatsLabel.setText("Fats per 100g: 0.0 g");
+            caloriesLabel.setText(MessageFormat.format(
+                    resources.getString("info.caloriesPer100.value"), 0.0));
+            proteinsLabel.setText(MessageFormat.format(
+                    resources.getString("info.proteinsPer100.value"), 0.0));
+            carbsLabel.setText(MessageFormat.format(
+                    resources.getString("info.carbsPer100.value"), 0.0));
+            fatsLabel.setText(MessageFormat.format(
+                    resources.getString("info.fatsPer100.value"), 0.0));
         }
+
     }
 
     /**

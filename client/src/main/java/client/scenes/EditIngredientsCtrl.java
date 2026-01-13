@@ -11,7 +11,10 @@ import org.glassfish.jersey.client.ClientConfig;
 import recipes.FoodItem;
 import recipes.Ingredient;
 import recipes.Recipe;
-
+import client.i18n.LanguageManager;
+import java.util.Locale;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.MenuItem;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import javafx.collections.ObservableList;
@@ -60,6 +63,8 @@ public class EditIngredientsCtrl{
     @FXML
     private TableColumn<Ingredient, String> measurementColumn;
 
+    @FXML
+    private MenuButton languageButton;
     @FXML
     private Label errorLabel;
     @FXML
@@ -168,7 +173,41 @@ public class EditIngredientsCtrl{
         metric.setToggleGroup(unitGroup);
         imperial.setToggleGroup(unitGroup);
         common.setToggleGroup(unitGroup);
+        setupLanguageMenu();
+
     }
+
+    private void setupLanguageMenu() {
+        languageButton.getItems().clear();
+
+        MenuItem enItem = new MenuItem("English");
+        enItem.setOnAction(e -> changeLanguage(new Locale("en")));
+
+        MenuItem nlItem = new MenuItem("Nederlands");
+        nlItem.setOnAction(e -> changeLanguage(new Locale("nl")));
+
+        MenuItem roItem = new MenuItem("Română");
+        roItem.setOnAction(e -> changeLanguage(new Locale("ro")));
+
+        languageButton.getItems().addAll(enItem, nlItem, roItem);
+
+        Locale current = LanguageManager.getLocale();
+        switch (current.getLanguage()) {
+            case "nl" -> languageButton.setText("Nederlands");
+            case "ro" -> languageButton.setText("Română");
+            default -> languageButton.setText("English");
+        }
+    }
+
+    private void changeLanguage(Locale newLocale) {
+        LanguageManager.setLocale(newLocale);
+        languageButton.setText(
+                "nl".equals(newLocale.getLanguage()) ? "Nederlands" :
+                        "ro".equals(newLocale.getLanguage()) ? "Română" : "English"
+        );
+        mainCtrl.reloadScenesForNewLanguage();
+    }
+
 
     @FXML
     private void handleSystemChange(){

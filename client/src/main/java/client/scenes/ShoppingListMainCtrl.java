@@ -13,7 +13,11 @@ import javafx.scene.layout.HBox;
 import recipes.FoodItem;
 import recipes.Ingredient;
 import shopping.ShoppingList;
-
+import client.i18n.LanguageManager;
+import java.util.Locale;
+import java.util.ResourceBundle;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.MenuItem;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
@@ -32,6 +36,12 @@ public class ShoppingListMainCtrl {
 
     @FXML
     private Button addIngredientButton;
+
+    @FXML
+    private MenuButton languageButton;
+
+    @FXML
+    private ResourceBundle resources;
 
     @FXML
     private ListView <Ingredient> ingredientsListView;
@@ -108,7 +118,41 @@ public class ShoppingListMainCtrl {
                 }
             }
         });
+        setupLanguageMenu();
     }
+
+    private void setupLanguageMenu() {
+        languageButton.getItems().clear();
+
+        MenuItem enItem = new MenuItem("English");
+        enItem.setOnAction(e -> changeLanguage(new Locale("en")));
+
+        MenuItem nlItem = new MenuItem("Nederlands");
+        nlItem.setOnAction(e -> changeLanguage(new Locale("nl")));
+
+        MenuItem roItem = new MenuItem("Romana");
+        roItem.setOnAction(e -> changeLanguage(new Locale("ro")));
+
+        languageButton.getItems().addAll(enItem, nlItem, roItem);
+
+        Locale current = LanguageManager.getLocale();
+        switch (current.getLanguage()) {
+            case "nl" -> languageButton.setText("Nederlands");
+            case "ro" -> languageButton.setText("Romana");
+            default -> languageButton.setText("English");
+        }
+    }
+
+    private void changeLanguage(Locale newLocale) {
+        LanguageManager.setLocale(newLocale);
+        switch (newLocale.getLanguage()) {
+            case "nl" -> languageButton.setText("Nederlands");
+            case "ro" -> languageButton.setText("Romana");
+            default -> languageButton.setText("English");
+        }
+        mainCtrl.reloadScenesForNewLanguage();  // do not navigate away
+    }
+
 
     /**
      * Refreshes the interface to match the current state of the Shopping List
@@ -193,8 +237,8 @@ public class ShoppingListMainCtrl {
         boolean editing = !(ingredient==null);
         boolean addingNewFoodItem = !(currentIngredient == null);
         Dialog <Ingredient> dialogBox = new Dialog<>();
-        dialogBox.setTitle("Change ingredient");
-
+        //dialogBox.setTitle("Change ingredient");
+        dialogBox.setTitle(resources.getString("shopping.dialog.change.title"));
         // Adds an OK button and a Cancel button to the dialog box
         dialogBox.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
         Button okButton = (Button) dialogBox.getDialogPane().lookupButton(ButtonType.OK);
@@ -215,9 +259,11 @@ public class ShoppingListMainCtrl {
         // If the user is not editing, we show an empty text box with prompts
         // If they are editing, we fetch the ingredient's data
         if (!editing) {
-            foodItemField.setPromptText("Enter food type:");
-            quantityField.setPromptText("Enter quantity:");
-        }else{
+            foodItemField.setPromptText(
+                    resources.getString("shopping.dialog.food.prompt"));      // !!!
+            quantityField.setPromptText(
+                    resources.getString("shopping.dialog.quantity.prompt"));  // !!!
+        } else {
             foodItemField.setText(ingredient.getFoodName());
             quantityField.setText(String.valueOf(ingredient.getQuantity()));
             unitChoice.setValue(String.valueOf(ingredient.getMeasurement()));
@@ -277,9 +323,12 @@ public class ShoppingListMainCtrl {
                 try {
                     quantity = Double.parseDouble(quantityField.getText());
                 }catch (NumberFormatException e) {
+                    //wrong-number alert text from bundle
                     Alert wrongNumberInput = new Alert(Alert.AlertType.ERROR);
-                    wrongNumberInput.setTitle("Wrong input");
-                    wrongNumberInput.setContentText("Invalid input of a decimal number.");
+                    wrongNumberInput.setTitle(
+                            resources.getString("shopping.dialog.wrongNumber.title"));   // !!!
+                    wrongNumberInput.setContentText(
+                            resources.getString("shopping.dialog.wrongNumber.content")); // !!!
                     wrongNumberInput.showAndWait();
                     return null;
                 }
@@ -350,11 +399,8 @@ public class ShoppingListMainCtrl {
      */
     public void askToAddFoodItem (Ingredient ingredient, String foodItemEntry) {
         Dialog <ButtonType> dialogBox = new Dialog<>();
-        dialogBox.setTitle("Food Item not found");
-        dialogBox.setContentText("""
-                The ingredient you are adding is not known to us.
-                
-                Do you wish to add it?""");
+        dialogBox.setTitle(resources.getString("shopping.dialog.notFound.title"));
+        dialogBox.setContentText(resources.getString("shopping.dialog.notFound.content"));
 
         dialogBox.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
         Optional <ButtonType> buttonType = dialogBox.showAndWait();

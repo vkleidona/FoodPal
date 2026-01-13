@@ -1,5 +1,7 @@
 package client.scenes;
 
+import client.Main;
+import client.MyFXML;
 import client.network.WebSocketService;
 import client.utils.ServerUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -7,6 +9,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
+import client.i18n.LanguageManager;
+
+import java.util.*;
 
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -26,6 +31,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 //import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.Pair;
 import org.springframework.messaging.simp.stomp.StompSession;
 import recipes.FoodItem;
 import recipes.Recipe;
@@ -41,13 +47,7 @@ import jakarta.ws.rs.core.Response;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.Optional;
 
 public class MainUICtrl {
 
@@ -91,8 +91,14 @@ public class MainUICtrl {
     private Long lastSubscribedID = null;
     private StompSession.Subscription recipeSubscription;
 
+    @FXML
+    private MenuButton languageButton;
+
+
     // File path for saving favorites
     private static final File FAVORITES_FILE = new File("favorites.json");
+    private MainUICtrl mainUICtrl;
+    private Scene mainMenu;
 
     /**
      * reads a list of favorite recipe IDs from a local file (favorites.json)
@@ -250,12 +256,6 @@ public class MainUICtrl {
                 });
 
         // Top bar buttons
-        exitButton.setOnAction(e -> System.exit(0));
-        minimizeButton.setOnAction(e -> ((Stage) exitButton.getScene().getWindow()).setIconified(true));
-        maximizeButton.setOnAction(e -> {
-            Stage stage = (Stage) exitButton.getScene().getWindow();
-            stage.setMaximized(!stage.isMaximized());
-        });
         refreshButton.setOnAction(e -> initialRecipeFetch());
 
         // Bottom sidebar buttons
@@ -306,7 +306,44 @@ public class MainUICtrl {
                 }
             }
         });
+
+        setupLanguageMenu();
+
+
     }
+
+    private void setupLanguageMenu() {
+        languageButton.getItems().clear();
+
+        MenuItem enItem = new MenuItem("English");
+        enItem.setOnAction(e -> changeLanguage(new Locale("en")));
+
+        MenuItem nlItem = new MenuItem("Nederlands");
+        nlItem.setOnAction(e -> changeLanguage(new Locale("nl")));
+
+        MenuItem roItem = new MenuItem("Română");
+        roItem.setOnAction(e -> changeLanguage(new Locale("ro")));
+
+        languageButton.getItems().addAll(enItem, nlItem, roItem);
+
+        Locale current = LanguageManager.getLocale();
+        switch (current.getLanguage()) {
+            case "nl" -> languageButton.setText("Nederlands");
+            case "ro" -> languageButton.setText("Română");
+            default -> languageButton.setText("English");
+        }
+    }
+
+    private void changeLanguage(Locale newLocale) {
+        LanguageManager.setLocale(newLocale);
+        switch (newLocale.getLanguage()) {
+            case "nl" -> languageButton.setText("Nederlands");
+            case "ro" -> languageButton.setText("Română");
+            default -> languageButton.setText("English");
+        }
+        mainCtrl.reloadScenesForNewLanguage();
+    }
+
 
     /**
      * Loads the recipes initially from the master list using a standard GET request

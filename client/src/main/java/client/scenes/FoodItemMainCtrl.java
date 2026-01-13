@@ -11,7 +11,12 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import org.springframework.messaging.simp.stomp.StompSession;
 import recipes.FoodItem;
-
+import client.i18n.LanguageManager;
+import java.text.MessageFormat;
+import java.util.Locale;
+import java.util.ResourceBundle;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.MenuItem;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,6 +48,13 @@ public class FoodItemMainCtrl {
     private Button mainMenuButton;
     @FXML
     public Label recipeUsages;
+
+
+    @FXML
+    private MenuButton languageButton;
+
+    @FXML
+    private ResourceBundle resources;
 
     private final MainCtrl mainCtrl;
     private final ServerUtils serverUtils;
@@ -108,7 +120,41 @@ public class FoodItemMainCtrl {
             }
         });
         updateFoodDetails(null);
+        setupLanguageMenu();
     }
+
+    private void setupLanguageMenu() {
+        languageButton.getItems().clear();
+
+        MenuItem enItem = new MenuItem("English");
+        enItem.setOnAction(e -> changeLanguage(new Locale("en")));
+
+        MenuItem nlItem = new MenuItem("Nederlands");
+        nlItem.setOnAction(e -> changeLanguage(new Locale("nl")));
+
+        MenuItem roItem = new MenuItem("Romana");
+        roItem.setOnAction(e -> changeLanguage(new Locale("ro")));
+
+        languageButton.getItems().addAll(enItem, nlItem, roItem);
+
+        Locale current = LanguageManager.getLocale();
+        switch (current.getLanguage()) {
+            case "nl" -> languageButton.setText("Nederlands");
+            case "ro" -> languageButton.setText("Romana");
+            default -> languageButton.setText("English");
+        }
+    }
+
+    private void changeLanguage(Locale newLocale) {
+        LanguageManager.setLocale(newLocale);
+        switch (newLocale.getLanguage()) {
+            case "nl" -> languageButton.setText("Nederlands");
+            case "ro" -> languageButton.setText("Romana");
+            default -> languageButton.setText("English");
+        }
+        mainCtrl.reloadScenesForNewLanguage();  // no navigation
+    }
+
 
     /**
      * Updates the selectedFoodItem and subscribes to changes
@@ -139,8 +185,8 @@ public class FoodItemMainCtrl {
 
     @FXML
     public void updateFoodDetails(FoodItem item) {
-        if (item == null){
-            foodNameLabel.setText("Select food item to see details");
+        if (item == null) {
+            foodNameLabel.setText(resources.getString("foodItem.selectPrompt"));
             recipeUsages.setText("");
             nutritionLabel.setText("");
             kcalLabel.setText("");
@@ -148,19 +194,29 @@ public class FoodItemMainCtrl {
             proteinsLabel.setText("");
             fatsLabel.setText("");
         } else {
-            foodNameLabel.setText("Food Name: " + item.getName());
+            foodNameLabel.setText(MessageFormat.format(
+                    resources.getString("foodItem.label.name"), item.getName()));
+
             if (item.getId() == null || item.getId() < 0) {
-                recipeUsages.setText("Used in 0 recipes");
-            }else{
-                recipeUsages.setText("Used in " + serverUtils.getFoodItemRecipeUsage(item) + " recipe(s)");
+                recipeUsages.setText(resources.getString("foodItem.usedIn.zero"));
+            } else {
+                int usage = serverUtils.getFoodItemRecipeUsage(item);
+                recipeUsages.setText(MessageFormat.format(
+                        resources.getString("foodItem.usedIn.n"), usage));
             }
-            nutritionLabel.setText("Nutritional values per 100g:");
-            kcalLabel.setText("Kcal: " + item.getKcal());
-            carbsLabel.setText("Carbohydrates: " + item.getCarbs());
-            proteinsLabel.setText("Proteins: " + item.getProteins());
-            fatsLabel.setText("Fats: " + item.getFats());
+
+            nutritionLabel.setText(resources.getString("foodItem.nutritionHeader"));
+            kcalLabel.setText(MessageFormat.format(
+                    resources.getString("foodItem.label.kcal"), item.getKcal()));
+            carbsLabel.setText(MessageFormat.format(
+                    resources.getString("foodItem.label.carbs"), item.getCarbs()));
+            proteinsLabel.setText(MessageFormat.format(
+                    resources.getString("foodItem.label.proteins"), item.getProteins()));
+            fatsLabel.setText(MessageFormat.format(
+                    resources.getString("foodItem.label.fats"), item.getFats()));
         }
     }
+
 
     public void updateListView () {
         // Only show all recipes if we are in "All Recipes" tab
@@ -188,32 +244,36 @@ public class FoodItemMainCtrl {
     @FXML
     public void deleteFoodItem() {
         FoodItem selectedFoodItem = foodItemListView.getSelectionModel().getSelectedItem();
-        int recipeUsages = serverUtils.getFoodItemRecipeUsage(selectedFoodItem);
-
-        if(selectedFoodItem == null) {
+        if (selectedFoodItem == null) {
             Alert noSelection = new Alert(Alert.AlertType.WARNING);
-            noSelection.setTitle("Nothing Selected");
-            noSelection.setHeaderText("No food item was selected");
-            noSelection.setContentText("Please select a food item before deleting.");
+            noSelection.setTitle(resources.getString("foodItem.alert.nothingSelected.title"));
+            noSelection.setHeaderText(resources.getString("foodItem.alert.nothingSelected.header"));
+            noSelection.setContentText(resources.getString("foodItem.alert.nothingSelected.delete"));
             noSelection.showAndWait();
             return;
         }
 
+        int recipeUsages = serverUtils.getFoodItemRecipeUsage(selectedFoodItem);
+
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Deleting Selected Food Item");
-        alert.setHeaderText("Are you sure?");
-        alert.setContentText("Do you want to delete the item " + selectedFoodItem.getName() + " ?");
+        alert.setTitle(resources.getString("foodItem.alert.delete.title"));
+        alert.setHeaderText(resources.getString("foodItem.alert.delete.header"));
+        alert.setContentText(MessageFormat.format(
+                resources.getString("foodItem.alert.delete.content"),
+                selectedFoodItem.getName()));
 
         Optional<ButtonType> result = alert.showAndWait();
-        if(result.isPresent() && result.get() == ButtonType.OK){
-            if(recipeUsages > 0) {
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            if (recipeUsages > 0) {
                 Alert alertUsedInRecipe = new Alert(Alert.AlertType.CONFIRMATION);
-                alertUsedInRecipe.setTitle("Item Deleted is used in recipe(s)");
-                alertUsedInRecipe.setHeaderText("The item you want to delete is used in one or more recipes. Are you really sure you want to delete it?");
-                alertUsedInRecipe.setContentText("Do you want to delete the item " + selectedFoodItem.getName() + " which is used in one or more recipes?");
+                alertUsedInRecipe.setTitle(resources.getString("foodItem.alert.usedInRecipes.title"));
+                alertUsedInRecipe.setHeaderText(resources.getString("foodItem.alert.usedInRecipes.header"));
+                alertUsedInRecipe.setContentText(MessageFormat.format(
+                        resources.getString("foodItem.alert.usedInRecipes.content"),
+                        selectedFoodItem.getName()));
 
                 Optional<ButtonType> result2 = alertUsedInRecipe.showAndWait();
-                if(result2.isPresent() && result2.get() == ButtonType.OK){
+                if (result2.isPresent() && result2.get() == ButtonType.OK) {
                     serverUtils.deleteFoodItem(selectedFoodItem.getId());
                     unsubscribeFromFoodItem();
                 }
@@ -222,17 +282,17 @@ public class FoodItemMainCtrl {
                 unsubscribeFromFoodItem();
             }
         }
-
     }
+
 
     @FXML
     public void editFoodItem() {
         FoodItem selectedItem = foodItemListView.getSelectionModel().getSelectedItem();
         if (selectedItem == null) {
             Alert noSelection = new Alert(Alert.AlertType.WARNING);
-            noSelection.setTitle("Nothing Selected");
-            noSelection.setHeaderText("No food item was selected");
-            noSelection.setContentText("Please select a food item before editing.");
+            noSelection.setTitle(resources.getString("foodItem.alert.nothingSelected.title"));
+            noSelection.setHeaderText(resources.getString("foodItem.alert.nothingSelected.header"));
+            noSelection.setContentText(resources.getString("foodItem.alert.nothingSelected.edit"));
             noSelection.showAndWait();
             return;
         }
@@ -240,6 +300,7 @@ public class FoodItemMainCtrl {
         mainCtrl.showAddFoodItem();
         mainCtrl.getAddFoodItemCtrl().setEditingItem(selectedItem);
     }
+
 
     @FXML
     public void showMainUI() {
