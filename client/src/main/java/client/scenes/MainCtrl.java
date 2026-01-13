@@ -427,4 +427,11 @@ public class MainCtrl implements MainCtrlMethods {
         showMainMenu();
     }
 
+    // this constructor is for tests
+    public MainCtrl() {
+        this.fxml = null;
+        this.webSocketService = null;
+        this.recipeActions = null;
+    }
+
 }

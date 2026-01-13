@@ -328,7 +328,7 @@ public class MainUICtrlTest extends ApplicationTest {
         public boolean infoShown = false;
         public boolean foodItemMainShown = false;
 
-        public MockMainCtrl() { super(null, null); }
+        public MockMainCtrl() { super(); }
 
         @Override public void showCreateRecipe() { createRecipeShown = true; }
         @Override public void showEditIngredients(Recipe r) { editIngredientsShown = true; }
