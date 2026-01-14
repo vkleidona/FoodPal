@@ -85,6 +85,8 @@ public class CreateRecipeCtrl {
         UNIT_TO_GRAMS.put("jar", 450.0);
     }
 
+    private Locale currentLocale = new Locale("en");
+
     /**
      * helper method to display an alert dialog to the user.
      * @param type    type of alert (e.g., ERROR, WARNING, INFORMATION).
@@ -190,6 +192,7 @@ public class CreateRecipeCtrl {
             List<String> steps = buildInstructionsList();
             if (steps == null) return; // validation failed inside helper
             recipe.setInstructions(steps);
+            recipe.setLocale(currentLocale);
 
             // save
             serverService.sendRecipe(recipe);
@@ -295,8 +298,6 @@ public class CreateRecipeCtrl {
 
         Locale current = LanguageManager.getLocale();
 
-
-
         switch (current.getLanguage()) {
             case "nl" -> {
                 languageButton.setText("Nederlands");
@@ -320,12 +321,27 @@ public class CreateRecipeCtrl {
     private void changeLanguage(Locale newLocale) {
         LanguageManager.setLocale(newLocale);
         switch (newLocale.getLanguage()) {
-            case "nl" -> languageButton.setText("Nederlands");
-            case "ro" -> languageButton.setText("Română");
-            case "bg" -> languageButton.setText("Български");
-            default -> languageButton.setText("English");
+            case "nl" -> {
+                languageButton.setText("Nederlands");
+                currentLocale = new Locale("nl");
+                updateButtonGraphic("dutch");
+            }
+            case "ro" -> {
+                languageButton.setText("Română");
+                currentLocale = new Locale("nl");
+                updateButtonGraphic("romanian");
+            }
+            case "bg" -> {
+                languageButton.setText("Български");
+                currentLocale = new Locale("bg");
+                updateButtonGraphic("bulgarian");
+            }
+            default -> {
+                languageButton.setText("English");
+                currentLocale = new Locale("en");
+                updateButtonGraphic("english");
+            }
         }
-        mainCtrl.reloadScenesForNewLanguage();
     }
 
 
@@ -663,6 +679,7 @@ public class CreateRecipeCtrl {
         }
         recipe.setIngredients(ingredients);
         recipe.setInstructions(instructions);
+        recipe.setLocale(currentLocale);
 
         return recipe;
     }

@@ -78,6 +78,8 @@ public class MainUICtrl {
 
     @FXML private TextField RecipeSearchBar;
 
+    @FXML private ImageView languageIndicator;
+
     private final Client client = ClientBuilder.newClient();
     private final String recipeEndpointUrl = "http://localhost:8080/api/recipes";
 
@@ -255,6 +257,9 @@ public class MainUICtrl {
                         boolean isFav = favoriteRecipeIds.contains(newVal.getId());
                         favoriteButton.setSelected(isFav);
                         favoriteButton.setText(isFav ? "★" : "☆");
+                        changeRecipeLanguage(selectedRecipe);
+                    }else{
+                        languageIndicator.setImage(null);
                     }
                 });
 
@@ -346,8 +351,20 @@ public class MainUICtrl {
         Circle clip = new Circle(8, 8, 8);
         imageView.setClip(clip);
 
-        // Set the graphic to the MenuButton itself
         languageButton.setGraphic(imageView);
+    }
+
+    private void updateIndicator(String iconFileName) {
+        Image img = new Image
+                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg"));
+
+        languageIndicator.setImage(img);
+
+        languageIndicator.setFitHeight(30);
+        languageIndicator.setFitWidth(30);
+
+        Circle clip = new Circle(15, 15, 15);
+        languageIndicator.setClip(clip);
     }
 
     private void setupLanguageMenu() {
@@ -791,5 +808,16 @@ public class MainUICtrl {
         }
     }
 
-
+    /**
+     * Changes the visible indicator of the recipe language
+     * @param selectedRecipe - the recipe which updates the language indicator
+     */
+    public void changeRecipeLanguage (Recipe selectedRecipe) {
+        switch(selectedRecipe.getLocale().getLanguage()) {
+            case "bg" -> updateIndicator("bulgarian");
+            case "nl" -> updateIndicator("dutch");
+            case "ro" -> updateIndicator("romanian");
+            default -> updateIndicator("english");
+        }
+    }
 }

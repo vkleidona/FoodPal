@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -35,22 +36,11 @@ public class Recipe implements Serializable {
     @Column(name = "servings")
     private Integer servings;
 
-    public Integer getServings() {
-        return servings;
-    }
+    @Column(name = "locale")
+    private Locale locale;
 
-    public void setServings(Integer servings) {
-        this.servings = servings;
-    }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-/*
-    To be implemented at a later date. We will probably use a specific
-    built-in class for languages, not String
-    private String language;
-     */
+
 
     /**
      * A public constructor for the Recipe - now, the recipe should be able to be fetched properly
@@ -111,6 +101,26 @@ public class Recipe implements Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Integer getServings() {
+        return servings;
+    }
+
+    public void setServings(Integer servings) {
+        this.servings = servings;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Locale getLocale () {
+        return this.locale;
+    }
+
+    public void setLocale (Locale locale) {
+        this.locale = locale;
     }
 
     /**
