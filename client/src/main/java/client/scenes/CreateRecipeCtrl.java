@@ -328,7 +328,7 @@ public class CreateRecipeCtrl {
             }
             case "ro" -> {
                 languageButton.setText("Română");
-                currentLocale = new Locale("nl");
+                currentLocale = new Locale("ro");
                 updateButtonGraphic("romanian");
             }
             case "bg" -> {

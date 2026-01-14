@@ -19,6 +19,7 @@ import javafx.collections.ObservableSet;
 
 import javafx.collections.FXCollections;
 
+import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -79,11 +80,13 @@ public class MainUICtrl {
     @FXML private TextField RecipeSearchBar;
 
     @FXML private ImageView languageIndicator;
+    @FXML private MenuButton filterLanguagesButton;
 
     private final Client client = ClientBuilder.newClient();
     private final String recipeEndpointUrl = "http://localhost:8080/api/recipes";
 
     private ObservableList<Recipe> currentRecipes;
+    private FilteredList<Recipe> filteredRecipesByLanguage;
     private Recipe selectedRecipe;
 
     private final ServerUtils server;
@@ -92,6 +95,7 @@ public class MainUICtrl {
     private WebSocketService webSocketService;
 
     private Set<Long> favoriteRecipeIds = new HashSet<>();
+    private List <Locale> filteredLocales = new ArrayList<>();
 
     private Long lastSubscribedID = null;
     private StompSession.Subscription recipeSubscription;
@@ -156,47 +160,26 @@ public class MainUICtrl {
         }
 
         saveFavorites();
+        updatePredicate();
 
         if (favoritesTab.isSelected()) {
-            // Re-calculate the list of favorites
-            List<Recipe> favorites = currentRecipes.stream()
-                    .filter(r -> favoriteRecipeIds.contains(r.getId()))
-                    .collect(Collectors.toList());
-
             unsubscribeFromRecipe();
-
-            // Set the new list (this physically removes the item from the UI)
-            recipeListView.setItems(FXCollections.observableArrayList(favorites));
-
-            // Optional: Select the first item or clear selection so the details panel doesn't look weird
-            if (!favorites.isEmpty()) {
-                recipeListView.getSelectionModel().select(0);
-            } else {
-                // clear details panel if list is empty
-            }
-        } else {
-            recipeListView.refresh(); // Just redraw the stars if in "All Recipes"
         }
     }
 
 
     @FXML
     public void showAllRecipes() {
-        recipeListView.setItems(FXCollections.observableArrayList(currentRecipes));
+        allRecipesTab.setSelected(true);
+        favoritesTab.setSelected(false);
+        updatePredicate();
     }
 
     @FXML
     public void showFavoriteRecipes() {
-
-        List<Recipe> favorites = new ArrayList<>();
-        for (Recipe r : currentRecipes) {
-            if (favoriteRecipeIds.contains(r.getId())) {
-                favorites.add(r);
-            } else {
-
-            }
-        }
-        recipeListView.setItems(FXCollections.observableArrayList(favorites));
+        allRecipesTab.setSelected(false);
+        favoritesTab.setSelected(true);
+        updatePredicate();
     }
 
     /**
@@ -223,17 +206,6 @@ public class MainUICtrl {
     @FXML
     public void initialize() {
 
-        /**
-        webSocketService.connect(() -> {
-            System.out.println("Connection live! Now it is safe to subscribe.");
-            initialRecipeFetch();
-
-            // If a recipe was already selected by the user during the wait:
-            if (selectedRecipe != null) {
-                selectRecipe(selectedRecipe);
-            }
-        });
-**/
         // The recipe list matches the initial server one
         this.currentRecipes = webSocketService.getMasterRecipeList();
         // Immediately set currentRecipes to match the changes from the server
@@ -241,6 +213,10 @@ public class MainUICtrl {
         currentRecipes.addListener((ListChangeListener<Recipe>) c -> {
             Platform.runLater(this::updateRecipeListView);
         });
+
+        filteredRecipesByLanguage = new FilteredList<>(currentRecipes);
+        recipeListView.setItems(filteredRecipesByLanguage);
+        updatePredicate();
 
         //initialRecipeFetch();
 
@@ -316,7 +292,7 @@ public class MainUICtrl {
         });
 
         setupLanguageMenu();
-
+        setupFilterLanguages();
 
     }
 
@@ -378,7 +354,7 @@ public class MainUICtrl {
         languageButton.getItems().addAll(enItem, nlItem, roItem, bgItem);
 
         Locale current = LanguageManager.getLocale();
-
+        filteredLocales.clear();
 
 
         switch (current.getLanguage()) {
@@ -444,7 +420,7 @@ public class MainUICtrl {
         } else {
             // Only show all recipes if we are in "All Recipes" tab
             // Updates the sidebar when it senses changes in the database
-            recipeListView.getItems().setAll(currentRecipes);
+            updatePredicate();
 
             // Updates the recipe with all of its parameters
             if (selectedRecipe != null) {
@@ -819,5 +795,67 @@ public class MainUICtrl {
             case "ro" -> updateIndicator("romanian");
             default -> updateIndicator("english");
         }
+    }
+
+    /**
+     * Filters the selected languages
+     */
+    public void setupFilterLanguages () {
+        filterLanguagesButton.getItems().clear();
+
+        CheckMenuItem enItem = setupCheckMenuItemIcons("English", "en", "english");
+        CheckMenuItem nlItem = setupCheckMenuItemIcons("Nederlands", "nl", "dutch");
+        CheckMenuItem roItem = setupCheckMenuItemIcons("Română", "ro", "romanian");
+        CheckMenuItem bgItem = setupCheckMenuItemIcons("Български", "bg", "bulgarian");
+
+        filterLanguagesButton.getItems().addAll(enItem, nlItem, roItem, bgItem);
+    }
+
+    private CheckMenuItem setupCheckMenuItemIcons (String name, String langCode, String iconFileName) {
+        CheckMenuItem menuItem = new CheckMenuItem(name);
+
+        Image flagImage = new Image
+                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg"));
+
+        ImageView icon = new ImageView(flagImage);
+        icon.setFitWidth(16);
+        icon.setFitHeight(16);
+
+        Circle clip = new Circle(8, 8, 8);
+        icon.setClip(clip);
+
+        menuItem.setGraphic(icon);
+
+        menuItem.setOnAction(e -> filterLocales(new Locale(langCode)));
+
+        return menuItem;
+    }
+
+    /**
+     * A method which handles the filtering of languages
+     * @param locale - the locale we want to filter
+     */
+    public void filterLocales (Locale locale) {
+        if (filteredLocales.contains(locale)) {
+            filteredLocales.remove(locale);
+        }else{
+            filteredLocales.add(locale);
+        }
+        updatePredicate();
+    }
+
+    /**
+     * Updates the predicate of the filtered list
+     */
+    public void updatePredicate () {
+        filteredRecipesByLanguage.setPredicate(recipe -> {
+            boolean matchesLanguage = filteredLocales.isEmpty() ||
+                    filteredLocales.contains(recipe.getLocale());
+            boolean matchesTab = true;
+            if (favoritesTab.isSelected()) {
+                matchesTab = favoriteRecipeIds.contains(recipe.getId());
+            }
+            return matchesLanguage && matchesTab;
+        });
     }
 }

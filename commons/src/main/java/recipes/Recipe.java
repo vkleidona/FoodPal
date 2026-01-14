@@ -36,7 +36,7 @@ public class Recipe implements Serializable {
     @Column(name = "servings")
     private Integer servings;
 
-    @Column(name = "locale")
+    @Column(name = "locale", nullable = false)
     private Locale locale;
 
 

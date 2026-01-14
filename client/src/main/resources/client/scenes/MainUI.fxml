@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleButton?>
@@ -24,7 +26,16 @@
             <!-- Language button: items will be added in controller -->
             <MenuButton fx:id="languageButton" focusTraversable="false" mnemonicParsing="false" prefHeight="26.0" prefWidth="96.0" text="English">
             </MenuButton>
-            <TextField fx:id="RecipeSearchBar" onAction="#searchForRecipe" prefHeight="26.0" prefWidth="662.0" promptText="%search.bar.prompt" />
+         <MenuButton fx:id="filterLanguagesButton" mnemonicParsing="false" onAction="#setupFilterLanguages" prefHeight="26.0" prefWidth="112.0" text="%filter.languages">
+           <items>
+             <MenuItem mnemonicParsing="false" text="Action 1" />
+             <MenuItem mnemonicParsing="false" text="Action 2" />
+           </items>
+         </MenuButton>
+            <TextField fx:id="RecipeSearchBar" onAction="#searchForRecipe" prefHeight="26.0" prefWidth="566.0" promptText="%search.bar.prompt">
+            <HBox.margin>
+               <Insets />
+            </HBox.margin></TextField>
         </HBox>
     </top>
 
