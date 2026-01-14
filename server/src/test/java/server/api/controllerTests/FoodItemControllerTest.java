@@ -10,10 +10,11 @@ import server.api.controllers.FoodItemController;
 import server.repositories.FoodItemRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 public class FoodItemControllerTest {
     private FoodItemController ctrl;
@@ -26,6 +27,22 @@ public class FoodItemControllerTest {
         msg = mock(SimpMessagingTemplate.class);
 
         ctrl = new FoodItemController(repo, msg);
+    }
+
+    @Test
+    public void addFoodItemTest(){
+        FoodItem item = new FoodItem("Milk");
+        FoodItem savedItem = new FoodItem("Milk");
+        savedItem.setId(2L);
+
+        when(repo.findByName("Milk")).thenReturn(Optional.empty());
+        when(repo.save(item)).thenReturn(savedItem);
+
+        ResponseEntity<FoodItem> response = ctrl.addFoodItem(item);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(savedItem, response.getBody());
+
     }
 
     @Test
@@ -49,6 +66,33 @@ public class FoodItemControllerTest {
         ResponseEntity<Void> response = ctrl.deleteFoodItem(10L);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    public void deleteFoodItemMissingItem(){
+        Long id = 99L;
+        when(repo.existsById(id)).thenReturn(false);
+
+        ResponseEntity<Void> response = ctrl.deleteFoodItem(id);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        verify(repo, times(0)).deleteById(id);
+    }
+
+    @Test
+    public void updateFoodItemTest(){
+        FoodItem old = new FoodItem("lemon");
+        old.setId(1L);
+        FoodItem updated = new FoodItem("lemon2");
+
+        when(repo.findById(1L)).thenReturn(Optional.of(old));
+        when(repo.existsByNameAndIdNot("lemon2", 1L)).thenReturn(false);
+        when(repo.save(any())).thenReturn(old);
+
+        ResponseEntity<?> response = ctrl.updateFoodItem(1L, updated);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("lemon2", old.getName());
     }
 
 }
