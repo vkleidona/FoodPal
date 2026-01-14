@@ -26,9 +26,12 @@ import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Pair;
@@ -312,29 +315,72 @@ public class MainUICtrl {
 
     }
 
+    private MenuItem setupMenuItemIcons (String name, String langCode, String iconFileName) {
+        MenuItem menuItem = new MenuItem(name);
+
+        Image flagImage = new Image
+                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg"));
+
+        ImageView icon = new ImageView(flagImage);
+        icon.setFitWidth(16);
+        icon.setFitHeight(16);
+
+        Circle clip = new Circle(8, 8, 8);
+        icon.setClip(clip);
+
+        menuItem.setGraphic(icon);
+
+        menuItem.setOnAction(e -> changeLanguage(new Locale(langCode)));
+
+        return menuItem;
+    }
+
+    private void updateButtonGraphic(String iconFileName) {
+        Image img = new Image
+                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg"));
+        ImageView imageView = new ImageView(img);
+
+        imageView.setFitWidth(16);
+        imageView.setFitHeight(16);
+
+        Circle clip = new Circle(8, 8, 8);
+        imageView.setClip(clip);
+
+        // Set the graphic to the MenuButton itself
+        languageButton.setGraphic(imageView);
+    }
+
     private void setupLanguageMenu() {
         languageButton.getItems().clear();
 
-        MenuItem enItem = new MenuItem("English");
-        enItem.setOnAction(e -> changeLanguage(new Locale("en")));
-
-        MenuItem nlItem = new MenuItem("Nederlands");
-        nlItem.setOnAction(e -> changeLanguage(new Locale("nl")));
-
-        MenuItem roItem = new MenuItem("Română");
-        roItem.setOnAction(e -> changeLanguage(new Locale("ro")));
-
-        MenuItem bgItem = new MenuItem("Български");
-        bgItem.setOnAction(e -> changeLanguage(new Locale("bg")));
+        MenuItem enItem = setupMenuItemIcons("English", "en", "english");
+        MenuItem nlItem = setupMenuItemIcons("Nederlands", "nl", "dutch");
+        MenuItem roItem = setupMenuItemIcons("Română", "ro", "romanian");
+        MenuItem bgItem = setupMenuItemIcons("Български", "bg", "bulgarian");
 
         languageButton.getItems().addAll(enItem, nlItem, roItem, bgItem);
 
         Locale current = LanguageManager.getLocale();
+
+
+
         switch (current.getLanguage()) {
-            case "nl" -> languageButton.setText("Nederlands");
-            case "ro" -> languageButton.setText("Română");
-            case "bg" -> languageButton.setText("Български");
-            default -> languageButton.setText("English");
+            case "nl" -> {
+                languageButton.setText("Nederlands");
+                updateButtonGraphic("dutch");
+            }
+            case "ro" -> {
+                languageButton.setText("Română");
+                updateButtonGraphic("romanian");
+            }
+            case "bg" -> {
+                languageButton.setText("Български");
+                updateButtonGraphic("bulgarian");
+            }
+            default -> {
+                languageButton.setText("English");
+                updateButtonGraphic("english");
+            }
         }
     }
 
