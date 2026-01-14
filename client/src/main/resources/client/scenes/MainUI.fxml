@@ -14,28 +14,16 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane prefHeight="560.0" prefWidth="841.0"
-            xmlns="http://javafx.com/javafx/25"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="client.scenes.MainUICtrl">
+<BorderPane prefHeight="560.0" prefWidth="841.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.scenes.MainUICtrl">
 
     <!-- Top bar with window controls -->
     <top>
         <HBox prefHeight="69.0" prefWidth="842.0" spacing="10">
             <Button fx:id="refreshButton" text="⟳" />
             <!-- Language button: items will be added in controller -->
-            <MenuButton fx:id="languageButton"
-                        focusTraversable="false"
-                        mnemonicParsing="false"
-                        prefHeight="26.0"
-                        prefWidth="96.0"
-                        text="English">
+            <MenuButton fx:id="languageButton" focusTraversable="false" mnemonicParsing="false" prefHeight="26.0" prefWidth="96.0" text="English">
             </MenuButton>
-            <TextField fx:id="RecipeSearchBar"
-                       onAction="#searchForRecipe"
-                       prefHeight="26.0"
-                       prefWidth="662.0"
-                       promptText="%search.bar.prompt"/>
+            <TextField fx:id="RecipeSearchBar" onAction="#searchForRecipe" prefHeight="26.0" prefWidth="662.0" promptText="%search.bar.prompt" />
         </HBox>
     </top>
 
@@ -44,19 +32,12 @@
         <VBox prefWidth="200" spacing="5">
             <HBox prefHeight="36.0" prefWidth="200.0">
                 <children>
-                    <ToggleButton fx:id="allRecipesTab"
-                                  mnemonicParsing="false"
-                                  onAction="#showAllRecipes"
-                                  text="%tab.allRecipes">
+                    <ToggleButton fx:id="allRecipesTab" mnemonicParsing="false" onAction="#showAllRecipes" text="%tab.allRecipes">
                         <toggleGroup>
                             <ToggleGroup fx:id="group" />
                         </toggleGroup>
                     </ToggleButton>
-                    <ToggleButton fx:id="favoritesTab"
-                                  mnemonicParsing="false"
-                                  onAction="#showFavoriteRecipes"
-                                  text="%tab.favorites"
-                                  toggleGroup="$group" />
+                    <ToggleButton fx:id="favoritesTab" mnemonicParsing="false" onAction="#showFavoriteRecipes" text="%tab.favorites" toggleGroup="$group" />
                 </children>
             </HBox>
             <ListView fx:id="recipeListView" VBox.vgrow="ALWAYS" />
@@ -72,96 +53,38 @@
         <AnchorPane>
 
             <!-- Recipe Name -->
-            <Label layoutX="10" layoutY="10" text="%label.recipeName" />
+            <Label layoutX="13.0" layoutY="9.0" text="%label.recipeName" />
             <Label fx:id="recipeNameLabel" layoutX="110" layoutY="10" />
-            <Button fx:id="editNameButton"
-                    layoutX="300"
-                    layoutY="5"
-                    text="%button.edit" />
+            <Button fx:id="editNameButton" layoutX="300" layoutY="5" text="%button.edit" />
 
             <!-- Ingredients -->
             <Label layoutX="15.0" layoutY="93.0" text="%label.ingredients" />
-            <Button fx:id="editIngredientsButton"
-                    layoutX="300.0"
-                    layoutY="89.0"
-                    text="%button.edit" />
-            <ScrollPane fx:id="ingredientsScrollPane"
-                        layoutX="10.0"
-                        layoutY="127.0"
-                        prefHeight="150"
-                        prefWidth="570.0">
+            <Button fx:id="editIngredientsButton" layoutX="300.0" layoutY="89.0" text="%button.edit" />
+            <ScrollPane fx:id="ingredientsScrollPane" layoutX="10.0" layoutY="127.0" prefHeight="150" prefWidth="570.0">
                 <VBox fx:id="ingredientsVBox" spacing="5" />
             </ScrollPane>
 
             <!-- Instructions -->
             <Label layoutX="14.0" layoutY="291.0" text="%label.instructions" />
-            <Button fx:id="editInstructionsButton"
-                    layoutX="297.0"
-                    layoutY="287.0"
-                    text="%button.edit" />
-            <ScrollPane fx:id="instructionsScrollPane"
-                        layoutX="14.0"
-                        layoutY="325.0"
-                        prefHeight="150"
-                        prefWidth="566.0">
+            <Button fx:id="editInstructionsButton" layoutX="297.0" layoutY="287.0" text="%button.edit" />
+            <ScrollPane fx:id="instructionsScrollPane" layoutX="14.0" layoutY="325.0" prefHeight="150" prefWidth="566.0">
                 <VBox fx:id="instructionsVBox" spacing="5" />
             </ScrollPane>
 
             <!-- Bottom buttons / labels -->
-            <Button fx:id="foodItemButton"
-                    layoutX="14.0"
-                    layoutY="494.0"
-                    text="%button.goToFoodItems" />
-            <Button fx:id="shoppingListButton"
-                    layoutX="140.0"
-                    layoutY="493.0"
-                    mnemonicParsing="false"
-                    onAction="#handleGoToShoppingList"
-                    prefHeight="26.0"
-                    prefWidth="106.0"
-                    text="%button.shoppingList" />
-            <Button fx:id="downloadButton"
-                    layoutX="263.0"
-                    layoutY="493.0"
-                    mnemonicParsing="false"
-                    onAction="#downloadRecipe"
-                    prefHeight="25.0"
-                    prefWidth="89.0"
-                    text="%button.download" />
-            <Button fx:id="addToShoppingListButton"
-                    layoutX="446.0"
-                    layoutY="6.0"
-                    mnemonicParsing="false"
-                    onAction="#handleAddRecipeToShoppingList"
-                    text="%button.addToShoppingList" />
-            <Button layoutX="501.0"
-                    layoutY="89.0"
-                    mnemonicParsing="false"
-                    onAction="#handleInformation"
-                    text="%button.information" />
-            <Label layoutX="14.0"
-                   layoutY="56.0"
-                   text="%label.servings" />
-            <Label fx:id="servingsLabel"
-                   layoutX="301.0"
-                   layoutY="56.0">
+            <Button fx:id="foodItemButton" layoutX="14.0" layoutY="494.0" text="%button.goToFoodItems" />
+            <Button fx:id="shoppingListButton" layoutX="189.0" layoutY="493.0" mnemonicParsing="false" onAction="#handleGoToShoppingList" prefHeight="26.0" prefWidth="149.0" text="%button.shoppingList" />
+            <Button fx:id="downloadButton" layoutX="368.0" layoutY="493.0" mnemonicParsing="false" onAction="#downloadRecipe" prefHeight="26.0" prefWidth="97.0" text="%button.download" />
+            <Button fx:id="addToShoppingListButton" layoutX="446.0" layoutY="6.0" mnemonicParsing="false" onAction="#handleAddRecipeToShoppingList" text="%button.addToShoppingList" />
+            <Button layoutX="454.0" layoutY="89.0" mnemonicParsing="false" onAction="#handleInformation" text="%button.information" />
+            <Label layoutX="14.0" layoutY="56.0" text="%label.servings" />
+            <Label fx:id="servingsLabel" layoutX="301.0" layoutY="56.0">
                 <font>
                     <Font size="14.0" />
                 </font>
             </Label>
-            <ToggleButton fx:id="favoriteButton"
-                          layoutX="179.0"
-                          layoutY="6.0"
-                          mnemonicParsing="false"
-                          onAction="#toggleFavorite"
-                          text="☆" />
-            <Button layoutX="372.0"
-                    layoutY="493.0"
-                    mnemonicParsing="false"
-                    onAction="#cloneRecipe"
-                    prefHeight="25.0"
-                    prefWidth="74.0"
-                    text="%button.clone" />
+            <ToggleButton fx:id="favoriteButton" layoutX="179.0" layoutY="6.0" mnemonicParsing="false" onAction="#toggleFavorite" text="☆" />
+            <Button layoutX="484.0" layoutY="493.0" mnemonicParsing="false" onAction="#cloneRecipe" prefHeight="26.0" prefWidth="94.0" text="%button.clone" />
 
         </AnchorPane>
     </center>

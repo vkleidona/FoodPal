@@ -58,15 +58,19 @@ public class InformationCtrl {
         MenuItem nlItem = new MenuItem("Nederlands");
         nlItem.setOnAction(e -> changeLanguage(new Locale("nl")));
 
-        MenuItem roItem = new MenuItem("Romana");
+        MenuItem roItem = new MenuItem("Română");
         roItem.setOnAction(e -> changeLanguage(new Locale("ro")));
 
-        languageButton.getItems().addAll(enItem, nlItem, roItem);
+        MenuItem bgItem = new MenuItem("Български");
+        bgItem.setOnAction(e -> changeLanguage(new Locale("bg")));
+
+        languageButton.getItems().addAll(enItem, nlItem, roItem, bgItem);
 
         Locale current = LanguageManager.getLocale();
         switch (current.getLanguage()) {
             case "nl" -> languageButton.setText("Nederlands");
-            case "ro" -> languageButton.setText("Romana");
+            case "ro" -> languageButton.setText("Română");
+            case "bg" -> languageButton.setText("Български");
             default -> languageButton.setText("English");
         }
     }
@@ -75,10 +79,11 @@ public class InformationCtrl {
         LanguageManager.setLocale(newLocale);
         switch (newLocale.getLanguage()) {
             case "nl" -> languageButton.setText("Nederlands");
-            case "ro" -> languageButton.setText("Romana");
+            case "ro" -> languageButton.setText("Română");
+            case "bg" -> languageButton.setText("Български");
             default -> languageButton.setText("English");
         }
-        mainCtrl.reloadScenesForNewLanguage();   // no navigation change
+        mainCtrl.reloadScenesForNewLanguage();
     }
 
 
