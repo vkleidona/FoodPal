@@ -87,6 +87,7 @@ public class MainUICtrl {
 
     private ObservableList<Recipe> currentRecipes;
     private FilteredList<Recipe> filteredRecipesByLanguage;
+    private List <Long> searchedRecipeIds = new ArrayList<>();
     private Recipe selectedRecipe;
 
     private final ServerUtils server;
@@ -735,9 +736,8 @@ public class MainUICtrl {
         String searchQuery = RecipeSearchBar.getText().trim();
 
         if (searchQuery.isEmpty()) {
-            recipeListView.getSelectionModel().clearSelection();
-            recipeListView.getItems().clear();
-            currentRecipes.clear();
+            searchedRecipeIds.clear();
+            updatePredicate();
             return;
         }
 
@@ -750,28 +750,19 @@ public class MainUICtrl {
             }
         }
 
-        List<Recipe> recipes = null;
+        boolean firstItem = true;
         for (String term : trimmedRecipeTerms) {
             List<Recipe> termResults = server.searchRecipesByTerm(term);
-
-            if (recipes == null) {
-                recipes = termResults;
-            } else {
-                recipes.retainAll(termResults);
+            if (firstItem) {
+                searchedRecipeIds.clear();
+                searchedRecipeIds.addAll(termResults.stream().map(Recipe::getId).toList());
+                firstItem = false;
+            }else{
+                searchedRecipeIds.retainAll(termResults.stream().map(Recipe::getId).toList());
             }
         }
 
-        if (favoritesTab.isSelected()) {
-            recipes = recipes.stream()
-                    .filter(r -> favoriteRecipeIds.contains(r.getId()))
-                    .collect(Collectors.toList());
-        }
-
-        ObservableList<Recipe> searchResults =
-                FXCollections.observableArrayList(recipes);
-
-        recipeListView.getSelectionModel().clearSelection();
-        recipeListView.setItems(searchResults);
+        updatePredicate();
     }
 
     /**
@@ -826,7 +817,16 @@ public class MainUICtrl {
 
         menuItem.setGraphic(icon);
 
-        menuItem.setOnAction(e -> filterLocales(new Locale(langCode)));
+        Locale tempLocale = new Locale (langCode);
+
+        menuItem.setOnAction(e -> {
+            if (menuItem.isSelected()) {
+                filterLocales(tempLocale);
+            }else{
+                filteredLocales.remove(tempLocale);
+            }
+            updatePredicate();
+        });
 
         return menuItem;
     }
@@ -836,12 +836,9 @@ public class MainUICtrl {
      * @param locale - the locale we want to filter
      */
     public void filterLocales (Locale locale) {
-        if (filteredLocales.contains(locale)) {
-            filteredLocales.remove(locale);
-        }else{
+        if (!filteredLocales.contains(locale)) {
             filteredLocales.add(locale);
         }
-        updatePredicate();
     }
 
     /**
@@ -855,7 +852,10 @@ public class MainUICtrl {
             if (favoritesTab.isSelected()) {
                 matchesTab = favoriteRecipeIds.contains(recipe.getId());
             }
-            return matchesLanguage && matchesTab;
+            boolean matchesSearch = searchedRecipeIds.isEmpty() ||
+                    searchedRecipeIds.contains(recipe.getId());
+
+            return matchesLanguage && matchesTab && matchesSearch;
         });
     }
 }
