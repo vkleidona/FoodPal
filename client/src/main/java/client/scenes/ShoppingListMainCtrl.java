@@ -68,11 +68,13 @@ public class ShoppingListMainCtrl {
      *               server access
      * @param mainCtrl - an instance of the Main controller which allows the user
      *                 to switch scenes
+     * @param shoppingList - the instance of the ShoppingList required to operate
      */
     @Inject
-    public ShoppingListMainCtrl (ServerUtils server, MainCtrl mainCtrl) {
+    public ShoppingListMainCtrl (ServerUtils server, MainCtrl mainCtrl, ShoppingList shoppingList) {
         this.server = server;
         this.mainCtrl = mainCtrl;
+        this.s = shoppingList;
     }
 
     /**
@@ -89,7 +91,6 @@ public class ShoppingListMainCtrl {
      */
     public void initialize() {
         // loads the shopping list from the file
-        s = ShoppingList.getShoppingList();
         s.loadFile();
 
         // refreshes the interface to match the state of the shopping list
@@ -285,7 +286,7 @@ public class ShoppingListMainCtrl {
      */
     public void addIngredientToShoppingList (Ingredient ingredient) {
         ingredientsObservableList.add(ingredient);
-        ShoppingList.getShoppingList().addIngredient(ingredient);
+        s.addIngredient(ingredient);
     }
 
     /**
@@ -439,6 +440,7 @@ public class ShoppingListMainCtrl {
     public void deleteIngredient(Ingredient ingredient) {
         s.removeIngredient(ingredient);
         ingredientsObservableList.remove(ingredient);
+        s.storeFile();
     }
 
     /**

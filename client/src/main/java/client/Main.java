@@ -52,6 +52,8 @@ public class Main extends Application {
 			return;
 		}
 
+        var shoppingList = INJECTOR.getInstance(ShoppingList.class);
+
 		var information = FXML.load(InformationCtrl.class, "client", "scenes", "InformationUI.fxml");
 
 		var overview = FXML.load(QuoteOverviewCtrl.class, "client", "scenes", "QuoteOverview.fxml");
@@ -86,7 +88,7 @@ public class Main extends Application {
 
     @Override
     public void stop() throws Exception {
-        ShoppingList.getShoppingList().storeFile();
+        INJECTOR.getInstance(ShoppingList.class).storeFile();
         super.stop();
     }
 }

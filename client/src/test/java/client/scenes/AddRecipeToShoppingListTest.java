@@ -17,6 +17,7 @@ import org.testfx.matcher.base.NodeMatchers;
 import org.testfx.matcher.control.LabeledMatchers;
 import recipes.FoodItem;
 import recipes.Ingredient;
+import shopping.ShoppingList;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -48,6 +49,7 @@ public class AddRecipeToShoppingListTest extends ApplicationTest {
         AddRecipeToShoppingListCtrl addRecipeToShoppingListCtrl;
         ServerUtils serverUtils;
         MainCtrl mainCtrl;
+        ShoppingList shoppingList;
 
         // We try to find the controller class at the specified path
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/client/scenes/AddRecipeToShoppingList.fxml"));
@@ -55,7 +57,8 @@ public class AddRecipeToShoppingListTest extends ApplicationTest {
         // We use DI to load the ServerUtils and MainCtrl into the controller class and link it to the UI
         serverUtils = mock(ServerUtils.class);
         mainCtrl = mock(MainCtrl.class);
-        addRecipeToShoppingListCtrl = new AddRecipeToShoppingListCtrl(serverUtils, mainCtrl);
+        shoppingList = new ShoppingList();
+        addRecipeToShoppingListCtrl = new AddRecipeToShoppingListCtrl(serverUtils, mainCtrl, shoppingList);
         loader.setController(addRecipeToShoppingListCtrl);
 
         // We load the scene

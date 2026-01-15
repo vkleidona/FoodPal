@@ -8,6 +8,7 @@ import org.springframework.test.context.ActiveProfiles;
 import recipes.Ingredient;
 import recipes.Recipe;
 
+import java.util.Locale;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,6 +27,7 @@ public class IngredientRepositoryTest {
     @BeforeEach
     void setup () {
         r = new Recipe("orange juice");
+        r.setLocale(new Locale("en"));
         recipeRepo.save(r);
         i = new Ingredient(20, "g");
         i.setRecipe(r);

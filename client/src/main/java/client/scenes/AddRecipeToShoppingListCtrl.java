@@ -57,11 +57,13 @@ public class AddRecipeToShoppingListCtrl {
      * Constructor for the AddRecipeToShoppingList controller class
      * @param serverUtils - the single instance of server utilities
      * @param mainCtrl - the main controller class
+     * @param shoppingList - the instance of the ShoppingList class, injected
      */
     @Inject
-    public AddRecipeToShoppingListCtrl (ServerUtils serverUtils, MainCtrl mainCtrl) {
+    public AddRecipeToShoppingListCtrl (ServerUtils serverUtils, MainCtrl mainCtrl, ShoppingList shoppingList) {
         this.serverUtils = serverUtils;
         this.mainCtrl = mainCtrl;
+        this.shoppingList = shoppingList;
     }
 
     public void setRecipe (Recipe recipe) {
@@ -363,7 +365,6 @@ public class AddRecipeToShoppingListCtrl {
      */
     @FXML
     public void confirmAction () {
-        shoppingList = ShoppingList.getShoppingList();
         for (Ingredient ingredient : recipeIngredientsObservableList) {
             shoppingList.addIngredient(ingredient);
         }

@@ -1,5 +1,6 @@
 package shopping;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import recipes.FoodItem;
@@ -7,9 +8,6 @@ import recipes.Ingredient;
 import recipes.Recipe;
 
 import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Array;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,9 +18,9 @@ class ShoppingListTest {
     List <Ingredient> testList;
     Ingredient i;
     Ingredient i2;
-    ShoppingList s = ShoppingList.getShoppingList();
     Recipe r;
     FoodItem f;
+    ShoppingList s;
 
     @BeforeEach
     void setup () {
@@ -34,8 +32,17 @@ class ShoppingListTest {
         i.setFoodType(f);
         i2.setRecipe(r);
         i2.setFoodType(f);
+        s = new ShoppingList();
         s.addIngredient(i);
         testList = List.of(i);
+    }
+
+    @AfterEach
+    void cleanup() {
+        File file = new File(System.getProperty("user.home"), ".foodpal/shopping_list.json");
+        if (file.exists()) {
+            file.delete();
+        }
     }
 
     @Test
@@ -64,7 +71,7 @@ class ShoppingListTest {
 
     @Test
     void testEqualsHash() {
-        ShoppingList s2 = ShoppingList.getShoppingList();
+        ShoppingList s2 = new ShoppingList();
         // I also test the removeIngredient method, that is why this looks redundant
         s2.addIngredient(i2);
         s.removeIngredient(i);
@@ -91,9 +98,9 @@ class ShoppingListTest {
 
     @Test
     void testGetShoppingListNonNull() {
-        ShoppingList s2 = ShoppingList.getShoppingList();
+        ShoppingList s2 = new ShoppingList();
         s2.addIngredient(i);
-        assertEquals(s2, ShoppingList.getShoppingList());
+        assertEquals(s2, s);
     }
 
     @Test
@@ -104,7 +111,7 @@ class ShoppingListTest {
 
         s.storeFile();
 
-        File file = new File("shopping_list_ingredients.bin");
+        File file = new File(System.getProperty("user.home"), ".foodpal/shopping_list.json");
         assertTrue(file.exists());
 
         s.setIngredients(null);
