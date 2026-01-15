@@ -1,6 +1,9 @@
 package recipes;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import jakarta.persistence.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -47,6 +50,10 @@ public class Ingredient implements Serializable {
     @JoinColumn(name = "RECIPE_ID")
     @com.fasterxml.jackson.annotation.JsonBackReference
     private Recipe recipe;
+
+    // Used for Shopping List
+    @JsonProperty("recipeName")
+    private String recipeName;
 
     /**
      * A Constructor for the ObjectMapper to use
@@ -144,6 +151,14 @@ public class Ingredient implements Serializable {
         return foodType.getName();
     }
 
+    public String getRecipeName() {
+        return recipeName;
+    }
+
+    public void setRecipeName(String recipeName) {
+        this.recipeName = recipeName;
+    }
+
     /**
      * An implementation of the equals method for the Ingredient class
      * @param o - the reference object with which to compare.
@@ -169,8 +184,10 @@ public class Ingredient implements Serializable {
     public String toString () {
         String ingredientToString = this.getFoodName() + " - " +
                 this.getQuantity() + " " + this.getMeasurement();
-        if (this.getRecipe() != null) {
-            ingredientToString += " (for preparing " + this.getRecipe().getName() + ")";
+        if (this.getRecipeName() != null && !this.recipeName.isEmpty()) {
+            ingredientToString += " (for preparing " + recipeName + ")";
+        } else if (this.getRecipe() != null) {
+            ingredientToString += " (for preparing " + recipe.getName() + ")";
         }
         return ingredientToString;
     }

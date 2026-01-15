@@ -79,7 +79,7 @@ public class ShoppingList implements Serializable {
             SHOPPING_LIST_FILE.getParentFile().mkdirs();
             objectMapper.writeValue(SHOPPING_LIST_FILE, ingredients);
         } catch (IOException e) {
-            System.err.println("File not found");
+            e.printStackTrace();
         }
     }
 
@@ -96,9 +96,10 @@ public class ShoppingList implements Serializable {
             List<Ingredient> loaded = objectMapper.readValue(SHOPPING_LIST_FILE,
                     new TypeReference<>() {
                     });
-            ingredients = Objects.requireNonNullElseGet(loaded, ArrayList::new);
+            this.ingredients.clear();
+            this.ingredients.addAll(loaded);
         }catch (IOException e) {
-            System.err.println("Something went wrong");
+            e.printStackTrace();
             ingredients = new ArrayList<>();
         }
     }

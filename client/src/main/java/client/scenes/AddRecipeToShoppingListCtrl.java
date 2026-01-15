@@ -75,6 +75,9 @@ public class AddRecipeToShoppingListCtrl {
             ingredientList = recipeToAdd.getIngredients();
         }
         recipeIngredientsObservableList = FXCollections.observableArrayList(ingredientList);
+        recipeIngredientsObservableList.forEach(i -> i.setRecipe(recipeToAdd));
+        recipeIngredientsObservableList.forEach(i -> i.setRecipeName(recipeToAdd.getName()));
+
         recipeIngredientsListView.setItems(recipeIngredientsObservableList);
     }
 
@@ -106,7 +109,6 @@ public class AddRecipeToShoppingListCtrl {
                 }
             }
         });
-
         setupLanguageMenu();
     }
 
@@ -366,6 +368,7 @@ public class AddRecipeToShoppingListCtrl {
     @FXML
     public void confirmAction () {
         for (Ingredient ingredient : recipeIngredientsObservableList) {
+            ingredient.setRecipeName(recipeToAdd.getName());
             shoppingList.addIngredient(ingredient);
         }
         shoppingList.storeFile();
