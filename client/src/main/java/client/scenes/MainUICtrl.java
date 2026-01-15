@@ -794,16 +794,22 @@ public class MainUICtrl {
     public void setupFilterLanguages () {
         filterLanguagesButton.getItems().clear();
 
+        Set<Locale> savedFilters = LanguageManager.loadFilterLocales();
+        this.filteredLocales = new ArrayList<>(savedFilters);
+
         CheckMenuItem enItem = setupCheckMenuItemIcons("English", "en", "english");
         CheckMenuItem nlItem = setupCheckMenuItemIcons("Nederlands", "nl", "dutch");
         CheckMenuItem roItem = setupCheckMenuItemIcons("Română", "ro", "romanian");
         CheckMenuItem bgItem = setupCheckMenuItemIcons("Български", "bg", "bulgarian");
 
         filterLanguagesButton.getItems().addAll(enItem, nlItem, roItem, bgItem);
+        updatePredicate();
     }
 
     private CheckMenuItem setupCheckMenuItemIcons (String name, String langCode, String iconFileName) {
         CheckMenuItem menuItem = new CheckMenuItem(name);
+
+        menuItem.setSelected(filteredLocales.contains(new Locale(langCode)));
 
         Image flagImage = new Image
                 (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg"));
@@ -825,6 +831,7 @@ public class MainUICtrl {
             }else{
                 filteredLocales.remove(tempLocale);
             }
+            LanguageManager.saveFilterLocales(filteredLocales);
             updatePredicate();
         });
 
