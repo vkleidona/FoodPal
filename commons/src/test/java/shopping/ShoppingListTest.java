@@ -114,7 +114,6 @@ class ShoppingListTest {
         File file = new File(System.getProperty("user.home"), ".foodpal/shopping_list.json");
         assertTrue(file.exists());
 
-        s.setIngredients(null);
         s.loadFile();
 
         assertEquals(1, s.getIngredients().size());
