@@ -6,6 +6,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 import recipes.Recipe;
 
+import java.util.Locale;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
@@ -18,6 +20,7 @@ public class RecipeRepositoryTest {
     @Test
     void testSaveAndFindById() {
         Recipe recipe = new Recipe("Pasta");
+        recipe.setLocale(new Locale("en"));
         Recipe saved = recipeRepository.save(recipe);
 
         assertNotNull(saved.getId(), "Id should be generated after saving");
@@ -29,8 +32,12 @@ public class RecipeRepositoryTest {
 
     @Test
     void testFindAll() {
-        recipeRepository.save(new Recipe("Salad"));
-        recipeRepository.save(new Recipe("Soup"));
+        Recipe r = new Recipe("Salad");
+        Recipe r2 = new Recipe("Soup");
+        r.setLocale(new Locale("en"));
+        r2.setLocale(new Locale("en"));
+        recipeRepository.save(r);
+        recipeRepository.save(r2);
 
         var all = recipeRepository.findAll();
         assertEquals(2, all.size());
@@ -39,6 +46,7 @@ public class RecipeRepositoryTest {
     @Test
     void testDelete() {
         Recipe recipe = new Recipe("Cake");
+        recipe.setLocale(new Locale("bg"));
         Recipe saved = recipeRepository.save(recipe);
         long id = saved.getId();
 

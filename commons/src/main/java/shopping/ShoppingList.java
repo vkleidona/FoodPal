@@ -1,42 +1,32 @@
 package shopping;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import recipes.Ingredient;
 
+import java.beans.BeanProperty;
 import java.io.*;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class ShoppingList implements Serializable {
 
-    /**
-     * I know Sebastian said we shouldn't use static, but I thought it
-     * was a good implementation of the fact that the ShoppingList is a Singleton
-     * Whoever is reviewing this, share your opinion and if I should change it
-     */
-    private static ShoppingList shoppingList;
-    private List<Ingredient> ingredients;
+    private List<Ingredient> ingredients = new ArrayList<>();
+    private static final File SHOPPING_LIST_FILE =
+            new File(System.getProperty("user.home"), ".foodpal/shopping_list.json");
 
     /**
      * A constructor for the ShoppingList class
      */
     public ShoppingList() {
-        this.ingredients = new ArrayList<>();
+        loadFile();
     }
 
-    /**
-     * Returns the singular instance of a ShoppingList
-     * @return - ShoppingList - the instance of the ShoppingList this class has
-     */
-    public static ShoppingList getShoppingList () {
-        if (shoppingList == null) {
-            shoppingList = new ShoppingList();
-        }
-        return shoppingList;
-    }
 
     public List <Ingredient> getIngredients () {
         return this.ingredients;
@@ -79,13 +69,12 @@ public class ShoppingList implements Serializable {
      * Creates a local file which stores the ShoppingList
      */
     public void storeFile () {
-        try (ObjectOutputStream outputStream = new ObjectOutputStream(
-                new FileOutputStream("shopping_list_ingredients.bin"))) {
-            outputStream.writeObject(ingredients);
-        } catch (FileNotFoundException e) {
-            System.err.println("File not found!");
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            SHOPPING_LIST_FILE.getParentFile().mkdirs();
+            objectMapper.writeValue(SHOPPING_LIST_FILE, ingredients);
         } catch (IOException e) {
-            System.err.println("Something went wrong!");
+            e.printStackTrace();
         }
     }
 
@@ -93,19 +82,20 @@ public class ShoppingList implements Serializable {
      * Loads the local file into the Shopping list
      */
     public void loadFile () {
-        try (ObjectInputStream inputStream =
-                     new ObjectInputStream(new FileInputStream("shopping_list_ingredients.bin"))) {
-            List <Ingredient> fileIngredients = (List<Ingredient>) inputStream.readObject();
-            if (fileIngredients == null) {
-                ingredients = new ArrayList<>();
-            }else{
-                ingredients = fileIngredients;
-            }
-        }catch (FileNotFoundException e) {
-            System.err.println("File not found!");
-        } catch (IOException | ClassNotFoundException e) {
-            System.err.println("Class not initialized!");
-            shoppingList = getShoppingList();
+        if (!SHOPPING_LIST_FILE.exists()) {
+            ingredients.clear();
+            return;
+        }
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            List<Ingredient> loaded = objectMapper.readValue(SHOPPING_LIST_FILE,
+                    new TypeReference<>() {
+                    });
+            this.ingredients.clear();
+            this.ingredients.addAll(loaded);
+        }catch (IOException e) {
+            e.printStackTrace();
+            ingredients = new ArrayList<>();
         }
     }
 

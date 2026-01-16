@@ -36,7 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import recipes.FoodItem;
 import recipes.Recipe;
 
-public class MainCtrl implements MainCtrlMethods {
+public class MainCtrl {
 
     private Stage primaryStage;
 

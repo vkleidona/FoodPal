@@ -1,16 +1,19 @@
 package client.i18n;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Locale;
-import java.util.Properties;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public final class LanguageManager {
 
     private static final String KEY_LANGUAGE = "language";
+    private static final String KEY_LANGUAGE_FILTERS = "filter_locales";
     private static final Path CONFIG_PATH =
             Path.of(System.getProperty("user.home"), ".foodpal", "config.properties");
 
@@ -54,6 +57,53 @@ public final class LanguageManager {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * Loads filters for the languages
+     * @return Set <Locale> - returns a set of all Locales
+     */
+    public static Set<Locale> loadFilterLocales () {
+        Properties properties = new Properties();
+        if (Files.exists(CONFIG_PATH)) {
+            try (InputStream inputStream = Files.newInputStream(CONFIG_PATH)) {
+                properties.load(inputStream);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        String filters = properties.getProperty(KEY_LANGUAGE_FILTERS, "");
+        if (filters.isEmpty()) {
+            return new HashSet<>();
+        }
+
+        return Arrays.stream(filters.split(",")).
+                map(Locale::new).collect(Collectors.toSet());
+    }
+
+    /**
+     * Responsible for storing the information on locale filters
+     * @param locales - the list of locales to be saved
+     */
+    public static void saveFilterLocales (List <Locale> locales) {
+        Properties properties = new Properties();
+        if (Files.exists(CONFIG_PATH)) {
+            try (InputStream inputStream = Files.newInputStream(CONFIG_PATH)) {
+                properties.load(inputStream);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        String filterStr = locales.stream().map(Locale::getLanguage).
+                collect(Collectors.joining(","));
+
+        properties.setProperty(KEY_LANGUAGE_FILTERS, filterStr);
+        try (OutputStream out = Files.newOutputStream(CONFIG_PATH)) {
+            Files.createDirectories(CONFIG_PATH.getParent());
+            properties.store(out, "FoodPal user settings");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

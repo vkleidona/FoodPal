@@ -19,6 +19,7 @@ import javafx.collections.ObservableSet;
 
 import javafx.collections.FXCollections;
 
+import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -26,9 +27,12 @@ import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Pair;
@@ -75,10 +79,15 @@ public class MainUICtrl {
 
     @FXML private TextField RecipeSearchBar;
 
+    @FXML private ImageView languageIndicator;
+    @FXML private MenuButton filterLanguagesButton;
+
     private final Client client = ClientBuilder.newClient();
     private final String recipeEndpointUrl = "http://localhost:8080/api/recipes";
 
     private ObservableList<Recipe> currentRecipes;
+    private FilteredList<Recipe> filteredRecipesByLanguage;
+    private List <Long> searchedRecipeIds = new ArrayList<>();
     private Recipe selectedRecipe;
 
     private final ServerUtils server;
@@ -87,6 +96,7 @@ public class MainUICtrl {
     private WebSocketService webSocketService;
 
     private Set<Long> favoriteRecipeIds = new HashSet<>();
+    private List <Locale> filteredLocales = new ArrayList<>();
 
     private Long lastSubscribedID = null;
     private StompSession.Subscription recipeSubscription;
@@ -151,47 +161,26 @@ public class MainUICtrl {
         }
 
         saveFavorites();
+        updatePredicate();
 
         if (favoritesTab.isSelected()) {
-            // Re-calculate the list of favorites
-            List<Recipe> favorites = currentRecipes.stream()
-                    .filter(r -> favoriteRecipeIds.contains(r.getId()))
-                    .collect(Collectors.toList());
-
             unsubscribeFromRecipe();
-
-            // Set the new list (this physically removes the item from the UI)
-            recipeListView.setItems(FXCollections.observableArrayList(favorites));
-
-            // Optional: Select the first item or clear selection so the details panel doesn't look weird
-            if (!favorites.isEmpty()) {
-                recipeListView.getSelectionModel().select(0);
-            } else {
-                // clear details panel if list is empty
-            }
-        } else {
-            recipeListView.refresh(); // Just redraw the stars if in "All Recipes"
         }
     }
 
 
     @FXML
     public void showAllRecipes() {
-        recipeListView.setItems(FXCollections.observableArrayList(currentRecipes));
+        allRecipesTab.setSelected(true);
+        favoritesTab.setSelected(false);
+        updatePredicate();
     }
 
     @FXML
     public void showFavoriteRecipes() {
-
-        List<Recipe> favorites = new ArrayList<>();
-        for (Recipe r : currentRecipes) {
-            if (favoriteRecipeIds.contains(r.getId())) {
-                favorites.add(r);
-            } else {
-
-            }
-        }
-        recipeListView.setItems(FXCollections.observableArrayList(favorites));
+        allRecipesTab.setSelected(false);
+        favoritesTab.setSelected(true);
+        updatePredicate();
     }
 
     /**
@@ -218,17 +207,6 @@ public class MainUICtrl {
     @FXML
     public void initialize() {
 
-        /**
-        webSocketService.connect(() -> {
-            System.out.println("Connection live! Now it is safe to subscribe.");
-            initialRecipeFetch();
-
-            // If a recipe was already selected by the user during the wait:
-            if (selectedRecipe != null) {
-                selectRecipe(selectedRecipe);
-            }
-        });
-**/
         // The recipe list matches the initial server one
         this.currentRecipes = webSocketService.getMasterRecipeList();
         // Immediately set currentRecipes to match the changes from the server
@@ -236,6 +214,10 @@ public class MainUICtrl {
         currentRecipes.addListener((ListChangeListener<Recipe>) c -> {
             Platform.runLater(this::updateRecipeListView);
         });
+
+        filteredRecipesByLanguage = new FilteredList<>(currentRecipes);
+        recipeListView.setItems(filteredRecipesByLanguage);
+        updatePredicate();
 
         //initialRecipeFetch();
 
@@ -252,6 +234,9 @@ public class MainUICtrl {
                         boolean isFav = favoriteRecipeIds.contains(newVal.getId());
                         favoriteButton.setSelected(isFav);
                         favoriteButton.setText(isFav ? "★" : "☆");
+                        changeRecipeLanguage(selectedRecipe);
+                    }else{
+                        languageIndicator.setImage(null);
                     }
                 });
 
@@ -308,29 +293,88 @@ public class MainUICtrl {
         });
 
         setupLanguageMenu();
+        setupFilterLanguages();
 
+    }
 
+    private MenuItem setupMenuItemIcons (String name, String langCode, String iconFileName) {
+        MenuItem menuItem = new MenuItem(name);
+
+        Image flagImage = new Image
+                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg"));
+
+        ImageView icon = new ImageView(flagImage);
+        icon.setFitWidth(16);
+        icon.setFitHeight(16);
+
+        Circle clip = new Circle(8, 8, 8);
+        icon.setClip(clip);
+
+        menuItem.setGraphic(icon);
+
+        menuItem.setOnAction(e -> changeLanguage(new Locale(langCode)));
+
+        return menuItem;
+    }
+
+    private void updateButtonGraphic(String iconFileName) {
+        Image img = new Image
+                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg"));
+        ImageView imageView = new ImageView(img);
+
+        imageView.setFitWidth(16);
+        imageView.setFitHeight(16);
+
+        Circle clip = new Circle(8, 8, 8);
+        imageView.setClip(clip);
+
+        languageButton.setGraphic(imageView);
+    }
+
+    private void updateIndicator(String iconFileName) {
+        Image img = new Image
+                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg"));
+
+        languageIndicator.setImage(img);
+
+        languageIndicator.setFitHeight(30);
+        languageIndicator.setFitWidth(30);
+
+        Circle clip = new Circle(15, 15, 15);
+        languageIndicator.setClip(clip);
     }
 
     private void setupLanguageMenu() {
         languageButton.getItems().clear();
 
-        MenuItem enItem = new MenuItem("English");
-        enItem.setOnAction(e -> changeLanguage(new Locale("en")));
+        MenuItem enItem = setupMenuItemIcons("English", "en", "english");
+        MenuItem nlItem = setupMenuItemIcons("Nederlands", "nl", "dutch");
+        MenuItem roItem = setupMenuItemIcons("Română", "ro", "romanian");
+        MenuItem bgItem = setupMenuItemIcons("Български", "bg", "bulgarian");
 
-        MenuItem nlItem = new MenuItem("Nederlands");
-        nlItem.setOnAction(e -> changeLanguage(new Locale("nl")));
-
-        MenuItem roItem = new MenuItem("Română");
-        roItem.setOnAction(e -> changeLanguage(new Locale("ro")));
-
-        languageButton.getItems().addAll(enItem, nlItem, roItem);
+        languageButton.getItems().addAll(enItem, nlItem, roItem, bgItem);
 
         Locale current = LanguageManager.getLocale();
+        filteredLocales.clear();
+
+
         switch (current.getLanguage()) {
-            case "nl" -> languageButton.setText("Nederlands");
-            case "ro" -> languageButton.setText("Română");
-            default -> languageButton.setText("English");
+            case "nl" -> {
+                languageButton.setText("Nederlands");
+                updateButtonGraphic("dutch");
+            }
+            case "ro" -> {
+                languageButton.setText("Română");
+                updateButtonGraphic("romanian");
+            }
+            case "bg" -> {
+                languageButton.setText("Български");
+                updateButtonGraphic("bulgarian");
+            }
+            default -> {
+                languageButton.setText("English");
+                updateButtonGraphic("english");
+            }
         }
     }
 
@@ -339,6 +383,7 @@ public class MainUICtrl {
         switch (newLocale.getLanguage()) {
             case "nl" -> languageButton.setText("Nederlands");
             case "ro" -> languageButton.setText("Română");
+            case "bg" -> languageButton.setText("Български");
             default -> languageButton.setText("English");
         }
         mainCtrl.reloadScenesForNewLanguage();
@@ -376,7 +421,7 @@ public class MainUICtrl {
         } else {
             // Only show all recipes if we are in "All Recipes" tab
             // Updates the sidebar when it senses changes in the database
-            recipeListView.getItems().setAll(currentRecipes);
+            updatePredicate();
 
             // Updates the recipe with all of its parameters
             if (selectedRecipe != null) {
@@ -691,9 +736,8 @@ public class MainUICtrl {
         String searchQuery = RecipeSearchBar.getText().trim();
 
         if (searchQuery.isEmpty()) {
-            recipeListView.getSelectionModel().clearSelection();
-            recipeListView.getItems().clear();
-            currentRecipes.clear();
+            searchedRecipeIds.clear();
+            updatePredicate();
             return;
         }
 
@@ -706,28 +750,19 @@ public class MainUICtrl {
             }
         }
 
-        List<Recipe> recipes = null;
+        boolean firstItem = true;
         for (String term : trimmedRecipeTerms) {
             List<Recipe> termResults = server.searchRecipesByTerm(term);
-
-            if (recipes == null) {
-                recipes = termResults;
-            } else {
-                recipes.retainAll(termResults);
+            if (firstItem) {
+                searchedRecipeIds.clear();
+                searchedRecipeIds.addAll(termResults.stream().map(Recipe::getId).toList());
+                firstItem = false;
+            }else{
+                searchedRecipeIds.retainAll(termResults.stream().map(Recipe::getId).toList());
             }
         }
 
-        if (favoritesTab.isSelected()) {
-            recipes = recipes.stream()
-                    .filter(r -> favoriteRecipeIds.contains(r.getId()))
-                    .collect(Collectors.toList());
-        }
-
-        ObservableList<Recipe> searchResults =
-                FXCollections.observableArrayList(recipes);
-
-        recipeListView.getSelectionModel().clearSelection();
-        recipeListView.setItems(searchResults);
+        updatePredicate();
     }
 
     /**
@@ -740,5 +775,94 @@ public class MainUICtrl {
         }
     }
 
+    /**
+     * Changes the visible indicator of the recipe language
+     * @param selectedRecipe - the recipe which updates the language indicator
+     */
+    public void changeRecipeLanguage (Recipe selectedRecipe) {
+        switch(selectedRecipe.getLocale().getLanguage()) {
+            case "bg" -> updateIndicator("bulgarian");
+            case "nl" -> updateIndicator("dutch");
+            case "ro" -> updateIndicator("romanian");
+            default -> updateIndicator("english");
+        }
+    }
 
+    /**
+     * Filters the selected languages
+     */
+    public void setupFilterLanguages () {
+        filterLanguagesButton.getItems().clear();
+
+        Set<Locale> savedFilters = LanguageManager.loadFilterLocales();
+        this.filteredLocales = new ArrayList<>(savedFilters);
+
+        CheckMenuItem enItem = setupCheckMenuItemIcons("English", "en", "english");
+        CheckMenuItem nlItem = setupCheckMenuItemIcons("Nederlands", "nl", "dutch");
+        CheckMenuItem roItem = setupCheckMenuItemIcons("Română", "ro", "romanian");
+        CheckMenuItem bgItem = setupCheckMenuItemIcons("Български", "bg", "bulgarian");
+
+        filterLanguagesButton.getItems().addAll(enItem, nlItem, roItem, bgItem);
+        updatePredicate();
+    }
+
+    private CheckMenuItem setupCheckMenuItemIcons (String name, String langCode, String iconFileName) {
+        CheckMenuItem menuItem = new CheckMenuItem(name);
+
+        menuItem.setSelected(filteredLocales.contains(new Locale(langCode)));
+
+        Image flagImage = new Image
+                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg"));
+
+        ImageView icon = new ImageView(flagImage);
+        icon.setFitWidth(16);
+        icon.setFitHeight(16);
+
+        Circle clip = new Circle(8, 8, 8);
+        icon.setClip(clip);
+
+        menuItem.setGraphic(icon);
+
+        Locale tempLocale = new Locale (langCode);
+
+        menuItem.setOnAction(e -> {
+            if (menuItem.isSelected()) {
+                filterLocales(tempLocale);
+            }else{
+                filteredLocales.remove(tempLocale);
+            }
+            LanguageManager.saveFilterLocales(filteredLocales);
+            updatePredicate();
+        });
+
+        return menuItem;
+    }
+
+    /**
+     * A method which handles the filtering of languages
+     * @param locale - the locale we want to filter
+     */
+    public void filterLocales (Locale locale) {
+        if (!filteredLocales.contains(locale)) {
+            filteredLocales.add(locale);
+        }
+    }
+
+    /**
+     * Updates the predicate of the filtered list
+     */
+    public void updatePredicate () {
+        filteredRecipesByLanguage.setPredicate(recipe -> {
+            boolean matchesLanguage = filteredLocales.isEmpty() ||
+                    filteredLocales.contains(recipe.getLocale());
+            boolean matchesTab = true;
+            if (favoritesTab.isSelected()) {
+                matchesTab = favoriteRecipeIds.contains(recipe.getId());
+            }
+            boolean matchesSearch = searchedRecipeIds.isEmpty() ||
+                    searchedRecipeIds.contains(recipe.getId());
+
+            return matchesLanguage && matchesTab && matchesSearch;
+        });
+    }
 }

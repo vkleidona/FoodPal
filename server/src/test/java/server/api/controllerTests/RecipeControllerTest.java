@@ -16,6 +16,7 @@ import server.repositories.RecipeRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -60,6 +61,8 @@ public class RecipeControllerTest {
         ingredients.add(ingredient);
         recipe.setIngredients(ingredients);
         recipe.setId(null);
+        Locale locale = new Locale("en");
+        recipe.setLocale(locale);
 
         // convert to JSON format
         String json = objectMapper.writeValueAsString(recipe);
