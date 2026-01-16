@@ -16,12 +16,7 @@ import java.util.Objects;
 
 public class ShoppingList implements Serializable {
 
-    /**
-     * I know Sebastian said we shouldn't use static, but I thought it
-     * was a good implementation of the fact that the ShoppingList is a Singleton
-     * Whoever is reviewing this, share your opinion and if I should change it
-     */
-    private List<Ingredient> ingredients;
+    private List<Ingredient> ingredients = new ArrayList<>();
     private static final File SHOPPING_LIST_FILE =
             new File(System.getProperty("user.home"), ".foodpal/shopping_list.json");
 
@@ -29,7 +24,7 @@ public class ShoppingList implements Serializable {
      * A constructor for the ShoppingList class
      */
     public ShoppingList() {
-        this.ingredients = new ArrayList<>();
+        loadFile();
     }
 
 
