@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import java.io.Serializable;
+import java.util.Locale;
 import java.util.Objects;
 
 
@@ -176,13 +177,7 @@ public class Ingredient implements Serializable {
      * to the user in the ShoppingList
      */
     public String toString () {
-        String ingredientToString = this.getFoodName() + " - " +
+        return this.getFoodName() + " - " +
                 this.getQuantity() + " " + this.getMeasurement();
-        if (this.getRecipeName() != null && !this.recipeName.isEmpty()) {
-            ingredientToString += " (for preparing " + recipeName + ")";
-        } else if (this.getRecipe() != null) {
-            ingredientToString += " (for preparing " + recipe.getName() + ")";
-        }
-        return ingredientToString;
     }
 }

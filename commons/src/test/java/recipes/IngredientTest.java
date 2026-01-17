@@ -3,6 +3,8 @@ package recipes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Locale;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class IngredientTest {
@@ -75,6 +77,6 @@ class IngredientTest {
     @Test
     void testToString() {
         String iStr = ingredient.toString();
-        assertEquals("slanina - 20.0 g (for preparing bryndzové halušky)",iStr);
+        assertEquals("slanina - 20.0 g",iStr);
     }
 }

@@ -14,21 +14,16 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-// /recipes: endpoint, prepares it
-// to handle all requests sent to "/recipes"
 @RequestMapping("api/recipes")
 public class RecipeController {
 
-    @Autowired
-    private RecipeRepository recipeRepository;
+    private final RecipeRepository recipeRepository;
 
-    @Autowired
-    private FoodItemRepository foodItemRepository;
-    @Autowired
-    private IngredientRepository ingredientRepository;
+    private final FoodItemRepository foodItemRepository;
 
-    @Autowired
-    private SimpMessagingTemplate messageTemplate;
+    private final IngredientRepository ingredientRepository;
+
+    private final SimpMessagingTemplate messageTemplate;
 
     /**
      * A Dependency-Injection using constructor for all fields of the controller class
@@ -55,7 +50,6 @@ public class RecipeController {
      * as well as a status code for the response
      */
     @PostMapping(consumes = "application/json")
-    // @RequestBody: the JSON format is turned into a Java object
     public ResponseEntity<Long> saveRecipe(@RequestBody Recipe recipe) {
         for (Ingredient ingredient : recipe.getIngredients()) {
 
@@ -168,10 +162,13 @@ public class RecipeController {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * A method which searches for recipes by term
+     * @param keyword - the keyword by which the user searches in the methods
+     * @return List <Recipe> - all recipes which match the term
+     */
     @GetMapping("/searchByTerm")
     public List<Recipe> searchRecipesByTerm(@RequestParam String keyword) {
         return recipeRepository.findAllByTerm(keyword);
     }
-
-
 }

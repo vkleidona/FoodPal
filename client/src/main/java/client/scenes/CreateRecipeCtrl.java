@@ -358,7 +358,6 @@ public class CreateRecipeCtrl {
      * @param newLocale - the new Locale of the recipe
      */
     public void changeLanguage(Locale newLocale) {
-        LanguageManager.setLocale(newLocale);
         switch (newLocale.getLanguage()) {
             case "nl" -> {
                 languageButton.setText("Nederlands");

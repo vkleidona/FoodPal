@@ -108,7 +108,7 @@ public class ShoppingListMainCtrl {
                     setGraphic(null);
                 } else {
                     // set up a label (containing each Ingredient), and Edit and Delete buttons
-                    Label nameLabel = new Label(ingredient.toString());
+                    Label nameLabel = new Label(ingredientFormatter(ingredient));
 
                     HBox container = getHBox(ingredient, nameLabel);
 
@@ -132,6 +132,23 @@ public class ShoppingListMainCtrl {
         HBox container = new HBox(10, nameLabel, editButton, deleteButton);
         container.setAlignment(Pos.CENTER_LEFT);
         return container;
+    }
+
+    /**
+     * A method which displays the proper visualization of the ingredient
+     * @param ingredient - the Ingredient currently being visualized
+     * @return String - the correct addition to the ShoppingList
+     */
+    public String ingredientFormatter (Ingredient ingredient) {
+        Locale currentLocale = LanguageManager.getLocale();
+        String sourceName = ingredient.getRecipeName();
+        String initial = ingredient.toString();
+        return switch (currentLocale.getLanguage()) {
+            case "nl" -> initial + " (voor het voorbereiden " + sourceName + ")";
+            case "ro" -> initial + " (pentru pregătire " + sourceName + ")";
+            case "bg" -> initial + " (за приготвяне на " + sourceName + ")";
+            default -> initial + " (for preparing " + sourceName + ")";
+        };
     }
 
     /**

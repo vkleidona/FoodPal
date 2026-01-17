@@ -19,12 +19,11 @@ import static org.mockito.Mockito.*;
 public class FoodItemControllerTest {
     private FoodItemController ctrl;
     private FoodItemRepository repo;
-    private SimpMessagingTemplate msg;
 
     @BeforeEach
     public void setup(){
         repo = mock(FoodItemRepository.class);
-        msg = mock(SimpMessagingTemplate.class);
+        SimpMessagingTemplate msg = mock(SimpMessagingTemplate.class);
 
         ctrl = new FoodItemController(repo, msg);
     }
@@ -53,7 +52,7 @@ public class FoodItemControllerTest {
         List<FoodItem> result = ctrl.getAllFoodItems();
 
         assertEquals(1, result.size());
-        assertEquals("Bread", result.get(0).getName());
+        assertEquals("Bread", result.getFirst().getName());
     }
 
     @Test

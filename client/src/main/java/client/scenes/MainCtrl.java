@@ -341,7 +341,7 @@ public class MainCtrl {
             alert.setContentText("The food item you are currently editing has been removed");
             alert.showAndWait();
 
-            showMainMenu();
+            showFoodItemMain();
         });
     }
 

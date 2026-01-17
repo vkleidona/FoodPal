@@ -6,12 +6,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import recipes.FoodItem;
 import recipes.Ingredient;
 import recipes.Recipe;
+import server.api.controllers.RecipeController;
 import server.repositories.FoodItemRepository;
+import server.repositories.IngredientRepository;
 import server.repositories.RecipeRepository;
 
 import java.util.ArrayList;
@@ -42,10 +45,20 @@ public class RecipeControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private IngredientRepository ingredientRepository;
+
+    @Autowired
+    private SimpMessagingTemplate messageTemplate;
+
+    private RecipeController recipeController;
+
     @BeforeEach
     void setup() {
         recipeRepository.deleteAll();
         foodItemRepository.deleteAll();
+        recipeController = new RecipeController(recipeRepository, foodItemRepository,
+                ingredientRepository, messageTemplate);
     }
 
     @Test
@@ -74,7 +87,7 @@ public class RecipeControllerTest {
         // verify in database
         assertEquals(1, recipeRepository.count());
         assertEquals(1, foodItemRepository.count());
-        assertEquals("TestRecipe", recipeRepository.findAll().get(0).getName());
+        assertEquals("TestRecipe", recipeRepository.findAll().getFirst().getName());
     }
 
     @Test
@@ -144,7 +157,8 @@ public class RecipeControllerTest {
                 .content(inputJson))
                 .andExpect(status().isOk());
 
-        Recipe dbRecipe = recipeRepository.findById(original.getId()).get();
+        Recipe dbRecipe = recipeRepository.findById(original.getId()).isPresent() ?
+                recipeRepository.findById(original.getId()).get() : new Recipe("");
         assertEquals("New name", dbRecipe.getName());
     }
 

@@ -10,6 +10,7 @@ import recipes.Recipe;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,7 +28,7 @@ class ShoppingListTest {
         f = new FoodItem("slanina", 10, 20, 30, 40);
         i = new Ingredient(20, "g");
         i2 = new Ingredient(30, "g");
-        r = new Recipe("bryndzové halušky");
+        r = new Recipe("bryndzové halušky", new Locale("en"));
         i.setRecipe(r);
         i.setFoodType(f);
         i2.setRecipe(r);
@@ -90,8 +91,8 @@ class ShoppingListTest {
     void testToString() {
         String toStr = s.toString();
         assertTrue(toStr.contains("ShoppingList") && toStr.contains("ingredients"));
-        assertTrue(toStr.contains("slanina - 20.0 g (for preparing bryndzové halušky)"));
-        System.out.println(toStr);
+        assertTrue(toStr.contains("slanina - 20.0 g"));
+
     }
 
     @Test

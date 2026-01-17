@@ -94,7 +94,7 @@ public class AddRecipeToShoppingListCtrl {
                     setText(null);
                     setGraphic(null);
                 } else {
-                    Label nameLabel = new Label(ingredient.toString());
+                    Label nameLabel = new Label(ingredientFormatter(ingredient));
 
                     Button editButton = new Button("Edit");
                     Button deleteButton = new Button("Delete");
@@ -110,6 +110,24 @@ public class AddRecipeToShoppingListCtrl {
             }
         });
         setupLanguageMenu();
+    }
+
+
+    /**
+     * A method which displays the proper visualization of the ingredient
+     * @param ingredient - the Ingredient currently being visualized
+     * @return String - the correct addition to the ShoppingList
+     */
+    public String ingredientFormatter (Ingredient ingredient) {
+        Locale currentLocale = LanguageManager.getLocale();
+        String sourceName = ingredient.getRecipeName();
+        String initial = ingredient.toString();
+        return switch (currentLocale.getLanguage()) {
+            case "nl" -> initial + " (voor het voorbereiden " + sourceName + ")";
+            case "ro" -> initial + " (pentru pregătire " + sourceName + ")";
+            case "bg" -> initial + " (за приготвяне на " + sourceName + ")";
+            default -> initial + " (for preparing " + sourceName + ")";
+        };
     }
 
     /**

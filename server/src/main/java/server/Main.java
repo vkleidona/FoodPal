@@ -23,7 +23,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 @EntityScan(basePackages = {"commons", "server", "recipes"})
 public class Main {
 
-    public static void main(String[] args) {
+    static void main(String[] args) {
         SpringApplication.run(Main.class, args);
     }
 }

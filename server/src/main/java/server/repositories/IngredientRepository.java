@@ -17,6 +17,11 @@ public interface IngredientRepository extends JpaRepository<Ingredient, Long> {
      */
     Optional<Ingredient> findById (long id);
 
+    /**
+     * A method which counts all distinct recipes the FoodItem is used in
+     * @param foodType - the FoodItem which is checked
+     * @return int - the number of recipes the FoodItem is used in
+     */
     @Query("SELECT COUNT(DISTINCT i.recipe.id) FROM Ingredient AS i WHERE i.foodType = :foodItem")
     int countFoodItemRecipeUsages(@Param("foodItem") FoodItem foodType);
 }
