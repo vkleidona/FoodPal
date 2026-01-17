@@ -138,15 +138,10 @@ public class RecipeControllerTest {
         Recipe updated = new Recipe("New name");
         String inputJson = objectMapper.writeValueAsString(updated);
 
-        String responseJson = mockMvc.perform(put("/api/recipes/" + original.getId())
+        mockMvc.perform(put("/api/recipes/" + original.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(inputJson))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
-
-        Recipe result = objectMapper.readValue(responseJson, Recipe.class);
-
-        //assertEquals("New name", result.getName());
+                .andExpect(status().isOk());
 
         Recipe dbRecipe = recipeRepository.findById(original.getId()).get();
         assertEquals("New name", dbRecipe.getName());

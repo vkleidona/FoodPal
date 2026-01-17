@@ -151,22 +151,21 @@ public class RecipeController {
             return ResponseEntity.notFound().build();
         }
 
+        recipeRepository.findById(id).map(oldRecipe -> {
+            oldRecipe.setName(updatedRecipe.getName());
+            oldRecipe.setServings(updatedRecipe.getServings());
+            oldRecipe.setInstructions(updatedRecipe.getInstructions());
 
-        Recipe oldRecipe = recipeRepository.findById(id).get();
+            setAllIngredients(updatedRecipe.getIngredients(), oldRecipe.getId());
 
-        oldRecipe.setName(updatedRecipe.getName());
-        oldRecipe.setServings(updatedRecipe.getServings());
-        oldRecipe.setInstructions(updatedRecipe.getInstructions());
+            Recipe newRecipe = recipeRepository.save(oldRecipe);
 
-        setAllIngredients(updatedRecipe.getIngredients(), oldRecipe.getId());
-
-        Recipe newRecipe = recipeRepository.save(oldRecipe);
-
-        MiniUpdate miniUpdate = new MiniUpdate (newRecipe.getId(), newRecipe.getName());
-        messageTemplate.convertAndSend("/topic/recipes", miniUpdate);
-        messageTemplate.convertAndSend("/topic/recipes/" + newRecipe.getId(), newRecipe);
-
-        return ResponseEntity.ok(newRecipe);
+            MiniUpdate miniUpdate = new MiniUpdate (newRecipe.getId(), newRecipe.getName());
+            messageTemplate.convertAndSend("/topic/recipes", miniUpdate);
+            messageTemplate.convertAndSend("/topic/recipes/" + newRecipe.getId(), newRecipe);
+            return ResponseEntity.ok(newRecipe);
+        });
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/searchByName")
