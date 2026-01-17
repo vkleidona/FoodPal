@@ -51,13 +51,9 @@ public class Main extends Application {
 			System.err.println(msg);
 			return;
 		}
-
         var shoppingList = INJECTOR.getInstance(ShoppingList.class);
 
 		var information = FXML.load(InformationCtrl.class, "client", "scenes", "InformationUI.fxml");
-
-		var overview = FXML.load(QuoteOverviewCtrl.class, "client", "scenes", "QuoteOverview.fxml");
-		var add = FXML.load(AddQuoteCtrl.class, "client", "scenes", "AddQuote.fxml");
 
         var mainUI = FXML.load(MainUICtrl.class, "client", "scenes", "MainUI.fxml");
         var editInstructions = FXML.load
@@ -79,7 +75,7 @@ public class Main extends Application {
         WebSocketService wss = INJECTOR.getInstance(client.network.WebSocketService.class);
         wss.connect(() -> {
             System.out.println("Session established! Starting UI...");
-            mainCtrl.initialize(primaryStage, overview, add, mainUI, editInstructions,
+            mainCtrl.initialize(primaryStage, mainUI, editInstructions,
                     createRecipe, addFoodItem, foodItemMain, editIngredients, shoppingListMain, addRecipeToShoppingList, information);;
 
             mainUI.getKey().initialRecipeFetch();

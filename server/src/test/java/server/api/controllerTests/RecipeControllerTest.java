@@ -51,7 +51,7 @@ public class RecipeControllerTest {
     @Test
     void testSaveRecipe() throws Exception {
         // arrange: build Recipe with Ingredient and FoodItem
-        Recipe recipe = new Recipe("TestRecipe");
+        Recipe recipe = new Recipe("TestRecipe", new Locale ("bg"));
         Ingredient ingredient = new Ingredient(100, "g");
         FoodItem foodItem = foodItemRepository.findByName("Apple").
                 orElseGet(() -> foodItemRepository.save(new FoodItem("Apple", 50, 14, 0, 0)));
@@ -61,8 +61,6 @@ public class RecipeControllerTest {
         ingredients.add(ingredient);
         recipe.setIngredients(ingredients);
         recipe.setId(null);
-        Locale locale = new Locale("en");
-        recipe.setLocale(locale);
 
         // convert to JSON format
         String json = objectMapper.writeValueAsString(recipe);
@@ -81,8 +79,8 @@ public class RecipeControllerTest {
 
     @Test
     public void getAllRecipesTest() throws Exception{
-        recipeRepository.save(new Recipe("Pasta"));
-        recipeRepository.save(new Recipe("Pizza"));
+        recipeRepository.save(new Recipe("Pasta", new Locale("bg")));
+        recipeRepository.save(new Recipe("Pizza", new Locale ("bg")));
 
         String jsonResponse = mockMvc.perform(get("/api/recipes")
                 .contentType(MediaType.APPLICATION_JSON))
@@ -100,7 +98,7 @@ public class RecipeControllerTest {
 
     @Test
     public void setAllIngredientsTest() throws Exception{
-        Recipe r = new Recipe("Omelette");
+        Recipe r = new Recipe("Omelette", new Locale("bg"));
         r = recipeRepository.save(r);
 
         Ingredient i =  new Ingredient();
@@ -122,7 +120,7 @@ public class RecipeControllerTest {
 
     @Test
     public void deleteRecipeTest() throws Exception{
-        Recipe recipe = new Recipe("To be deleted");
+        Recipe recipe = new Recipe("To be deleted", new Locale("bg"));
         recipe = recipeRepository.save(recipe);
 
         mockMvc.perform(delete("/api/recipes/" + recipe.getId()))
@@ -135,7 +133,7 @@ public class RecipeControllerTest {
 
     @Test
     public void updateRecipeNameTest() throws Exception{
-        Recipe original = new Recipe("Old name");
+        Recipe original = new Recipe("Old name", new Locale("bg"));
         original = recipeRepository.save(original);
 
         Recipe updated = new Recipe("New name");

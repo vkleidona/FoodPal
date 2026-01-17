@@ -46,12 +46,6 @@ public class MainCtrl {
     private ObservableList<Recipe> recipes;
     private ObservableList <FoodItem> foodItems;
 
-    private QuoteOverviewCtrl overviewCtrl;
-    private Scene overview;
-
-    private AddQuoteCtrl addCtrl;
-    private Scene add;
-
     private final RecipeActions recipeActions;
 
 
@@ -99,8 +93,6 @@ public class MainCtrl {
     /**
      * Sets up the MainCtrl class with all UIs and WebSockets
      * @param primaryStage - the Stage which hosts the current Scene
-     * @param overview - redundant
-     * @param add - redundant
      * @param mainMenu - Main Scene of the FoodPal app
      * @param editInstructions - the Scene for editing instructions
      * @param createRecipe - the Scene for creating a recipe
@@ -111,8 +103,7 @@ public class MainCtrl {
      * @param addRecipeToShoppingList - the Scene to add a recipe to the ShoppingList
      * @param information - the Information Scene for each Recipe
      */
-    public void initialize(Stage primaryStage, Pair<QuoteOverviewCtrl, Parent> overview,
-                           Pair<AddQuoteCtrl, Parent> add, Pair<MainUICtrl, Parent> mainMenu,
+    public void initialize(Stage primaryStage, Pair<MainUICtrl, Parent> mainMenu,
                            Pair<EditInstructionsCtrl, Parent>
                                    editInstructions, Pair<CreateRecipeCtrl, Parent> createRecipe,
                            Pair<AddFoodItemCtrl, Parent>
@@ -126,11 +117,6 @@ public class MainCtrl {
         this.recipes = webSocketService.getMasterRecipeList();
 
         this.primaryStage = primaryStage;
-        this.overviewCtrl = overview.getKey();
-        this.overview = new Scene(overview.getValue());
-
-        this.addCtrl = add.getKey();
-        this.add = new Scene(add.getValue());
 
         this.mainUICtrl = mainMenu.getKey();
         this.mainMenu = new Scene(mainMenu.getValue());
@@ -173,18 +159,6 @@ public class MainCtrl {
 
     public Recipe getDraftRecipe() {
         return draftRecipe;
-    }
-
-    public void showOverview() {
-        primaryStage.setTitle("Quotes: Overview");
-        primaryStage.setScene(overview);
-        overviewCtrl.refresh();
-    }
-
-    public void showAdd() {
-        primaryStage.setTitle("Quotes: Adding Quote");
-        primaryStage.setScene(add);
-        add.setOnKeyPressed(e -> addCtrl.keyPressed(e));
     }
 
     public void showInformation(Recipe recipe) {
@@ -427,7 +401,9 @@ public class MainCtrl {
         showMainMenu();
     }
 
-    // this constructor is for tests
+    /**
+     * A constructor used for tests
+     */
     public MainCtrl() {
         this.fxml = null;
         this.webSocketService = null;

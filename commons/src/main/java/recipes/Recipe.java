@@ -24,9 +24,7 @@ public class Recipe implements Serializable {
     @com.fasterxml.jackson.annotation.JsonManagedReference
     private List <Ingredient> ingredients = new ArrayList<>();
 
-    /*
-    new table, recipe and its instructions
-     */
+
     @ElementCollection
     @CollectionTable(name = "RECIPE_INSTRUCTIONS", joinColumns = @JoinColumn(name = "RECIPE_ID"))
     @Column(name = "instruction")
@@ -56,6 +54,17 @@ public class Recipe implements Serializable {
     public Recipe(String name) {
         this.name = name;
         this.instructions = new ArrayList<>();
+    }
+
+    /**
+     * A constructor to be used in tests (as the locale is a non-nullable property
+     * @param name - the name of the recipe
+     * @param locale - the locale (language) of the recipe
+     */
+    public Recipe (String name, Locale locale) {
+        this.name = name;
+        this.instructions = new ArrayList<>();
+        this.locale = locale;
     }
 
     public Recipe(Recipe other){
