@@ -46,7 +46,7 @@ public class EditInstructionsCtrlTest extends ApplicationTest{
 
         testRecipe = new Recipe("Pizza");
         testRecipe.setInstructions(new ArrayList<>(List.of("Cut", "Bake")));
-        ctrl.initializeData(testRecipe);
+        ctrl.initialize(testRecipe);
 
         stage.setScene(new Scene(root));
         stage.show();
@@ -54,9 +54,9 @@ public class EditInstructionsCtrlTest extends ApplicationTest{
 
     @Test
     public void testInitializeData(){
-        assertEquals(2, ctrl.instructionList.getItems().size());
-        assertEquals("Cut", ctrl.instructionList.getItems().get(0));
-        assertEquals("Bake", ctrl.instructionList.getItems().get(1));
+        assertEquals(2, ctrl.getInstructionList().getItems().size());
+        assertEquals("Cut", ctrl.getInstructionList().getItems().get(0));
+        assertEquals("Bake", ctrl.getInstructionList().getItems().get(1));
     }
 
     @Test
@@ -65,7 +65,7 @@ public class EditInstructionsCtrlTest extends ApplicationTest{
         write("New Step");
         clickOn("OK");
 
-        assertEquals(3, ctrl.instructionList.getItems().size());
-        assertEquals("New Step", ctrl.instructionList.getItems().get(2));
+        assertEquals(3, ctrl.getInstructionList().getItems().size());
+        assertEquals("New Step", ctrl.getInstructionList().getItems().get(2));
     }
 }

@@ -32,7 +32,7 @@
              <MenuItem mnemonicParsing="false" text="Action 2" />
            </items>
          </MenuButton>
-            <TextField fx:id="RecipeSearchBar" onAction="#searchForRecipe" prefHeight="26.0" prefWidth="566.0" promptText="%search.bar.prompt">
+            <TextField fx:id="recipeSearchBar" onAction="#searchForRecipe" prefHeight="26.0" prefWidth="566.0" promptText="%search.bar.prompt">
             <HBox.margin>
                <Insets />
             </HBox.margin></TextField>

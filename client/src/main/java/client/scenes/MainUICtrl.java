@@ -1,7 +1,5 @@
 package client.scenes;
 
-import client.Main;
-import client.MyFXML;
 import client.network.WebSocketService;
 import client.utils.ServerUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -15,17 +13,11 @@ import java.util.*;
 
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.collections.ObservableSet;
-
-import javafx.collections.FXCollections;
 
 import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -35,23 +27,17 @@ import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.util.Pair;
 import org.springframework.messaging.simp.stomp.StompSession;
-import recipes.FoodItem;
 import recipes.Recipe;
 import recipes.Ingredient;
 
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.core.GenericType;
-import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.io.File;
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.stream.Collectors;
 
 public class MainUICtrl {
 
@@ -66,9 +52,6 @@ public class MainUICtrl {
     @FXML private Button shoppingListButton;
     @FXML private Button addToShoppingListButton;
 
-    @FXML private Button exitButton;
-    @FXML private Button minimizeButton;
-    @FXML private Button maximizeButton;
     @FXML private Button refreshButton;
 
     @FXML private Label recipeNameLabel;
@@ -77,7 +60,7 @@ public class MainUICtrl {
 
     @FXML private Label servingsLabel;
 
-    @FXML private TextField RecipeSearchBar;
+    @FXML private TextField recipeSearchBar;
 
     @FXML private ImageView languageIndicator;
     @FXML private MenuButton filterLanguagesButton;
@@ -93,7 +76,7 @@ public class MainUICtrl {
     private final ServerUtils server;
     private final MainCtrl mainCtrl;
     private ServerService serverService;
-    private WebSocketService webSocketService;
+    private final WebSocketService webSocketService;
 
     private Set<Long> favoriteRecipeIds = new HashSet<>();
     private List <Locale> filteredLocales = new ArrayList<>();
@@ -107,8 +90,6 @@ public class MainUICtrl {
 
     // File path for saving favorites
     private static final File FAVORITES_FILE = new File("favorites.json");
-    private MainUICtrl mainUICtrl;
-    private Scene mainMenu;
 
     /**
      * reads a list of favorite recipe IDs from a local file (favorites.json)
@@ -123,10 +104,12 @@ public class MainUICtrl {
         try {
             // Reads the file content and converts the JSON data into a Set of Long integers.
             // The TypeReference is required because Set<Long> is a generic type,
-            // and Java needs this extra help to understand exactly what type of collection to create.
-            favoriteRecipeIds = mapper.readValue(FAVORITES_FILE, new TypeReference<Set<Long>>(){});
+            // and Java needs this extra help to understand exactly
+            // what type of collection to create.
+            favoriteRecipeIds = mapper.readValue(FAVORITES_FILE, new TypeReference<>() {
+            });
         } catch (IOException e) {
-            e.printStackTrace(); // Handle error properly in production
+            System.err.println("Error - favorites file not found - aborting load");
         }
     }
 
@@ -139,7 +122,7 @@ public class MainUICtrl {
         try {
             mapper.writeValue(FAVORITES_FILE, favoriteRecipeIds);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Error - favorites file could not be found - aborting save");
         }
     }
 
@@ -147,6 +130,9 @@ public class MainUICtrl {
     @FXML private ToggleButton allRecipesTab;
     @FXML private ToggleButton favoritesTab;
 
+    /**
+     * A method for changing the recipe status to favorite and the inverse
+     */
     @FXML
     public void toggleFavorite() {
         Recipe current = recipeListView.getSelectionModel().getSelectedItem();
@@ -267,9 +253,9 @@ public class MainUICtrl {
         foodItemButton.setOnAction(e -> handleGoToFoodItems());
 
 
-        RecipeSearchBar.setOnKeyPressed(keyEvent -> {
+        recipeSearchBar.setOnKeyPressed(keyEvent -> {
             if (keyEvent.getCode() == KeyCode.ESCAPE) {
-                RecipeSearchBar.clear();
+                recipeSearchBar.clear();
                 initialRecipeFetch();
             }
         });
@@ -733,7 +719,7 @@ public class MainUICtrl {
     }
 
     public void searchForRecipe() {
-        String searchQuery = RecipeSearchBar.getText().trim();
+        String searchQuery = recipeSearchBar.getText().trim();
 
         if (searchQuery.isEmpty()) {
             searchedRecipeIds.clear();

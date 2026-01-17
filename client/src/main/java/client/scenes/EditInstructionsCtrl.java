@@ -12,19 +12,17 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.shape.Circle;
 import recipes.Recipe;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+
+import java.util.*;
+
 import client.i18n.LanguageManager;
-import java.util.Locale;
-import java.util.ResourceBundle;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 
 public class EditInstructionsCtrl {
 
     @FXML
-    public ListView<String> instructionList;
+    private ListView<String> instructionList;
     private ObservableList<String> steps;
     private Recipe currentRecipe;
 
@@ -34,16 +32,47 @@ public class EditInstructionsCtrl {
     @FXML
     private ResourceBundle resources;
 
+    private final client.utils.ServerUtils server;
+    private final MainCtrl mainCtrl;
+
+    /**
+     * Initializer method - sets up the language method,
+     * as well as the currently existing ingredients
+     * @param recipe - the currently edited recipe
+     */
     @FXML
-    public void initialize() {
+    public void initialize(Recipe recipe) {
+        currentRecipe = recipe;
+
+        // Handle case where instructions list is null in the database
+        List<String> existingInstructions = recipe.getInstructions();
+        if (existingInstructions == null) {
+            existingInstructions = new ArrayList<>();
+        }
+
+        // Pass the steps from the existing instructions to the Observable List
+        // so that the screen updates automatically
+        steps = FXCollections.observableArrayList(existingInstructions);
+        instructionList.setItems(steps);
         setupLanguageMenu();
     }
 
-    private MenuItem setupMenuItemIcons (String name, String langCode, String iconFileName) {
+    public ListView<String> getInstructionList() {
+        return instructionList;
+    }
+
+    /**
+     * A method which sets up the icons for the language menu
+     * @param name - the name of the language we are adding
+     * @param langCode - the locale code of the language
+     * @param iconFileName - the encoding for the name of the icon file
+     * @return MenuItem - returns the ready-made MenuItem with the proper icon
+     */
+    public MenuItem setupMenuItemIcons (String name, String langCode, String iconFileName) {
         MenuItem menuItem = new MenuItem(name);
 
-        Image flagImage = new Image
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg"));
+        Image flagImage = new Image(Objects.requireNonNull
+                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
 
         ImageView icon = new ImageView(flagImage);
         icon.setFitWidth(16);
@@ -54,14 +83,18 @@ public class EditInstructionsCtrl {
 
         menuItem.setGraphic(icon);
 
-        menuItem.setOnAction(e -> changeLanguage(new Locale(langCode)));
+        menuItem.setOnAction(_ -> changeLanguage(new Locale(langCode)));
 
         return menuItem;
     }
 
-    private void updateButtonGraphic(String iconFileName) {
-        Image img = new Image
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg"));
+    /**
+     * A method which updates the flag icon of the language button when necessary
+     * @param iconFileName - the encoding for the name of the icon file
+     */
+    public void updateButtonGraphic(String iconFileName) {
+        Image img = new Image (Objects.requireNonNull
+                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
         ImageView imageView = new ImageView(img);
 
         imageView.setFitWidth(16);
@@ -74,7 +107,11 @@ public class EditInstructionsCtrl {
         languageButton.setGraphic(imageView);
     }
 
-    private void setupLanguageMenu() {
+    /**
+     * A setup method for the language menu -
+     * adds the constructed MenuItems using the helper methods with the appropriate icon
+     */
+    public void setupLanguageMenu() {
         languageButton.getItems().clear();
 
         MenuItem enItem = setupMenuItemIcons("English", "en", "english");
@@ -85,8 +122,6 @@ public class EditInstructionsCtrl {
         languageButton.getItems().addAll(enItem, nlItem, roItem, bgItem);
 
         Locale current = LanguageManager.getLocale();
-
-
 
         switch (current.getLanguage()) {
             case "nl" -> {
@@ -108,7 +143,11 @@ public class EditInstructionsCtrl {
         }
     }
 
-    private void changeLanguage(Locale newLocale) {
+    /**
+     * A method for changing the language of the menus to a new Locale
+     * @param newLocale - the new language we want to set the menus to
+     */
+    public void changeLanguage(Locale newLocale) {
         LanguageManager.setLocale(newLocale);
         switch (newLocale.getLanguage()) {
             case "nl" -> languageButton.setText("Nederlands");
@@ -119,46 +158,16 @@ public class EditInstructionsCtrl {
         mainCtrl.reloadScenesForNewLanguage();
     }
 
-
-
-    // ServerUtils to communicate with the backend
-    private final client.utils.ServerUtils server;
-    private final MainCtrl mainCtrl;
-
     /**
-     * Constructor
-     * @param server
-     * @param mainCtrl
+     * Constructor for the EditInstructions class using Dependency Injection
+     * @param server - the injected instance of the ServerUtils class
+     * @param mainCtrl - the injected instance of the MainCtrl class
      */
     @Inject
     public EditInstructionsCtrl(client.utils.ServerUtils server, MainCtrl mainCtrl) {
         this.server = server;
         this.mainCtrl = mainCtrl;
     }
-
-
-
-   
-
-    /**
-     *
-     * @param recipe : the recipe we are currently working on
-     */
-    public void initializeData(Recipe recipe) {
-        currentRecipe = recipe;
-
-        // Handle case where instructions list is null in the database
-        List<String> existingInstructions = recipe.getInstructions();
-        if (existingInstructions == null) {
-            existingInstructions = new ArrayList<>();
-        }
-
-        // Pass the steps from the existing instructions to the Observable List so that the screen updates automatically
-        steps = FXCollections.observableArrayList(existingInstructions);
-        instructionList.setItems(steps);
-    }
-
-    //Button actions
 
     /**
      * The method behind the add button
@@ -180,7 +189,7 @@ public class EditInstructionsCtrl {
 
 
     /**
-     * The method behind the edit button
+     * A method responsible for editing a specific instruction
      */
     @FXML
     public void editInstruction() {
@@ -206,7 +215,7 @@ public class EditInstructionsCtrl {
 
 
     /**
-     * The method behind the delete button
+     * A method responsible for deleting an instruction
      */
     @FXML
     public void deleteInstruction() {
@@ -229,20 +238,19 @@ public class EditInstructionsCtrl {
             currentRecipe.setInstructions(new ArrayList<>(steps));
             // Send the updated recipe to the server
             server.updateRecipe(currentRecipe);
-
-
             returnToMainUI();
 
         } catch (Exception e) {
             showAlert(resources.getString("editInstructions.alert.error.title"),
-                    resources.getString("editInstructions.alert.error.saveFailed") + " " + e.getMessage());
-            e.printStackTrace();
+                    resources.getString("editInstructions.alert.error.saveFailed")
+                            + " " + e.getMessage());
+            System.err.println("Error: Saving instructions failed.");
         }
     }
 
     /**
-     * Refreshes the content
-     * @param recipe - the recipe's current
+     * Refreshes the recipe content upon a server-pushed change
+     * @param recipe - the recipe's current content
      */
     public void refreshContent (Recipe recipe) {
         Platform.runLater(() -> {
@@ -251,18 +259,20 @@ public class EditInstructionsCtrl {
         });
     }
 
-
+    /**
+     * A method which returns to the Main UI
+     */
     @FXML
-    private void returnToMainUI() {
+    public void returnToMainUI() {
         mainCtrl.showMainMenu();
     }
 
     /**
-     *
-     * @param title
-     * @param content
+     * A helper method for showing alerts
+     * @param title - the title of the alert to be shown
+     * @param content - the content of the alert
      */
-    private void showAlert(String title, String content) {
+    public void showAlert(String title, String content) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle(title);
         alert.setContentText(content);

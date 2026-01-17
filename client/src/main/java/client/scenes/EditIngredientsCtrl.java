@@ -1,60 +1,26 @@
 package client.scenes;
 
-import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 
 import jakarta.inject.Inject;
-import jakarta.ws.rs.client.Entity;
 import javafx.application.Platform;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.shape.Circle;
-import org.glassfish.jersey.client.ClientConfig;
 import recipes.FoodItem;
 import recipes.Ingredient;
 import recipes.Recipe;
 import client.i18n.LanguageManager;
-import java.util.Locale;
+
+import java.util.*;
+
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.ClientBuilder;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-
-/*
-    Edit Ingredients scene for a recipe can be initialized with the following code:
-
-    // Create a loader.
-        FXMLLoader loader = new FXMLLoader();
-
-    // Set the fxml file to be loaded.
-        loader.setLocation(getClass().getResource("/client/scenes/EditIngredients.fxml"));
-
-    // Set the controller for the scene to a controller with the selected recipe.
-        loader.setController(new EditIngredientsCtrl(recipe));
-
-    // Create the new scene from the loader.
-        Scene scene = new Scene(loader.load());
-
-    // You now have a scene for the specified recipe.
- */
-
 public class EditIngredientsCtrl{
-
-    // Variable for testing if the return method is called
-    private boolean calledReturn =  false;
-
-    public boolean getCalledReturn() {
-        return calledReturn;
-    }
 
     @FXML
     private TableView<Ingredient> listOfIngredients;
@@ -86,19 +52,17 @@ public class EditIngredientsCtrl{
     @FXML
     private RadioButton common;
 
-    // the client cannot call server methods directly
-    private final Client client = ClientBuilder.newClient(new ClientConfig());
-    private final String recipeEndpointUrl = "http://localhost:8080/api/recipes";
-
     private Recipe recipe;
     private Ingredient lastClickedIngredient = null;
 
-    private MainCtrl mainCtrl;
-    private client.utils.ServerUtils server;
+    private final MainCtrl mainCtrl;
+    private final client.utils.ServerUtils server;
 
     private static final List<String> METRIC_UNITS = List.of("g", "kg", "ml", "l");
-    private static final List<String> IMPERIAL_UNITS = List.of("oz", "lb", "fl oz", "cup", "tbsp", "tsp");
-    private static final List<String> COMMON_UNITS = List.of("pinch", "dash", "stick", "clove", "slice", "can", "jar");
+    private static final List<String> IMPERIAL_UNITS = List.of
+            ("oz", "lb", "fl oz", "cup", "tbsp", "tsp");
+    private static final List<String> COMMON_UNITS = List.of
+            ("pinch", "dash", "stick", "clove", "slice", "can", "jar");
 
     private static final Map<String, Double> UNIT_TO_GRAMS = new HashMap<>();
     static {
@@ -126,6 +90,11 @@ public class EditIngredientsCtrl{
         UNIT_TO_GRAMS.put("jar", 450.0);
     }
 
+    /**
+     * A constructor for the EditIngredients Ctrl class using Dependency Injection
+     * @param mainCtrl - the instance of the main controller class
+     * @param server - the instance of the server utilities class
+     */
     @Inject
     public EditIngredientsCtrl(MainCtrl mainCtrl, client.utils.ServerUtils server) {
         this.mainCtrl = mainCtrl;
@@ -141,15 +110,11 @@ public class EditIngredientsCtrl{
         this.recipe = recipe;
     }
 
+    /**
+     * The initialize method for the class
+     * @param recipe - the recipe which these ingredients belong to
+     */
     public void initialize(Recipe recipe) {
-        /* recipeName.setText(recipe.getName());
-        listOfIngredients.getItems().addAll(recipe.getIngredients());
-        ingredientNameColumn.setCellValueFactory(new PropertyValueFactory<Ingredient, String>("foodName"));
-        quantityColumn.setCellValueFactory(new PropertyValueFactory<Ingredient, Double>("quantity"));
-        measurementColumn.setCellValueFactory(new PropertyValueFactory<Ingredient, String>("measurement"));
-        System.out.println(recipe);
-
-         */
 
         this.recipe = recipe; // 1. Save the recipe
 
@@ -184,11 +149,18 @@ public class EditIngredientsCtrl{
         inputMeasurement.setEditable(false);
     }
 
-    private MenuItem setupMenuItemIcons (String name, String langCode, String iconFileName) {
+    /**
+     * A method which sets up the icons for the language menu
+     * @param name - the name of the language we are adding
+     * @param langCode - the locale code of the language
+     * @param iconFileName - the encoding for the name of the icon file
+     * @return MenuItem - returns the ready-made MenuItem with the proper icon
+     */
+    public MenuItem setupMenuItemIcons (String name, String langCode, String iconFileName) {
         MenuItem menuItem = new MenuItem(name);
 
-        Image flagImage = new Image
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg"));
+        Image flagImage = new Image(Objects.requireNonNull
+                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
 
         ImageView icon = new ImageView(flagImage);
         icon.setFitWidth(16);
@@ -199,14 +171,18 @@ public class EditIngredientsCtrl{
 
         menuItem.setGraphic(icon);
 
-        menuItem.setOnAction(e -> changeLanguage(new Locale(langCode)));
+        menuItem.setOnAction(_ -> changeLanguage(new Locale(langCode)));
 
         return menuItem;
     }
 
-    private void updateButtonGraphic(String iconFileName) {
-        Image img = new Image
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg"));
+    /**
+     * A method which updates the flag icon of the language button when necessary
+     * @param iconFileName - the encoding for the name of the icon file
+     */
+    public void updateButtonGraphic(String iconFileName) {
+        Image img = new Image (Objects.requireNonNull
+                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
         ImageView imageView = new ImageView(img);
 
         imageView.setFitWidth(16);
@@ -219,7 +195,11 @@ public class EditIngredientsCtrl{
         languageButton.setGraphic(imageView);
     }
 
-    private void setupLanguageMenu() {
+    /**
+     * A setup method for the language menu -
+     * adds the constructed MenuItems using the helper methods with the appropriate icon
+     */
+    public void setupLanguageMenu() {
         languageButton.getItems().clear();
 
         MenuItem enItem = setupMenuItemIcons("English", "en", "english");
@@ -230,8 +210,6 @@ public class EditIngredientsCtrl{
         languageButton.getItems().addAll(enItem, nlItem, roItem, bgItem);
 
         Locale current = LanguageManager.getLocale();
-
-
 
         switch (current.getLanguage()) {
             case "nl" -> {
@@ -253,7 +231,11 @@ public class EditIngredientsCtrl{
         }
     }
 
-    private void changeLanguage(Locale newLocale) {
+    /**
+     * A method for changing the language of the menus to a new Locale
+     * @param newLocale - the new language we want to set the menus to
+     */
+    public void changeLanguage(Locale newLocale) {
         LanguageManager.setLocale(newLocale);
         switch (newLocale.getLanguage()) {
             case "nl" -> languageButton.setText("Nederlands");
@@ -265,25 +247,33 @@ public class EditIngredientsCtrl{
     }
 
 
+    /**
+     * Changes the system in which the units are displayed
+     */
     @FXML
-    private void handleSystemChange(){
+    public void handleSystemChange(){
         if (metric.isSelected()) {
             inputMeasurement.getItems().clear();
             inputMeasurement.getItems().addAll("g", "kg", "ml", "l");
             inputMeasurement.setValue("g");
         } else if (imperial.isSelected()) {
             inputMeasurement.getItems().clear();
-            inputMeasurement.getItems().addAll("oz", "lb", "fl oz", "cup", "tbsp", "tsp");
+            inputMeasurement.getItems().
+                    addAll("oz", "lb", "fl oz", "cup", "tbsp", "tsp");
             inputMeasurement.setValue("oz");
         } else if(common.isSelected()) {
             inputMeasurement.getItems().clear();
-            inputMeasurement.getItems().addAll("slice", "clove", "stick", "pinch", "dash", "jar", "other");
+            inputMeasurement.getItems().
+                    addAll("slice", "clove", "stick", "pinch", "dash", "jar", "other");
             inputMeasurement.setValue("stick");
         }
     }
 
+    /**
+     * Resets the Edit Ingredients screen with null values
+     */
     @FXML
-    private void resetForm() {
+    public void resetForm() {
         inputFoodName.setValue(null);
         inputQuantity.clear();
         inputMeasurement.setValue(null);
@@ -302,13 +292,14 @@ public class EditIngredientsCtrl{
         // Clear the errorLabel.
         errorLabel.setText("");
         lastClickedIngredient = listOfIngredients.getSelectionModel().getSelectedItem();
+        String unit = null;
         // Show values of the clicked ingredient in the input fields.
         if (lastClickedIngredient != null && lastClickedIngredient.getFoodType() != null) {
             inputFoodName.setValue(lastClickedIngredient.getFoodType().getName());
+            inputQuantity.setText(String.valueOf(lastClickedIngredient.getQuantity()));
+            unit = lastClickedIngredient.getMeasurement();
         }
-        inputQuantity.setText(String.valueOf(lastClickedIngredient.getQuantity()));
 
-        String unit = lastClickedIngredient.getMeasurement();
         inputMeasurement.getItems().clear();
 
         if(METRIC_UNITS.contains(unit)){
@@ -319,7 +310,8 @@ public class EditIngredientsCtrl{
             inputMeasurement.getItems().addAll("oz", "lb", "fl oz", "cup", "tbsp", "tsp");
         }else if(COMMON_UNITS.contains(unit)){
             common.setSelected(true);
-            inputMeasurement.getItems().addAll("slice", "clove", "stick", "pinch", "dash", "jar", "other");
+            inputMeasurement.getItems().
+                    addAll("slice", "clove", "stick", "pinch", "dash", "jar", "other");
         }
         inputMeasurement.setValue(unit);
         inputFoodName.setDisable(true);
@@ -360,7 +352,7 @@ public class EditIngredientsCtrl{
     }
 
     /**
-     * Refreshes the content
+     * Refreshes the recipe content after a server-pushed update
      * @param recipe - the recipe's current
      */
     public void refreshContent (Recipe recipe) {
@@ -437,15 +429,12 @@ public class EditIngredientsCtrl{
     @FXML
     public void applyEdit() {
         try {
-            Recipe done = client.target(recipeEndpointUrl)
-                    .path("/ingredients/set/" + recipe.getId())
-                    .request(APPLICATION_JSON)
-                    .put(Entity.entity(listOfIngredients.getItems(), APPLICATION_JSON), Recipe.class);
+            server.updateIngredients(recipe, listOfIngredients.getItems());
             // Return to the mainUI
             closeUI();
         } catch (Exception e) {
             // Exceptions
-            e.printStackTrace();
+            System.err.println("Error: Could not save ingredient list");
         }
     }
 

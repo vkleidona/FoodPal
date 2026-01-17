@@ -25,7 +25,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
+import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.core.MediaType;
+import org.checkerframework.checker.units.qual.C;
 import org.glassfish.jersey.client.ClientConfig;
 
 import jakarta.ws.rs.ProcessingException;
@@ -33,21 +35,12 @@ import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.GenericType;
 import recipes.FoodItem;
+import recipes.Ingredient;
 import recipes.Recipe;
 
 public class ServerUtils {
 
 	private static final String SERVER = "http://localhost:8080/";
-
-	public void getQuotesTheHardWay() throws IOException, URISyntaxException {
-		var url = new URI("http://localhost:8080/api/quotes").toURL();
-		var is = url.openConnection().getInputStream();
-		var br = new BufferedReader(new InputStreamReader(is));
-		String line;
-		while ((line = br.readLine()) != null) {
-			System.out.println(line);
-		}
-	}
 
 	public boolean isServerAvailable() {
 		try {
@@ -69,6 +62,15 @@ public class ServerUtils {
                 .request(APPLICATION_JSON)
                 .put(Entity.entity(recipe, APPLICATION_JSON), Recipe.class);
     }
+
+    public Recipe updateIngredients (Recipe recipe, List <Ingredient> ingredients) {
+        return ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER + "api/recipes/")
+                .path("/ingredients/set/" + recipe.getId())
+                .request(APPLICATION_JSON)
+                .put(Entity.entity(ingredients, APPLICATION_JSON), Recipe.class);
+    }
+
 
     /**
      * Searches the FoodItem repository for type

@@ -1,38 +1,15 @@
-/*
- * Copyright 2021 Delft University of Technology
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package client.scenes;
 
-import client.Main;
 import client.network.WebSocketService;
-import client.utils.ServerUtils;
 import jakarta.inject.Inject;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
-import javafx.collections.WeakListChangeListener;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.ListView;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 import client.MyFXML;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.util.Pair;
-import org.springframework.beans.factory.annotation.Autowired;
 import recipes.FoodItem;
 import recipes.Recipe;
 
@@ -82,7 +59,14 @@ public class MainCtrl {
     private AddRecipeToShoppingListCtrl addRecipeToShoppingListCtrl;
     private Scene addRecipeToShoppingList;
 
-    private WebSocketService webSocketService;
+    private final WebSocketService webSocketService;
+
+    /**
+     * A constructor for the MainCtrl class using Dependency Injection
+     * @param fxml - the FXML module which loads the scenes
+     * @param webSocketService - the instance of the WebSocket support service
+     * @param recipeActions - the instance of the recipe server utilities
+     */
     @Inject
     public MainCtrl(MyFXML fxml, WebSocketService webSocketService, RecipeActions recipeActions) {
         this.fxml = fxml;
@@ -110,11 +94,12 @@ public class MainCtrl {
                                    addFoodItem, Pair<FoodItemMainCtrl, Parent> foodItemMain,
                            Pair<EditIngredientsCtrl, Parent> editIngredients,
                                     Pair <ShoppingListMainCtrl, Parent> shoppingListMain,
-                                    Pair <AddRecipeToShoppingListCtrl, Parent> addRecipeToShoppingList,
+                                    Pair <AddRecipeToShoppingListCtrl, Parent>
+                                   addRecipeToShoppingList,
                                     Pair <InformationCtrl, Parent> information) {
 
-        this.foodItems = webSocketService.getMasterFoodItemsList();
         this.recipes = webSocketService.getMasterRecipeList();
+        this.foodItems = webSocketService.getMasterFoodItemsList();
 
         this.primaryStage = primaryStage;
 
@@ -161,6 +146,10 @@ public class MainCtrl {
         return draftRecipe;
     }
 
+    /**
+     * A method used to switch to the nutritional values scene
+     * @param recipe - the recipe whose nutritional values have to be initialized
+     */
     public void showInformation(Recipe recipe) {
         if (informationCtrl != null) {
             informationCtrl.setRecipe(recipe); // <--- PASS THE DATA
@@ -169,28 +158,45 @@ public class MainCtrl {
         primaryStage.setScene(informationScene);
     }
 
+    /**
+     * A method used to display the main menu
+     */
     public void showMainMenu() {
         primaryStage.setTitle("FoodPal: Main Menu");
         primaryStage.setScene(mainMenu);
     }
 
+    /**
+     * A method used to show the screen for editing instructions
+     * @param recipe - the recipe whose instructions need to be edited
+     */
     public void showEditInstructions(Recipe recipe) {
-        editInstructionsCtrl.initializeData(recipe);
+        editInstructionsCtrl.initialize(recipe);
         primaryStage.setTitle("Edit Instructions");
         primaryStage.setScene(editInstructions);
     }
 
+    /**
+     * A method used to show the screen for editing ingredients
+     * @param recipe - the recipe whose ingredients need to be edited
+     */
     public void showEditIngredients(Recipe recipe) {
         editIngredientsCtrl.initialize(recipe);
         primaryStage.setTitle("Edit Ingredients");
         primaryStage.setScene(editIngredients);
     }
 
+    /**
+     * A method for switching to the scene for creating recipes
+     */
     public void showCreateRecipe() {
         primaryStage.setTitle("Create Recipe");
         primaryStage.setScene(createRecipe);
     }
 
+    /**
+     * A method for switching to the scene for adding a new food item
+     */
     public void showAddFoodItem() {
         primaryStage.setTitle("Add Food Item");
         primaryStage.setScene(addFoodItem);
@@ -216,6 +222,9 @@ public class MainCtrl {
         primaryStage.setScene(addFoodItem);
     }
 
+    /**
+     * A method which switches to the scene for displaying all food items
+     */
     public void showFoodItemMain() {
         primaryStage.setTitle("Food Item Main");
         primaryStage.setScene(foodItemMain);
@@ -325,11 +334,11 @@ public class MainCtrl {
      */
     public void handleFoodItemBeingDeleted (Long id) {
         Platform.runLater(() -> {
-
+            webSocketService.removeItemFromList(id);
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Recipe removed!");
-            alert.setHeaderText("Selected recipe removed");
-            alert.setContentText("The recipe you are currently editing has been removed");
+            alert.setTitle("Food Item removed!");
+            alert.setHeaderText("Selected food item removed");
+            alert.setContentText("The food item you are currently editing has been removed");
             alert.showAndWait();
 
             showMainMenu();
@@ -340,24 +349,22 @@ public class MainCtrl {
      * Reloads all main scenes in the currently selected language.
      */
     public void reloadScenesForNewLanguage() {
+        reloadMainScenes();
+        reloadAdditionalScenes();
+        // Finally, show the main menu again
+        showMainMenu();
+    }
 
+
+    /**
+     * A helper method for reloading all scenes of the basic requirements
+     */
+    public void reloadMainScenes () {
         // Main UI
         Pair<MainUICtrl, Parent> mainPair =
                 fxml.load(MainUICtrl.class, "client", "scenes", "MainUI.fxml");
         this.mainUICtrl = mainPair.getKey();
         this.mainMenu = new Scene(mainPair.getValue());
-
-        // Add Food Item
-        Pair<AddFoodItemCtrl, Parent> addFoodItemPair =
-                fxml.load(AddFoodItemCtrl.class, "client", "scenes", "AddFoodItem.fxml");
-        this.addFoodItemCtrl = addFoodItemPair.getKey();
-        this.addFoodItem = new Scene(addFoodItemPair.getValue());
-
-        // Add Recipe To Shopping List
-        Pair<AddRecipeToShoppingListCtrl, Parent> addRecipeToShoppingListPair =
-                fxml.load(AddRecipeToShoppingListCtrl.class, "client", "scenes", "AddRecipeToShoppingList.fxml");
-        this.addRecipeToShoppingListCtrl = addRecipeToShoppingListPair.getKey();
-        this.addRecipeToShoppingList = new Scene(addRecipeToShoppingListPair.getValue());
 
         // Create Recipe
         Pair<CreateRecipeCtrl, Parent> createRecipePair =
@@ -378,6 +385,24 @@ public class MainCtrl {
                 fxml.load(EditInstructionsCtrl.class, "client", "scenes", "EditInstructions.fxml");
         this.editInstructionsCtrl = editInstructionsPair.getKey();
         this.editInstructions = new Scene(editInstructionsPair.getValue());
+    }
+
+    /**
+     * A helper method for reloading all scenes of the additional requirements
+     */
+    public void reloadAdditionalScenes () {
+        // Add Food Item
+        Pair<AddFoodItemCtrl, Parent> addFoodItemPair =
+                fxml.load(AddFoodItemCtrl.class, "client", "scenes", "AddFoodItem.fxml");
+        this.addFoodItemCtrl = addFoodItemPair.getKey();
+        this.addFoodItem = new Scene(addFoodItemPair.getValue());
+
+        // Add Recipe To Shopping List
+        Pair<AddRecipeToShoppingListCtrl, Parent> addRecipeToShoppingListPair =
+                fxml.load(AddRecipeToShoppingListCtrl.class,
+                        "client", "scenes", "AddRecipeToShoppingList.fxml");
+        this.addRecipeToShoppingListCtrl = addRecipeToShoppingListPair.getKey();
+        this.addRecipeToShoppingList = new Scene(addRecipeToShoppingListPair.getValue());
 
         // Food Item Main
         Pair<FoodItemMainCtrl, Parent> foodItemMainPair =
@@ -393,21 +418,16 @@ public class MainCtrl {
 
         // Shopping List Main UI
         Pair<ShoppingListMainCtrl, Parent> shoppingListMainPair =
-                fxml.load(ShoppingListMainCtrl.class, "client", "scenes", "ShoppingListMainUI.fxml");
+                fxml.load(ShoppingListMainCtrl.class,
+                        "client", "scenes", "ShoppingListMainUI.fxml");
         this.shoppingListMainCtrl = shoppingListMainPair.getKey();
         this.shoppingListMainScene = new Scene(shoppingListMainPair.getValue());
-
-        // Finally, show the main menu again
-        showMainMenu();
     }
 
     /**
-     * A constructor used for tests
+     * A testing constructor for the MainCtrl
      */
-    public MainCtrl() {
-        this.fxml = null;
-        this.webSocketService = null;
-        this.recipeActions = null;
+    public MainCtrl () {
+        this(null, new WebSocketService(), null);
     }
-
 }

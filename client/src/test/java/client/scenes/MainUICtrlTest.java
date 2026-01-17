@@ -1,5 +1,6 @@
 package client.scenes;
 
+import client.network.WebSocketService;
 import client.utils.ServerUtils;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -328,7 +329,7 @@ public class MainUICtrlTest extends ApplicationTest {
         public boolean infoShown = false;
         public boolean foodItemMainShown = false;
 
-        public MockMainCtrl() { super(); }
+        public MockMainCtrl() { super(null, new WebSocketService(), null); }
 
         @Override public void showCreateRecipe() { createRecipeShown = true; }
         @Override public void showEditIngredients(Recipe r) { editIngredientsShown = true; }
