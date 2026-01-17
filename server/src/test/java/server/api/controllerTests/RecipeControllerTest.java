@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -78,4 +78,76 @@ public class RecipeControllerTest {
         assertEquals(1, foodItemRepository.count());
         assertEquals("TestRecipe", recipeRepository.findAll().get(0).getName());
     }
+
+    @Test
+    public void getAllRecipesTest() throws Exception{
+        recipeRepository.save(new Recipe("Pasta"));
+        recipeRepository.save(new Recipe("Pizza"));
+
+        String jsonResponse = mockMvc.perform(get("/api/recipes")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        Recipe[] recipes = objectMapper.readValue(jsonResponse, Recipe[].class);
+
+        assertEquals(2, recipes.length);
+        assertEquals("Pasta", recipes[0].getName());
+        assertEquals("Pizza", recipes[1].getName());
+    }
+
+    @Test
+    public void setAllIngredientsTest() throws Exception{
+        Recipe r = new Recipe("Omelette");
+        r = recipeRepository.save(r);
+
+        Ingredient i =  new Ingredient();
+        i.setFoodType(new FoodItem("egg"));
+        List<Ingredient> ingredients = new ArrayList<>();
+        ingredients.add(i);
+
+        String jsonInput = objectMapper.writeValueAsString(ingredients);
+
+        String responseJson = mockMvc.perform(put("/api/recipes/ingredients/set/" + r.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonInput))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        Recipe result = objectMapper.readValue(responseJson, Recipe.class);
+        assertEquals(1, result.getIngredients().size());
+    }
+
+    @Test
+    public void deleteRecipeTest() throws Exception{
+        Recipe recipe = new Recipe("To be deleted");
+        recipe = recipeRepository.save(recipe);
+
+        mockMvc.perform(delete("/api/recipes/" + recipe.getId()))
+                .andExpect(status().isNoContent());
+
+        assertEquals(0, recipeRepository.count());
+        assertFalse(recipeRepository.existsById(recipe.getId()));
+    }
+
+
+    @Test
+    public void updateRecipeNameTest() throws Exception{
+        Recipe original = new Recipe("Old name");
+        original = recipeRepository.save(original);
+
+        Recipe updated = new Recipe("New name");
+        String inputJson = objectMapper.writeValueAsString(updated);
+
+        mockMvc.perform(put("/api/recipes/" + original.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(inputJson))
+                .andExpect(status().isOk());
+
+        Recipe dbRecipe = recipeRepository.findById(original.getId()).get();
+        assertEquals("New name", dbRecipe.getName());
+    }
+
 }

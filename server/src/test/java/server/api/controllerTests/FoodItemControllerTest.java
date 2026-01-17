@@ -1,0 +1,98 @@
+package server.api.controllerTests;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import recipes.FoodItem;
+import server.api.controllers.FoodItemController;
+import server.repositories.FoodItemRepository;
+
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+public class FoodItemControllerTest {
+    private FoodItemController ctrl;
+    private FoodItemRepository repo;
+    private SimpMessagingTemplate msg;
+
+    @BeforeEach
+    public void setup(){
+        repo = mock(FoodItemRepository.class);
+        msg = mock(SimpMessagingTemplate.class);
+
+        ctrl = new FoodItemController(repo, msg);
+    }
+
+    @Test
+    public void addFoodItemTest(){
+        FoodItem item = new FoodItem("Milk");
+        FoodItem savedItem = new FoodItem("Milk");
+        savedItem.setId(2L);
+
+        when(repo.findByName("Milk")).thenReturn(Optional.empty());
+        when(repo.save(item)).thenReturn(savedItem);
+
+        ResponseEntity<FoodItem> response = ctrl.addFoodItem(item);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(savedItem, response.getBody());
+
+    }
+
+    @Test
+    public void getAllFoodItemsTest(){
+        List<FoodItem> mockList = List.of(new FoodItem("Bread"));
+        when(repo.findAllByOrderByNameAsc()).thenReturn(mockList);
+
+        List<FoodItem> result = ctrl.getAllFoodItems();
+
+        assertEquals(1, result.size());
+        assertEquals("Bread", result.get(0).getName());
+    }
+
+    @Test
+    public void deleteFoodItemTest(){
+        FoodItem test = new FoodItem("Milk");
+        test.setId(10L);
+
+        when(repo.existsById(10L)).thenReturn(true);
+
+        ResponseEntity<Void> response = ctrl.deleteFoodItem(10L);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    public void deleteFoodItemMissingItem(){
+        Long id = 99L;
+        when(repo.existsById(id)).thenReturn(false);
+
+        ResponseEntity<Void> response = ctrl.deleteFoodItem(id);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        verify(repo, times(0)).deleteById(id);
+    }
+
+    @Test
+    public void updateFoodItemTest(){
+        FoodItem old = new FoodItem("lemon");
+        old.setId(1L);
+        FoodItem updated = new FoodItem("lemon2");
+
+        when(repo.findById(1L)).thenReturn(Optional.of(old));
+        when(repo.existsByNameAndIdNot("lemon2", 1L)).thenReturn(false);
+        when(repo.save(any())).thenReturn(old);
+
+        ResponseEntity<?> response = ctrl.updateFoodItem(1L, updated);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("lemon2", old.getName());
+    }
+
+}

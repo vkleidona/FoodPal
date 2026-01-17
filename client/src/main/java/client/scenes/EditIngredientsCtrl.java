@@ -164,6 +164,7 @@ public class EditIngredientsCtrl{
 
         List<FoodItem> items = server.getAllFoodItems();
 
+        inputFoodName.getItems().clear();
 
         for (FoodItem item : items) {
             inputFoodName.getItems().add(item.getName());
