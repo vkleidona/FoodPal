@@ -6,7 +6,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
 import client.i18n.LanguageManager;
 
 import java.util.*;
@@ -15,7 +14,6 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
 import javafx.collections.transformation.FilteredList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
@@ -70,12 +68,12 @@ public class MainUICtrl {
 
     private ObservableList<Recipe> currentRecipes;
     private FilteredList<Recipe> filteredRecipesByLanguage;
-    private List <Long> searchedRecipeIds = new ArrayList<>();
+    private final List <Long> searchedRecipeIds = new ArrayList<>();
     private Recipe selectedRecipe;
 
     private final ServerUtils server;
     private final MainCtrl mainCtrl;
-    private ServerService serverService;
+    private final ServerService serverService;
     private final WebSocketService webSocketService;
 
     private Set<Long> favoriteRecipeIds = new HashSet<>();
@@ -142,7 +140,7 @@ public class MainUICtrl {
             favoriteRecipeIds.add(current.getId());
             favoriteButton.setText("★");
         } else {
-            boolean removed = favoriteRecipeIds.remove(current.getId());
+            favoriteRecipeIds.remove(current.getId());
             favoriteButton.setText("☆");
         }
 
@@ -154,7 +152,9 @@ public class MainUICtrl {
         }
     }
 
-
+    /**
+     * A method for toggling to showing all recipes
+     */
     @FXML
     public void showAllRecipes() {
         allRecipesTab.setSelected(true);
@@ -162,6 +162,9 @@ public class MainUICtrl {
         updatePredicate();
     }
 
+    /**
+     * A method for toggling to just the favorite recipes
+     */
     @FXML
     public void showFavoriteRecipes() {
         allRecipesTab.setSelected(false);
@@ -183,37 +186,26 @@ public class MainUICtrl {
         this.serverService = new RealServerService();
     }
 
-    public void setServerService(ServerService serverService) {
-        this.serverService = serverService;
-    }
-
     /**
      * Initializes the main UI by loading all recipes
      */
     @FXML
     public void initialize() {
 
-        // The recipe list matches the initial server one
         this.currentRecipes = webSocketService.getMasterRecipeList();
-        // Immediately set currentRecipes to match the changes from the server
-        // The recipe list view gets updated every time a change from the server is sensed
-        currentRecipes.addListener((ListChangeListener<Recipe>) c -> {
-            Platform.runLater(this::updateRecipeListView);
-        });
+        currentRecipes.addListener((ListChangeListener<Recipe>) _ ->
+                Platform.runLater(this::updateRecipeListView));
 
         filteredRecipesByLanguage = new FilteredList<>(currentRecipes);
         recipeListView.setItems(filteredRecipesByLanguage);
         updatePredicate();
 
-        //initialRecipeFetch();
-
         loadFavorites();
-
         allRecipesTab.setSelected(true);
 
         // Sidebar selection updates main UI
         recipeListView.getSelectionModel().selectedItemProperty().
-                addListener((obs, oldVal, newVal) -> {
+                addListener((_, _, newVal) -> {
                     if (newVal != null) {
                         selectedRecipe = newVal;
                         selectRecipe(newVal);
@@ -226,16 +218,15 @@ public class MainUICtrl {
                     }
                 });
 
-        // Top bar buttons
-        refreshButton.setOnAction(e -> initialRecipeFetch());
+        refreshButton.setOnAction(_ -> initialRecipeFetch());
 
         // Bottom sidebar buttons
-        addRecipeButton.setOnAction(e -> openCreateRecipeUI());
-        deleteRecipeButton.setOnAction(e -> handleDeleteRecipe());
+        addRecipeButton.setOnAction(_ -> openCreateRecipeUI());
+        deleteRecipeButton.setOnAction(_ -> handleDeleteRecipe());
 
         // Placeholders for edit buttons
-        editNameButton.setOnAction(e -> handleEditName());
-        editIngredientsButton.setOnAction(e -> {
+        editNameButton.setOnAction(_ -> handleEditName());
+        editIngredientsButton.setOnAction(_ -> {
             if (selectedRecipe != null) {
                 handleEditIngredients(selectedRecipe);
             } else {
@@ -243,14 +234,14 @@ public class MainUICtrl {
             }
         });
 
-        editInstructionsButton.setOnAction(e -> {
+        editInstructionsButton.setOnAction(_ -> {
             if (selectedRecipe != null) {
                 handleEditInstructions(selectedRecipe);
             } else {
                 System.out.println("Please select a recipe to edit");
             }
         });
-        foodItemButton.setOnAction(e -> handleGoToFoodItems());
+        foodItemButton.setOnAction(_ -> handleGoToFoodItems());
 
 
         recipeSearchBar.setOnKeyPressed(keyEvent -> {
@@ -261,7 +252,7 @@ public class MainUICtrl {
         });
 
         // Tell the list: "When you have a Recipe, just show its name (and maybe a star!)"
-        recipeListView.setCellFactory(param -> new ListCell<Recipe>() {
+        recipeListView.setCellFactory(_ -> new ListCell<>() {
             @Override
             protected void updateItem(Recipe item, boolean empty) {
                 super.updateItem(item, empty);
@@ -283,11 +274,18 @@ public class MainUICtrl {
 
     }
 
-    private MenuItem setupMenuItemIcons (String name, String langCode, String iconFileName) {
+    /**
+     * A method which sets up the icons for the language menu
+     * @param name - the name of the language we are adding
+     * @param langCode - the locale code of the language
+     * @param iconFileName - the encoding for the name of the icon file
+     * @return MenuItem - returns the ready-made MenuItem with the proper icon
+     */
+    public MenuItem setupMenuItemIcons (String name, String langCode, String iconFileName) {
         MenuItem menuItem = new MenuItem(name);
 
-        Image flagImage = new Image
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg"));
+        Image flagImage = new Image(Objects.requireNonNull
+                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
 
         ImageView icon = new ImageView(flagImage);
         icon.setFitWidth(16);
@@ -298,14 +296,18 @@ public class MainUICtrl {
 
         menuItem.setGraphic(icon);
 
-        menuItem.setOnAction(e -> changeLanguage(new Locale(langCode)));
+        menuItem.setOnAction(_ -> changeLanguage(new Locale(langCode)));
 
         return menuItem;
     }
 
-    private void updateButtonGraphic(String iconFileName) {
-        Image img = new Image
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg"));
+    /**
+     * A method which updates the flag icon of the language button when necessary
+     * @param iconFileName - the encoding for the name of the icon file
+     */
+    public void updateButtonGraphic(String iconFileName) {
+        Image img = new Image (Objects.requireNonNull
+                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
         ImageView imageView = new ImageView(img);
 
         imageView.setFitWidth(16);
@@ -314,23 +316,15 @@ public class MainUICtrl {
         Circle clip = new Circle(8, 8, 8);
         imageView.setClip(clip);
 
+        // Set the graphic to the MenuButton itself
         languageButton.setGraphic(imageView);
     }
 
-    private void updateIndicator(String iconFileName) {
-        Image img = new Image
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg"));
-
-        languageIndicator.setImage(img);
-
-        languageIndicator.setFitHeight(30);
-        languageIndicator.setFitWidth(30);
-
-        Circle clip = new Circle(15, 15, 15);
-        languageIndicator.setClip(clip);
-    }
-
-    private void setupLanguageMenu() {
+    /**
+     * A setup method for the language menu -
+     * adds the constructed MenuItems using the helper methods with the appropriate icon
+     */
+    public void setupLanguageMenu() {
         languageButton.getItems().clear();
 
         MenuItem enItem = setupMenuItemIcons("English", "en", "english");
@@ -341,8 +335,6 @@ public class MainUICtrl {
         languageButton.getItems().addAll(enItem, nlItem, roItem, bgItem);
 
         Locale current = LanguageManager.getLocale();
-        filteredLocales.clear();
-
 
         switch (current.getLanguage()) {
             case "nl" -> {
@@ -364,7 +356,11 @@ public class MainUICtrl {
         }
     }
 
-    private void changeLanguage(Locale newLocale) {
+    /**
+     * A method for changing the language of the menus to a new Locale
+     * @param newLocale - the new language we want to set the menus to
+     */
+    public void changeLanguage(Locale newLocale) {
         LanguageManager.setLocale(newLocale);
         switch (newLocale.getLanguage()) {
             case "nl" -> languageButton.setText("Nederlands");
@@ -373,6 +369,23 @@ public class MainUICtrl {
             default -> languageButton.setText("English");
         }
         mainCtrl.reloadScenesForNewLanguage();
+    }
+
+    /**
+     * A method for updating the indicator of the recipe language
+     * @param iconFileName - the name of the flag icon
+     */
+    public void updateIndicator(String iconFileName) {
+        Image img = new Image (Objects.requireNonNull
+                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
+
+        languageIndicator.setImage(img);
+
+        languageIndicator.setFitHeight(30);
+        languageIndicator.setFitWidth(30);
+
+        Circle clip = new Circle(15, 15, 15);
+        languageIndicator.setClip(clip);
     }
 
 
@@ -440,18 +453,16 @@ public class MainUICtrl {
         }
 
         StompSession.Subscription sub = webSocketService.
-                subscribeToRecipe(selectedRecipe.getId(), updated -> {
-                    Platform.runLater(() -> {
-                        displayRecipe(updated);
-                        mainCtrl.handleRecipeBeingUpdated(updated);
-                        for (int i = 0; i < currentRecipes.size(); i++) {
-                            if (currentRecipes.get(i).getId().equals(updated.getId())) {
-                                currentRecipes.set(i, updated);
-                                break;
-                            }
+                subscribeToRecipe(selectedRecipe.getId(), updated -> Platform.runLater(() -> {
+                    displayRecipe(updated);
+                    mainCtrl.handleRecipeBeingUpdated(updated);
+                    for (int i = 0; i < currentRecipes.size(); i++) {
+                        if (currentRecipes.get(i).getId().equals(updated.getId())) {
+                            currentRecipes.set(i, updated);
+                            break;
                         }
-                    });
-                });
+                    }
+                }));
         if (sub != null) {
             this.recipeSubscription = sub;
             this.lastSubscribedID = selectedRecipe.getId();
@@ -510,13 +521,10 @@ public class MainUICtrl {
                             .delete();
 
                     if (serverResponse.getStatus() == 204) {
-                        System.out.println("Recipe deleted successfully");
                         unsubscribeFromRecipe();
-                    } else {
-                        System.out.println("Failed to delete recipe: " + serverResponse.getStatus());
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    System.err.println("Error - could not delete recipe");
                 }
             }
         });
@@ -542,10 +550,6 @@ public class MainUICtrl {
         hBox.setPadding(new Insets(20));
         hBox.getChildren().addAll(nameLabel, editNameNameField);
         dialogBox.getDialogPane().setContent(hBox);
-
-        ChangeListener<String> emptyNameValidator = (obs, old, newVal) -> {
-            okButton.setDisable(editNameNameField.getText().isEmpty());
-        };
 
         dialogBox.setResultConverter(button -> {
             if (button == ButtonType.OK) {
@@ -609,50 +613,61 @@ public class MainUICtrl {
         return selectedRecipe;
     }
 
+    /**
+     * Downloads a recipe in a user-chosen directory
+     */
     @FXML
     public void downloadRecipe() {
         int index = recipeListView.getSelectionModel().getSelectedIndex();
         if (index < 0 || index >= currentRecipes.size()) return;
         Recipe selectedRecipe = currentRecipes.get(index);
 
-        String content = "Recipe: " + selectedRecipe.getName() + "\n\n";
-        content += "Ingredients:\n";
+        StringBuilder content = new StringBuilder("Recipe: " + selectedRecipe.getName() + "\n\n");
 
-        if (selectedRecipe.getIngredients() != null) {
-            for (int i = 0; i < selectedRecipe.getIngredients().size(); i++) {
-                content += String.valueOf(i + 1) + ". ";
-                content += selectedRecipe.getIngredients().get(i).toString();
-                content += "\n";
-            }
-        }
+        content.append("Ingredients:\n");
+        appendList(content, selectedRecipe.getIngredients(), "");
 
-        content += "\nInstructions:\n";
-
-        if (selectedRecipe.getInstructions() != null) {
-            for (int i = 0; i < selectedRecipe.getInstructions().size(); i++) {
-                content += "Step " + String.valueOf(i + 1) + ": ";
-                content += selectedRecipe.getInstructions().get(i);
-                content += "\n";
-            }
-        }
+        content.append("\nInstructions:\n");
+        appendList(content, selectedRecipe.getInstructions(), "Step ");
 
         FileChooser fileChooser = new  FileChooser();
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Recipe", "*.txt"));  //ensures the file is saved as txt
+        fileChooser.getExtensionFilters().
+                add(new FileChooser.ExtensionFilter("Recipe", "*.txt"));
+        //ensures the file is saved as txt
 
         fileChooser.setInitialFileName((selectedRecipe.getName() + ".txt"));
 
         Stage stage = (Stage) addRecipeButton.getScene().getWindow();
         File file = fileChooser.showSaveDialog(stage);
 
-        if(file!=null) {
+        if (file!=null) {
             try (FileWriter fw = new FileWriter(file)) {
-                fw.write(content);
+                fw.write(content.toString());
             } catch (IOException e) {
-                e.printStackTrace();
+                System.err.println("Error - could not download recipe");
             }
         }
     }
 
+    /**
+     * A helper method for constructing a list
+     * @param sb - the initial StringBuilder object which would be appended to
+     * @param items - the list of items added to the content
+     * @param prefix - the initial String the list starts with
+     */
+    public void appendList (StringBuilder sb, List<?> items, String prefix) {
+        if (items==null) {
+            return;
+        }
+        for (int i = 0; i < items.size(); i++) {
+            sb.append(prefix).append(i + 1).append(". ")
+                    .append(items.get(i)).append("\n");
+        }
+    }
+
+    /**
+     * A method for creating a clone of the currently selected recipe
+     */
     @FXML
     public void cloneRecipe(){
         int index = recipeListView.getSelectionModel().getSelectedIndex();
@@ -674,8 +689,11 @@ public class MainUICtrl {
         }
     }
 
+    /**
+     * A method for accessing the Information of a recipe
+     */
     @FXML
-    public void handleInformation(ActionEvent actionEvent) {
+    public void handleInformation() {
         if (recipeListView.getSelectionModel().isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setTitle("No Selection");
@@ -700,7 +718,8 @@ public class MainUICtrl {
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setTitle("Invalid Selection");
             alert.setHeaderText(null);
-            alert.setContentText("Cannot open detailed view: The selected recipe has no name/data.");
+            alert.setContentText("Cannot open detailed view: " +
+                    "The selected recipe has no name/data.");
             alert.showAndWait();
             return;
         }
@@ -718,6 +737,9 @@ public class MainUICtrl {
         }
     }
 
+    /**
+     * A method which searches for recipe using the search bar
+     */
     public void searchForRecipe() {
         String searchQuery = recipeSearchBar.getText().trim();
 
@@ -792,13 +814,14 @@ public class MainUICtrl {
         updatePredicate();
     }
 
-    private CheckMenuItem setupCheckMenuItemIcons (String name, String langCode, String iconFileName) {
+    private CheckMenuItem setupCheckMenuItemIcons(String name,
+                                                  String langCode, String iconFileName) {
         CheckMenuItem menuItem = new CheckMenuItem(name);
 
         menuItem.setSelected(filteredLocales.contains(new Locale(langCode)));
 
-        Image flagImage = new Image
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg"));
+        Image flagImage = new Image(Objects.requireNonNull
+                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
 
         ImageView icon = new ImageView(flagImage);
         icon.setFitWidth(16);
@@ -811,7 +834,7 @@ public class MainUICtrl {
 
         Locale tempLocale = new Locale (langCode);
 
-        menuItem.setOnAction(e -> {
+        menuItem.setOnAction(_ -> {
             if (menuItem.isSelected()) {
                 filterLocales(tempLocale);
             }else{

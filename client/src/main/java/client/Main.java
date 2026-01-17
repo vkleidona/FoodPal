@@ -1,18 +1,3 @@
-/*
- * Copyright 2021 Delft University of Technology
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package client;
 
 import static com.google.inject.Guice.createInjector;
@@ -33,27 +18,39 @@ import shopping.ShoppingList;
 
 public class Main extends Application {
 
-	private static final Injector INJECTOR = createInjector(new MyModule());
-	private static final MyFXML FXML = new MyFXML(INJECTOR);
+    private static final Injector INJECTOR = createInjector(new MyModule());
+    private static final MyFXML FXML = new MyFXML(INJECTOR);
 
+    /**
+     * The Main method of the Application - it starts the client
+     * @param args - the arguments with which the application starts
+     * @throws URISyntaxException - a possible Exception with the provided URI syntax
+     * in the arguments of Main
+     * @throws IOException - a possible Exception with the file
+     */
     public static void main(String[] args) throws URISyntaxException, IOException {
-		launch();
-	}
+        launch();
+    }
 
-	@Override
-	public void start(Stage primaryStage) throws Exception {
+    /**
+     * A method which starts up the application and loads all instances
+     * @param primaryStage - the primary stage to be shown to the user
+     */
+    @Override
+	public void start(Stage primaryStage) {
 
         var mainCtrl = INJECTOR.getInstance(MainCtrl.class);
 
-		var serverUtils = INJECTOR.getInstance(ServerUtils.class);
-		if (!serverUtils.isServerAvailable()) {
-			var msg = "Server needs to be started before the client, but it does not seem to be available. Shutting down.";
-			System.err.println(msg);
+        var serverUtils = INJECTOR.getInstance(ServerUtils.class);
+        if (!serverUtils.isServerAvailable()) {
+            var msg = "Server needs to be started before the client, " +
+                    "but it does not seem to be available. Shutting down.";
+            System.err.println(msg);
 			return;
-		}
-        var shoppingList = INJECTOR.getInstance(ShoppingList.class);
+        }
 
-		var information = FXML.load(InformationCtrl.class, "client", "scenes", "InformationUI.fxml");
+        var information = FXML.load(InformationCtrl.class,
+                "client", "scenes", "InformationUI.fxml");
 
         var mainUI = FXML.load(MainUICtrl.class, "client", "scenes", "MainUI.fxml");
         var editInstructions = FXML.load
@@ -65,23 +62,31 @@ public class Main extends Application {
         var foodItemMain = FXML.load
                 (FoodItemMainCtrl.class, "client", "scenes", "FoodItemMain.fxml");
 
-        var editIngredients = FXML.load(EditIngredientsCtrl.class, "client", "scenes", "EditIngredients.fxml");
+        var editIngredients = FXML.load(EditIngredientsCtrl.class,
+                "client", "scenes", "EditIngredients.fxml");
 
-        var shoppingListMain = FXML.load(ShoppingListMainCtrl.class, "client", "scenes", "ShoppingListMainUI.fxml");
+        var shoppingListMain = FXML.load(ShoppingListMainCtrl.class,
+                "client", "scenes", "ShoppingListMainUI.fxml");
 
-        var addRecipeToShoppingList = FXML.load
-                (AddRecipeToShoppingListCtrl.class, "client", "scenes", "AddRecipeToShoppingList.fxml");
+        var addRecipeToShoppingList = FXML.load(AddRecipeToShoppingListCtrl.class,
+                "client", "scenes", "AddRecipeToShoppingList.fxml");
 
         WebSocketService wss = INJECTOR.getInstance(client.network.WebSocketService.class);
         wss.connect(() -> {
             System.out.println("Session established! Starting UI...");
             mainCtrl.initialize(primaryStage, mainUI, editInstructions,
-                    createRecipe, addFoodItem, foodItemMain, editIngredients, shoppingListMain, addRecipeToShoppingList, information);;
+                    createRecipe, addFoodItem, foodItemMain, editIngredients,
+                    shoppingListMain, addRecipeToShoppingList, information);
 
             mainUI.getKey().initialRecipeFetch();
         });
-	}
+    }
 
+    /**
+     * A method which defines the behavior of the application when stopping - namely
+     * to store the ShoppingList inside a file
+     * @throws Exception - any Exception which might be thrown when storing the Shopping list file
+     */
     @Override
     public void stop() throws Exception {
         INJECTOR.getInstance(ShoppingList.class).storeFile();

@@ -15,8 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
 import org.testfx.util.WaitForAsyncUtils;
 import recipes.Recipe;
-import client.i18n.LanguageManager;
-import java.util.Locale;
+
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -317,7 +316,8 @@ public class MainUICtrlTest extends ApplicationTest {
         }
 
         @Override
-        public Recipe updateRecipe(Recipe r) { return r; }
+        public void updateRecipe(Recipe r) {
+        }
     }
 
     static class MockMainCtrl extends MainCtrl {

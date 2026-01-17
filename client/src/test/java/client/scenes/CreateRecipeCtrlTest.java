@@ -54,10 +54,6 @@ public class CreateRecipeCtrlTest extends ApplicationTest {
                 return new java.util.ArrayList<>();
             }
 
-            @Override
-            public java.util.List<recipes.FoodItem> getFoodItems() {
-                return new java.util.ArrayList<>();
-            }
         });
 
         stage.setScene(new Scene(root));
@@ -292,7 +288,6 @@ public class CreateRecipeCtrlTest extends ApplicationTest {
                 return list;
             }
             @Override public void sendRecipe(Recipe r) {}
-            @Override public java.util.List<recipes.FoodItem> getFoodItems() { return new java.util.ArrayList<>(); }
         });
 
         // 3. Call handleRefresh explicitly (since we might not have a button for it in the test UI)
