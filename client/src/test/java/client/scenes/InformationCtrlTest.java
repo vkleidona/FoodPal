@@ -42,7 +42,7 @@ public class InformationCtrlTest extends ApplicationTest {
     public void start(Stage stage) throws Exception {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/client/scenes/InformationUI.fxml"));
 
-        loader.setControllerFactory(param -> {
+        loader.setControllerFactory(_ -> {
             MainCtrl mockMainCtrl = new MainCtrl() {
                 @Override
                 public void showMainMenu() {
@@ -99,8 +99,8 @@ public class InformationCtrlTest extends ApplicationTest {
         assertEquals(1, container.getChildren().size());
 
         // Verify specific label text in the row
-        HBox row = (HBox) container.getChildren().get(0);
-        Label nameLbl = (Label) row.getChildren().get(0);
+        HBox row = (HBox) container.getChildren().getFirst();
+        Label nameLbl = (Label) row.getChildren().getFirst();
         assertEquals("Apple", nameLbl.getText());
     }
 
@@ -119,7 +119,7 @@ public class InformationCtrlTest extends ApplicationTest {
         WaitForAsyncUtils.waitForFxEvents();
 
         VBox container = lookup("#ingredientsContainer").query();
-        HBox row = (HBox) container.getChildren().get(0);
+        HBox row = (HBox) container.getChildren().getFirst();
         TextField qtyField = (TextField) row.getChildren().get(1);
         Label unitLbl = (Label) row.getChildren().get(2);
 
@@ -148,7 +148,7 @@ public class InformationCtrlTest extends ApplicationTest {
 
         // Verify Ingredient Quantity scaled (200g * 2 = 400g)
         VBox container = lookup("#ingredientsContainer").query();
-        HBox row = (HBox) container.getChildren().get(0);
+        HBox row = (HBox) container.getChildren().getFirst();
         TextField qtyField = (TextField) row.getChildren().get(1);
         assertEquals("400", qtyField.getText());
 
@@ -176,7 +176,7 @@ public class InformationCtrlTest extends ApplicationTest {
 
         // Verify Ingredients (200g * 3 = 600g)
         VBox container = lookup("#ingredientsContainer").query();
-        HBox row = (HBox) container.getChildren().get(0);
+        HBox row = (HBox) container.getChildren().getFirst();
         TextField qtyField = (TextField) row.getChildren().get(1);
         assertEquals("600", qtyField.getText());
     }
@@ -190,7 +190,7 @@ public class InformationCtrlTest extends ApplicationTest {
 
         // Find the quantity text field for the first ingredient
         VBox container = lookup("#ingredientsContainer").query();
-        HBox row = (HBox) container.getChildren().get(0);
+        HBox row = (HBox) container.getChildren().getFirst();
         TextField qtyField = (TextField) row.getChildren().get(1);
 
         // Click specifically on that node

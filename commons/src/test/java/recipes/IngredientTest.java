@@ -69,7 +69,7 @@ class IngredientTest {
         r.setId(2L);
         r2.setId(42L);
         ingredient2.setRecipe(r2);
-       // assertEquals(ingredient2.getRecipeID(), r2.getId());
+       assertEquals(ingredient2.getRecipe().getId(), r2.getId());
     }
 
     @Test

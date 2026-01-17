@@ -5,13 +5,6 @@ public class MiniUpdate {
     private String title;
 
     /**
-     * Default constructor for the class
-     */
-    public MiniUpdate () {
-
-    }
-
-    /**
      * A constructor for the MiniUpdate object - an Object package sent over
      * STOMP to reflect only small changes in recipes
      * @param id - the ID of the Object to be changed

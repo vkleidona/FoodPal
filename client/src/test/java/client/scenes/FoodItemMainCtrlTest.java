@@ -9,7 +9,6 @@ import javafx.scene.control.*;
 import javafx.stage.Stage;
 import org.junit.jupiter.api.*;
 import org.testfx.framework.junit5.ApplicationTest;
-import org.mockito.Mockito;
 
 import recipes.FoodItem;
 
@@ -24,8 +23,6 @@ public class FoodItemMainCtrlTest extends ApplicationTest {
 
     private FoodItemMainCtrl ctrl;
     private ServerUtils serverUtils;
-    private MainCtrl mainCtrl;
-    private WebSocketService webSocketService;
 
     @BeforeAll
     static void skipInCiWithoutDisplay() {
@@ -38,8 +35,8 @@ public class FoodItemMainCtrlTest extends ApplicationTest {
     public void start(Stage stage) throws Exception {
         // Mock dependencies
         serverUtils = mock(ServerUtils.class);
-        mainCtrl = mock(MainCtrl.class);
-        webSocketService = mock(WebSocketService.class);
+        MainCtrl mainCtrl = mock(MainCtrl.class);
+        WebSocketService webSocketService = mock(WebSocketService.class);
 
         // Load FXML and set controller
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/client/scenes/FoodItemMain.fxml"));
@@ -96,6 +93,6 @@ public class FoodItemMainCtrlTest extends ApplicationTest {
         ctrl.refreshFoodItems();
 
         assertEquals(2, ctrl.getFoodItemListView().getItems().size());
-        assertEquals("Banana", ctrl.getFoodItemListView().getItems().get(0).getName());
+        assertEquals("Banana", ctrl.getFoodItemListView().getItems().getFirst().getName());
     }
 }

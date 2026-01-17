@@ -7,9 +7,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import recipes.Ingredient;
 
-import java.beans.BeanProperty;
 import java.io.*;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -74,7 +72,7 @@ public class ShoppingList implements Serializable {
             SHOPPING_LIST_FILE.getParentFile().mkdirs();
             objectMapper.writeValue(SHOPPING_LIST_FILE, ingredients);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Error - Shopping List file could not be stored");
         }
     }
 
@@ -94,7 +92,7 @@ public class ShoppingList implements Serializable {
             this.ingredients.clear();
             this.ingredients.addAll(loaded);
         }catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Error - Shopping List could not be loaded");
             ingredients = new ArrayList<>();
         }
     }

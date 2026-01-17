@@ -19,7 +19,6 @@ public class EditInstructionsCtrlTest extends ApplicationTest{
     private EditInstructionsCtrl ctrl;
     private ServerUtils mockServer;
     private MainCtrl mockMainCtrl;
-    private Recipe testRecipe;
 
     @BeforeAll
     static void skipInCiWithoutDisplay() {
@@ -39,12 +38,12 @@ public class EditInstructionsCtrlTest extends ApplicationTest{
 
         FXMLLoader loader =  new FXMLLoader(getClass().getResource("/client/scenes/EditInstructions.fxml"));
 
-        loader.setControllerFactory(param -> new EditInstructionsCtrl(mockServer, mockMainCtrl));
+        loader.setControllerFactory(_ -> new EditInstructionsCtrl(mockServer, mockMainCtrl));
 
         Parent root =  loader.load();
         ctrl = loader.getController();
 
-        testRecipe = new Recipe("Pizza");
+        Recipe testRecipe = new Recipe("Pizza");
         testRecipe.setInstructions(new ArrayList<>(List.of("Cut", "Bake")));
         ctrl.initialize(testRecipe);
 

@@ -67,23 +67,36 @@ public class Recipe implements Serializable {
         this.locale = locale;
     }
 
+    /**
+     * A "cloner" of recipes - produces cloned copies of recipes
+     * @param other - the other recipe to be cloned
+     */
+    @SuppressWarnings("CopyConstructorMissesField")
+    // The only warning is that we miss the ID - we don't wish to have
+    // two recipes with the same ID
     public Recipe(Recipe other){
         this.name = other.name;
 
         this.ingredients = new ArrayList<>();
         List<Ingredient> old = other.getIngredients();
         if (old != null){
-            for(int i=0; i < old.size(); i++){
-                Ingredient current = old.get(i);
-                Ingredient copy = new Ingredient(current.getFoodType(), current.getQuantity(), current.getMeasurement());
+            for (Ingredient current : old) {
+                Ingredient copy = new Ingredient(current.getFoodType(), current.getQuantity(),
+                        current.getMeasurement());
                 copy.setRecipe(this);
                 this.ingredients.add(copy);
             }
         }
         this.instructions = new ArrayList<>(other.getInstructions()) ;
-        this.servings = servings;
+        this.servings = other.servings;
+        this.locale = other.locale;
     }
 
+
+    /**
+     * A getter for the recipe ID
+     * @return Long - returns the ID of the recipe
+     */
     public Long getId() {
         return id;
     }

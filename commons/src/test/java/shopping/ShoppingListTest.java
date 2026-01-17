@@ -40,9 +40,7 @@ class ShoppingListTest {
     @AfterEach
     void cleanup() {
         File file = new File(System.getProperty("user.home"), ".foodpal/shopping_list.json");
-        if (file.exists()) {
-            file.delete();
-        }
+        if (file.exists()) file.delete();
     }
 
     @Test

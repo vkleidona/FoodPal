@@ -67,15 +67,15 @@ public class CreateRecipeCtrlTest extends ApplicationTest {
 
         clickOn("#addIngredientButton");
         VBox ingredientsBox = lookup("#ingredientsVBox").query();
-        HBox row = (HBox) ingredientsBox.getChildren().get(0);
+        HBox row = (HBox) ingredientsBox.getChildren().getFirst();
 
         clickOn(row.getChildren().get(0)).write("Flour");
         clickOn(row.getChildren().get(1)).write("NotANumber"); // <--- Logic Error Here
 
         clickOn("#addPreparationButton");
         VBox prepBox = lookup("#preparationVBox").query();
-        HBox stepRow = (HBox) prepBox.getChildren().get(0);
-        clickOn(stepRow.getChildren().get(0)).write("Mix everything.");
+        HBox stepRow = (HBox) prepBox.getChildren().getFirst();
+        clickOn(stepRow.getChildren().getFirst()).write("Mix everything.");
 
         clickOn("#applyButton");
 
@@ -93,7 +93,7 @@ public class CreateRecipeCtrlTest extends ApplicationTest {
 
         // get the row and the ChoiceBox
         VBox ingredientsBox = lookup("#ingredientsVBox").query();
-        HBox row = (HBox) ingredientsBox.getChildren().get(0);
+        HBox row = (HBox) ingredientsBox.getChildren().getFirst();
 
         @SuppressWarnings("unchecked")
         ChoiceBox<String> unitChoice = (ChoiceBox<String>) row.getChildren().get(2);
@@ -170,7 +170,7 @@ public class CreateRecipeCtrlTest extends ApplicationTest {
 
         clickOn("#addIngredientButton");
         VBox ingredientsBox = lookup("#ingredientsVBox").query();
-        HBox row = (HBox) ingredientsBox.getChildren().get(0);
+        HBox row = (HBox) ingredientsBox.getChildren().getFirst();
 
         clickOn(row.getChildren().get(0)).write("Flour");
         clickOn(row.getChildren().get(1)).write("500");
@@ -182,8 +182,8 @@ public class CreateRecipeCtrlTest extends ApplicationTest {
 
         clickOn("#addPreparationButton");
         VBox prepBox = lookup("#preparationVBox").query();
-        HBox stepRow = (HBox) prepBox.getChildren().get(0);
-        clickOn(stepRow.getChildren().get(0)).write("Mix everything.");
+        HBox stepRow = (HBox) prepBox.getChildren().getFirst();
+        clickOn(stepRow.getChildren().getFirst()).write("Mix everything.");
 
         clickOn("#applyButton");
 
@@ -195,7 +195,7 @@ public class CreateRecipeCtrlTest extends ApplicationTest {
         assertEquals(1, capturedRecipe.getIngredients().size());
 
         // verify Ingredient fields
-        var ingredient = capturedRecipe.getIngredients().get(0);
+        var ingredient = capturedRecipe.getIngredients().getFirst();
         assertEquals("Flour", ingredient.getFoodType().getName());
         assertEquals(500, ingredient.getQuantity());
         assertEquals("g", ingredient.getMeasurement()); // Verify unit matches
@@ -246,8 +246,8 @@ public class CreateRecipeCtrlTest extends ApplicationTest {
         // Click the 'x' button on the first row
         // The structure is HBox -> [Combo, Text, Choice, Text, Text, Button]
         // The delete button is the last child in the HBox
-        HBox firstRow = (HBox) ingredientsBox.getChildren().get(0);
-        clickOn(firstRow.getChildren().get(firstRow.getChildren().size() - 1));
+        HBox firstRow = (HBox) ingredientsBox.getChildren().getFirst();
+        clickOn(firstRow.getChildren().getLast());
 
         // Wait for UI update
         WaitForAsyncUtils.waitForFxEvents();
@@ -267,11 +267,11 @@ public class CreateRecipeCtrlTest extends ApplicationTest {
         assertNotNull(r);
         assertEquals("Test Helper", r.getName());
         assertEquals(2, r.getIngredients().size());
-        assertEquals("Apple", r.getIngredients().get(0).getFoodType().getName());
-        assertEquals(1, r.getIngredients().get(0).getQuantity());
-        assertEquals("piece", r.getIngredients().get(0).getMeasurement());
+        assertEquals("Apple", r.getIngredients().getFirst().getFoodType().getName());
+        assertEquals(1, r.getIngredients().getFirst().getQuantity());
+        assertEquals("piece", r.getIngredients().getFirst().getMeasurement());
         assertEquals(2, r.getInstructions().size());
-        assertEquals("Step 1", r.getInstructions().get(0));
+        assertEquals("Step 1", r.getInstructions().getFirst());
     }
 
     @Test
@@ -296,9 +296,9 @@ public class CreateRecipeCtrlTest extends ApplicationTest {
 
         // 4. Verify the ComboBox now contains "New Server Item"
         VBox ingredientsBox = lookup("#ingredientsVBox").query();
-        HBox row = (HBox) ingredientsBox.getChildren().get(0);
+        HBox row = (HBox) ingredientsBox.getChildren().getFirst();
         @SuppressWarnings("unchecked")
-        ComboBox<String> nameBox = (ComboBox<String>) row.getChildren().get(0);
+        ComboBox<String> nameBox = (ComboBox<String>) row.getChildren().getFirst();
 
         assertTrue(nameBox.getItems().contains("New Server Item"), "ComboBox should contain updated items from server");
         assertTrue(nameBox.getItems().contains("+ Create New Food Item..."), "ComboBox should still have create option");
