@@ -20,7 +20,7 @@ public class FoodItemController {
     private final FoodItemRepository repo;
 
     @Autowired
-    private SimpMessagingTemplate messageTemplate;
+    private final SimpMessagingTemplate messageTemplate;
 
     /**
      * A constructor for the FoodItemController class

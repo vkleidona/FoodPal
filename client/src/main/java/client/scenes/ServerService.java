@@ -6,9 +6,12 @@ import recipes.Recipe;
 import java.util.List;
 
 public interface ServerService {
+
+    /**
+     * A method which handles the sending of a recipe to the server
+     * @param recipe - the recipe to be posted to the server
+     */
     void sendRecipe(Recipe recipe);
     List<FoodItem> getAllFoodItems();
 
-    // Added this alias too, just in case your interface uses this name instead
-    List<FoodItem> getFoodItems();
 }

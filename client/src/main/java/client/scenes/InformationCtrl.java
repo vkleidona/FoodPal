@@ -1,8 +1,7 @@
 package client.scenes;
 
-import client.utils.ServerUtils;
 import jakarta.inject.Inject;
-import javafx.event.ActionEvent;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -17,6 +16,7 @@ import recipes.Recipe;
 import client.i18n.LanguageManager;
 import java.text.MessageFormat;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.ResourceBundle;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
@@ -39,24 +39,38 @@ public class InformationCtrl {
     private ResourceBundle resources;
 
     private final MainCtrl mainCtrl;
-    private final ServerUtils serverUtils;
     private Recipe currentRecipe;
 
+    /**
+     * A constructor for the InformationCtrl class which uses Dependency Injection
+     * @param mainCtrl - the instance of the MainCtrl class
+     */
     @Inject
-    public InformationCtrl(MainCtrl mainCtrl, ServerUtils serverUtils) {
+    public InformationCtrl(MainCtrl mainCtrl) {
         this.mainCtrl = mainCtrl;
-        this.serverUtils = serverUtils;
     }
+
+    /**
+     * An initializer method - sets up the language menu
+     */
 
     @FXML
     public void initialize() {
         setupLanguageMenu();
     }
-    private MenuItem setupMenuItemIcons (String name, String langCode, String iconFileName) {
+
+    /**
+     * A method which sets up the icons for the language menu
+     * @param name - the name of the language we are adding
+     * @param langCode - the locale code of the language
+     * @param iconFileName - the encoding for the name of the icon file
+     * @return MenuItem - returns the ready-made MenuItem with the proper icon
+     */
+    public MenuItem setupMenuItemIcons (String name, String langCode, String iconFileName) {
         MenuItem menuItem = new MenuItem(name);
 
-        Image flagImage = new Image
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg"));
+        Image flagImage = new Image(Objects.requireNonNull
+                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
 
         ImageView icon = new ImageView(flagImage);
         icon.setFitWidth(16);
@@ -67,14 +81,18 @@ public class InformationCtrl {
 
         menuItem.setGraphic(icon);
 
-        menuItem.setOnAction(e -> changeLanguage(new Locale(langCode)));
+        menuItem.setOnAction(_ -> changeLanguage(new Locale(langCode)));
 
         return menuItem;
     }
 
-    private void updateButtonGraphic(String iconFileName) {
-        Image img = new Image
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg"));
+    /**
+     * A method which updates the flag icon of the language button when necessary
+     * @param iconFileName - the encoding for the name of the icon file
+     */
+    public void updateButtonGraphic(String iconFileName) {
+        Image img = new Image (Objects.requireNonNull
+                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
         ImageView imageView = new ImageView(img);
 
         imageView.setFitWidth(16);
@@ -87,19 +105,23 @@ public class InformationCtrl {
         languageButton.setGraphic(imageView);
     }
 
-    private void setupLanguageMenu() {
+    /**
+     * A setup method for the language menu -
+     * adds the constructed MenuItems using the helper methods with the appropriate icon
+     */
+    public void setupLanguageMenu() {
         languageButton.getItems().clear();
 
         MenuItem enItem = setupMenuItemIcons("English", "en", "english");
         MenuItem nlItem = setupMenuItemIcons("Nederlands", "nl", "dutch");
-        MenuItem roItem = setupMenuItemIcons("Română", "ro", "romanian");
         MenuItem bgItem = setupMenuItemIcons("Български", "bg", "bulgarian");
+        MenuItem roItem = setupMenuItemIcons("Română", "ro", "romanian");
+        MenuItem skItem = setupMenuItemIcons("Slovenčina", "sk", "slovak");
+        MenuItem deItem = setupMenuItemIcons("Deutsch", "de", "german");
 
-        languageButton.getItems().addAll(enItem, nlItem, roItem, bgItem);
+        languageButton.getItems().addAll(enItem, nlItem, bgItem, roItem, skItem, deItem);
 
         Locale current = LanguageManager.getLocale();
-
-
 
         switch (current.getLanguage()) {
             case "nl" -> {
@@ -114,6 +136,14 @@ public class InformationCtrl {
                 languageButton.setText("Български");
                 updateButtonGraphic("bulgarian");
             }
+            case "sk" -> {
+                languageButton.setText("Slovenčina");
+                updateButtonGraphic("slovak");
+            }
+            case "de" -> {
+                languageButton.setText("Deutsch");
+                updateButtonGraphic("german");
+            }
             default -> {
                 languageButton.setText("English");
                 updateButtonGraphic("english");
@@ -121,21 +151,25 @@ public class InformationCtrl {
         }
     }
 
-    private void changeLanguage(Locale newLocale) {
+    /**
+     * A method for changing the language of the menus to a new Locale
+     * @param newLocale - the new language we want to set the menus to
+     */
+    public void changeLanguage(Locale newLocale) {
         LanguageManager.setLocale(newLocale);
         switch (newLocale.getLanguage()) {
             case "nl" -> languageButton.setText("Nederlands");
             case "ro" -> languageButton.setText("Română");
             case "bg" -> languageButton.setText("Български");
+            case "sk" -> languageButton.setText("Slovenčina");
+            case "de" -> languageButton.setText("Deutsch");
             default -> languageButton.setText("English");
         }
         mainCtrl.reloadScenesForNewLanguage();
     }
 
-
-
     /**
-     * go the main UI
+     * A method for returning to the MainUI
      */
     @FXML
     private void returnToMainUI() {
@@ -143,17 +177,17 @@ public class InformationCtrl {
     }
 
     /**
-     * return to main UI
-     * @param actionEvent for the cancel button
+     * A method for cancelling the editing (scaling) of information
+     * Returns to the main UI
      */
-    public void handleCancel(ActionEvent actionEvent){
+    public void handleCancel(){
         returnToMainUI();
     }
 
     /**
-     * here we pass the data from the main UI
-     * to the InformationUI
-     * @param recipe Recipe
+     * Here we pass the data of the currently selected recipe
+     * from the main UI to the InformationUI
+     * @param recipe - the currently edited Recipe
      */
     public void setRecipe(Recipe recipe) {
         this.currentRecipe = recipe;
@@ -180,8 +214,8 @@ public class InformationCtrl {
     }
 
     /**
-     * helper to redraw the ingredients list.
-     * separated, so we can call it after scaling without resetting the whole recipe object.
+     * Helper to redraw the ingredients list.
+     * Separated, so we can call it after scaling without resetting the whole recipe object.
      */
     private void renderIngredientsList() {
         ingredientsContainer.getChildren().clear();
@@ -196,18 +230,7 @@ public class InformationCtrl {
                 nameLbl.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
 
                 // Quantity Input
-                TextField qtyField = new TextField();
-                if (ing.getQuantity() == (long) ing.getQuantity()) {
-                    qtyField.setText(String.format("%d", (long) ing.getQuantity()));
-                } else {
-                    qtyField.setText(String.format("%.2f", ing.getQuantity()));
-                }
-
-                qtyField.setPrefWidth(80);
-                qtyField.setStyle("-fx-font-size: 14px;");
-
-                // when user presses ENTER on an ingredient quantity ---
-                qtyField.setOnAction(e -> handleIngredientChange(ing, qtyField.getText()));
+                TextField qtyField = getQtyField(ing);
 
                 // Unit
                 Label unitLbl = new Label(ing.getMeasurement());
@@ -220,7 +243,28 @@ public class InformationCtrl {
     }
 
     /**
-     * scaling logic: user changes Servings -> Scale Ingredients
+     * A method for extracting the quantity from the field
+     * @param ing - the Ingredient whose quantity we extract
+     * @return TextField - a new TextField object with the quantity
+     */
+    public TextField getQtyField(Ingredient ing) {
+        TextField qtyField = new TextField();
+        if (ing.getQuantity() == (long) ing.getQuantity()) {
+            qtyField.setText(String.format("%d", (long) ing.getQuantity()));
+        } else {
+            qtyField.setText(String.format("%.2f", ing.getQuantity()));
+        }
+
+        qtyField.setPrefWidth(80);
+        qtyField.setStyle("-fx-font-size: 14px;");
+
+        // when user presses ENTER on an ingredient quantity ---
+        qtyField.setOnAction(_ -> handleIngredientChange(ing, qtyField.getText()));
+        return qtyField;
+    }
+
+    /**
+     * A method which scales the ingredients according to the servings
      */
     @FXML
     public void handleServingsChange() {
@@ -244,12 +288,14 @@ public class InformationCtrl {
             calculateAndShowNutrition();
 
         } catch (NumberFormatException e) {
-            // Ignore non-integer input
+            System.err.println("Error: Could not save the servings of a recipe" +
+                    " - non-integer input");
         }
     }
 
     /**
-     * scaling logic 2: user changes Ingredient Quantity -> Scale Servings & Other Ingredients
+     * A method which scales the quantity of all ingredients and servings
+     * to match the scaled quantity of the selected ingredient
      */
     private void handleIngredientChange(Ingredient targetIng, String newQtyStr) {
         try {
@@ -276,7 +322,7 @@ public class InformationCtrl {
             calculateAndShowNutrition();
 
         } catch (NumberFormatException e) {
-            // Ignore invalid input
+            System.err.println("Error: Could not scale other ingredients - non-numeric input");
         }
     }
 
@@ -292,12 +338,7 @@ public class InformationCtrl {
             // 1. Calculate current total calories to determine scale factor
             double currentTotalCalories = 0;
             if (currentRecipe.getIngredients() != null) {
-                for (Ingredient ing : currentRecipe.getIngredients()) {
-                    FoodItem food = ing.getFoodType();
-                    if (food != null) {
-                        currentTotalCalories += (ing.getQuantityInGrams() / 100.0) * food.getKcal();
-                    }
-                }
+                currentTotalCalories = recalculateTotalCalories();
             }
 
             if (currentTotalCalories == 0) return;
@@ -328,6 +369,21 @@ public class InformationCtrl {
     }
 
     /**
+     * A method which recalculates the total calories for one recipe
+     * @return double - returns a double with the total calories for the recipe
+     */
+    public double recalculateTotalCalories () {
+        double currentTotalCalories = 0;
+        for (Ingredient ing : currentRecipe.getIngredients()) {
+            FoodItem food = ing.getFoodType();
+            if (food != null) {
+                currentTotalCalories += (ing.getQuantityInGrams() / 100.0) * food.getKcal();
+            }
+        }
+        return currentTotalCalories;
+    }
+
+    /**
      * Helper to scale a single ingredient's visual quantity and internal grams.
      */
     private void scaleIngredient(Ingredient ing, double scaleFactor) {
@@ -346,33 +402,18 @@ public class InformationCtrl {
     /**
      * Calculates totals and displays nutritional info per 100g.
      */
-    private void calculateAndShowNutrition() {
-        double totalCal = 0;
-        double totalProt = 0;
-        double totalCarb = 0;
-        double totalFat = 0;
-        double totalWeightInGrams = 0;
+    public void calculateAndShowNutrition() {
 
+        double [] data = new double[]{0, 0, 0, 0, 0};
         if (currentRecipe.getIngredients() != null) {
-            for (Ingredient ing : currentRecipe.getIngredients()) {
-                FoodItem food = ing.getFoodType();
-
-                // track total weight of the recipe to normalize to 100g later
-                double grams = ing.getQuantityInGrams();
-                totalWeightInGrams += grams;
-
-                if (food != null) {
-                    // add actual total nutrients for this ingredient to the recipe totals
-                    // ratio: (Grams / 100) because FoodItem values are stored per 100g
-                    double ratio = grams / 100.0;
-
-                    totalCal += ratio * food.getKcal();
-                    totalProt += ratio * food.getProteins();
-                    totalCarb += ratio * food.getCarbs();
-                    totalFat += ratio * food.getFats();
-                }
-            }
+            data = calculateNutrition();
         }
+
+        double totalCal = data[0];
+        double totalProt = data[1];
+        double totalCarb = data[2];
+        double totalFat = data[3];
+        double totalWeightInGrams = data[4];
 
         caloriesRecipe.setText(String.format("%.0f", totalCal));
 
@@ -409,12 +450,45 @@ public class InformationCtrl {
     }
 
     /**
+     * A helper method which returns an array of all nutritional values
+     * @return double[] - an array containing calories, proteins, carbs, fats
+     * and the total weight
+     */
+    public double[] calculateNutrition () {
+        double totalCal = 0;
+        double totalProt = 0;
+        double totalCarb = 0;
+        double totalFat = 0;
+        double totalWeightInGrams = 0;
+
+        for (Ingredient ing : currentRecipe.getIngredients()) {
+            FoodItem food = ing.getFoodType();
+
+            // track total weight of the recipe to normalize to 100g later
+            double grams = ing.getQuantityInGrams();
+            totalWeightInGrams += grams;
+
+            if (food != null) {
+                // add actual total nutrients for this ingredient to the recipe totals
+                // ratio: (Grams / 100) because FoodItem values are stored per 100g
+                double ratio = grams / 100.0;
+
+                totalCal += ratio * food.getKcal();
+                totalProt += ratio * food.getProteins();
+                totalCarb += ratio * food.getCarbs();
+                totalFat += ratio * food.getFats();
+            }
+        }
+        return new double[]{totalCal, totalCarb, totalProt, totalFat, totalWeightInGrams};
+    }
+    /**
      * Automatically converts units based on quantity thresholds.
      * Examples:
      * - 1500 g -> 1.5 kg
      * - 0.5 kg -> 500 g
+     * @param ing - the ingredient whose gram value will be calculated
      */
-    private void optimizeIngredientUnit(Ingredient ing) {
+    public void optimizeIngredientUnit(Ingredient ing) {
         String unit = ing.getMeasurement().toLowerCase();
         double qty = ing.getQuantity();
 
@@ -436,8 +510,23 @@ public class InformationCtrl {
             ing.setQuantity(qty * 1000.0);
         }
 
+        if ((unit.equals("oz") && qty >= 16) || (unit.equals("lb") && qty < 1)) {
+            refactorImperial(ing);
+        }
+    }
+
+    /**
+     * A helper method for comparing imperial values
+     * Implemented to avoid Checkstyle warnings.
+     * @param ing - the Ingredient whose values should be refactored
+     */
+    public void refactorImperial (Ingredient ing) {
+
+        String unit = ing.getMeasurement().toLowerCase();
+        double qty = ing.getQuantity();
+
         // Imperial Mass: oz <-> lb (1 lb = 16 oz)
-        else if (unit.equals("oz") && qty >= 16) {
+        if (unit.equals("oz") && qty >= 16) {
             ing.setMeasurement("lb");
             ing.setQuantity(qty / 16.0);
         } else if (unit.equals("lb") && qty < 1) {
@@ -445,6 +534,5 @@ public class InformationCtrl {
             ing.setQuantity(qty * 16.0);
         }
     }
-
 
 }

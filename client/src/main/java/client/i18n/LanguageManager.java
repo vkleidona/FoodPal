@@ -1,7 +1,5 @@
 package client.i18n;
 
-import jakarta.persistence.criteria.CriteriaBuilder;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -56,7 +54,8 @@ public final class LanguageManager {
                 props.store(out, "FoodPal user settings");
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Preferred language could not be saved to recipe; " +
+                    "Config file not found");
         }
     }
 
