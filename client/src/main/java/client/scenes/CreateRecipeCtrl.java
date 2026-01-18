@@ -327,10 +327,12 @@ public class CreateRecipeCtrl {
         MenuItem nlItem = setupMenuItemIcons("Nederlands", "nl", "dutch");
         MenuItem roItem = setupMenuItemIcons("Română", "ro", "romanian");
         MenuItem bgItem = setupMenuItemIcons("Български", "bg", "bulgarian");
+        MenuItem skItem = setupMenuItemIcons("Slovenčina", "sk", "slovak");
+        MenuItem deItem = setupMenuItemIcons("Deutsch", "de", "german");
 
-        languageButton.getItems().addAll(enItem, nlItem, roItem, bgItem);
+        languageButton.getItems().addAll(enItem, nlItem, bgItem, roItem, skItem, deItem);
 
-        Locale current = currentLocale;
+        Locale current = LanguageManager.getLocale();
 
         switch (current.getLanguage()) {
             case "nl" -> {
@@ -344,6 +346,14 @@ public class CreateRecipeCtrl {
             case "bg" -> {
                 languageButton.setText("Български");
                 updateButtonGraphic("bulgarian");
+            }
+            case "sk" -> {
+                languageButton.setText("Slovenčina");
+                updateButtonGraphic("slovak");
+            }
+            case "de" -> {
+                languageButton.setText("Deutsch");
+                updateButtonGraphic("german");
             }
             default -> {
                 languageButton.setText("English");
@@ -373,6 +383,16 @@ public class CreateRecipeCtrl {
                 languageButton.setText("Български");
                 currentLocale = new Locale("bg");
                 updateButtonGraphic("bulgarian");
+            }
+            case "sk" -> {
+                languageButton.setText("Slovenčina");
+                currentLocale = new Locale("sk");
+                updateButtonGraphic("slovak");
+            }
+            case "de" -> {
+                languageButton.setText("Deutsch");
+                currentLocale = new Locale("de");
+                updateButtonGraphic("german");
             }
             default -> {
                 languageButton.setText("English");

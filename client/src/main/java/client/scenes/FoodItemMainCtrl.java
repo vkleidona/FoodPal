@@ -208,10 +208,12 @@ public class FoodItemMainCtrl {
 
         MenuItem enItem = setupMenuItemIcons("English", "en", "english");
         MenuItem nlItem = setupMenuItemIcons("Nederlands", "nl", "dutch");
-        MenuItem roItem = setupMenuItemIcons("Română", "ro", "romanian");
         MenuItem bgItem = setupMenuItemIcons("Български", "bg", "bulgarian");
+        MenuItem roItem = setupMenuItemIcons("Română", "ro", "romanian");
+        MenuItem skItem = setupMenuItemIcons("Slovenčina", "sk", "slovak");
+        MenuItem deItem = setupMenuItemIcons("Deutsch", "de", "german");
 
-        languageButton.getItems().addAll(enItem, nlItem, roItem, bgItem);
+        languageButton.getItems().addAll(enItem, nlItem, bgItem, roItem, skItem, deItem);
 
         Locale current = LanguageManager.getLocale();
 
@@ -227,6 +229,14 @@ public class FoodItemMainCtrl {
             case "bg" -> {
                 languageButton.setText("Български");
                 updateButtonGraphic("bulgarian");
+            }
+            case "sk" -> {
+                languageButton.setText("Slovenčina");
+                updateButtonGraphic("slovak");
+            }
+            case "de" -> {
+                languageButton.setText("Deutsch");
+                updateButtonGraphic("german");
             }
             default -> {
                 languageButton.setText("English");
@@ -245,6 +255,8 @@ public class FoodItemMainCtrl {
             case "nl" -> languageButton.setText("Nederlands");
             case "ro" -> languageButton.setText("Română");
             case "bg" -> languageButton.setText("Български");
+            case "sk" -> languageButton.setText("Slovenčina");
+            case "de" -> languageButton.setText("Deutsch");
             default -> languageButton.setText("English");
         }
         mainCtrl.reloadScenesForNewLanguage();

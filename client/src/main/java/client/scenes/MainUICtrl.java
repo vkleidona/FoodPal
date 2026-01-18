@@ -329,10 +329,12 @@ public class MainUICtrl {
 
         MenuItem enItem = setupMenuItemIcons("English", "en", "english");
         MenuItem nlItem = setupMenuItemIcons("Nederlands", "nl", "dutch");
-        MenuItem roItem = setupMenuItemIcons("Română", "ro", "romanian");
         MenuItem bgItem = setupMenuItemIcons("Български", "bg", "bulgarian");
+        MenuItem roItem = setupMenuItemIcons("Română", "ro", "romanian");
+        MenuItem skItem = setupMenuItemIcons("Slovenčina", "sk", "slovak");
+        MenuItem deItem = setupMenuItemIcons("Deutsch", "de", "german");
 
-        languageButton.getItems().addAll(enItem, nlItem, roItem, bgItem);
+        languageButton.getItems().addAll(enItem, nlItem, bgItem, roItem, skItem, deItem);
 
         Locale current = LanguageManager.getLocale();
 
@@ -348,6 +350,14 @@ public class MainUICtrl {
             case "bg" -> {
                 languageButton.setText("Български");
                 updateButtonGraphic("bulgarian");
+            }
+            case "sk" -> {
+                languageButton.setText("Slovenčina");
+                updateButtonGraphic("slovak");
+            }
+            case "de" -> {
+                languageButton.setText("Deutsch");
+                updateButtonGraphic("german");
             }
             default -> {
                 languageButton.setText("English");
@@ -366,6 +376,8 @@ public class MainUICtrl {
             case "nl" -> languageButton.setText("Nederlands");
             case "ro" -> languageButton.setText("Română");
             case "bg" -> languageButton.setText("Български");
+            case "sk" -> languageButton.setText("Slovenčina");
+            case "de" -> languageButton.setText("Deutsch");
             default -> languageButton.setText("English");
         }
         mainCtrl.reloadScenesForNewLanguage();
@@ -792,6 +804,7 @@ public class MainUICtrl {
             case "bg" -> updateIndicator("bulgarian");
             case "nl" -> updateIndicator("dutch");
             case "ro" -> updateIndicator("romanian");
+            case "sk" -> updateIndicator("slovak");
             default -> updateIndicator("english");
         }
     }
@@ -809,12 +822,21 @@ public class MainUICtrl {
         CheckMenuItem nlItem = setupCheckMenuItemIcons("Nederlands", "nl", "dutch");
         CheckMenuItem roItem = setupCheckMenuItemIcons("Română", "ro", "romanian");
         CheckMenuItem bgItem = setupCheckMenuItemIcons("Български", "bg", "bulgarian");
+        CheckMenuItem skItem = setupCheckMenuItemIcons("Slovenčina", "sk", "slovak");
+        CheckMenuItem deItem = setupCheckMenuItemIcons("Deutsch", "de", "german");
 
-        filterLanguagesButton.getItems().addAll(enItem, nlItem, roItem, bgItem);
+        filterLanguagesButton.getItems().addAll(enItem, nlItem, bgItem, roItem, skItem, deItem);
         updatePredicate();
     }
 
-    private CheckMenuItem setupCheckMenuItemIcons(String name,
+    /**
+     * Sets up the icons for the filtering languages
+     * @param name - the name of the language (to be put on the button)
+     * @param langCode - the language code - will result in a locale filter
+     * @param iconFileName - the name of the file containing the country's flag
+     * @return CheckMenuItem - a new CheckMenuItem with the language
+     */
+    public CheckMenuItem setupCheckMenuItemIcons(String name,
                                                   String langCode, String iconFileName) {
         CheckMenuItem menuItem = new CheckMenuItem(name);
 
