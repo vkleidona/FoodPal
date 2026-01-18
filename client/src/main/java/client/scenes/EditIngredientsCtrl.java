@@ -3,6 +3,7 @@ package client.scenes;
 
 import jakarta.inject.Inject;
 import javafx.application.Platform;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
@@ -135,8 +136,14 @@ public class EditIngredientsCtrl{
             inputFoodName.getItems().add(item.getName());
         }
 
-        //Reset the inputs so the "Name" field isn't stuck as disabled
-        resetForm();
+        inputFoodName.getItems().add("+ Create New Food Item...");
+
+        inputFoodName.setOnAction(_->{
+            if("+ Create New Food Item...".equals(inputFoodName.getValue())){
+                handleCreateNewFoodItem();
+            }
+        });
+
 
         ToggleGroup unitGroup = new ToggleGroup();
         metric.setToggleGroup(unitGroup);
@@ -147,6 +154,24 @@ public class EditIngredientsCtrl{
 
         inputFoodName.setEditable(false);
         inputMeasurement.setEditable(false);
+    }
+
+    /**
+     * Saves the current list of ingredients and redirects to the add food item UI.
+     */
+    public void handleCreateNewFoodItem(){
+        List<Ingredient> currentIngredients = new ArrayList<>(listOfIngredients.getItems());
+
+
+        this.recipe.setIngredients(currentIngredients);
+
+        Platform.runLater(() -> inputFoodName.getSelectionModel().clearSelection());
+
+        if (mainCtrl != null){
+            mainCtrl.setCameFromEditIngredients(true);
+            mainCtrl.setDraftRecipe(this.recipe);
+            mainCtrl.showAddFoodItem();
+        }
     }
 
     /**

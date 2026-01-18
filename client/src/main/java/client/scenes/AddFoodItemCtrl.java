@@ -216,7 +216,10 @@ public class AddFoodItemCtrl {
                 mainCtrl.getFoodItemMainCtrl().refreshFoodItems();
             }
 
-            if (mainCtrl.getDraftRecipe() != null) {
+            if(mainCtrl.isCameFromEditIngredients()){
+                mainCtrl.showEditIngredients(mainCtrl.getDraftRecipe());
+                mainCtrl.setCameFromEditIngredients(false);
+            } else if (mainCtrl.getDraftRecipe() != null) {
                 mainCtrl.showCreateRecipe();
             } else if (cameFromShoppingList) {
                 mainCtrl.showShoppingListDialogBox(ingredientName);
@@ -291,7 +294,10 @@ public class AddFoodItemCtrl {
 
         // if a draft exists, we go back to the Create Recipe screen.
         // if not, we go back to the Food Item list.
-        if (mainCtrl.getDraftRecipe() != null) {
+        if(mainCtrl.isCameFromEditIngredients()){
+            mainCtrl.showEditIngredients(mainCtrl.getDraftRecipe());
+            mainCtrl.setCameFromEditIngredients(false);
+        } else if (mainCtrl.getDraftRecipe() != null) {
             mainCtrl.showCreateRecipe();
         } else {
             mainCtrl.showFoodItemMain();
