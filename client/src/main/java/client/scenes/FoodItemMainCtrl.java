@@ -16,12 +16,10 @@ import org.springframework.messaging.simp.stomp.StompSession;
 import recipes.FoodItem;
 import client.i18n.LanguageManager;
 import java.text.MessageFormat;
-import java.util.Locale;
-import java.util.ResourceBundle;
+import java.util.*;
+
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
-import java.util.List;
-import java.util.Optional;
 
 public class FoodItemMainCtrl {
 
@@ -34,24 +32,23 @@ public class FoodItemMainCtrl {
     private StompSession.Subscription foodItemSubscription;
 
     @FXML
-    public ListView<FoodItem> foodItemListView;
+    private ListView<FoodItem> foodItemListView;
     @FXML
-    public Label foodNameLabel;
+    private Label foodNameLabel;
     @FXML
-    public Label nutritionLabel;
+    private Label nutritionLabel;
     @FXML
-    public Label kcalLabel;
+    private Label kcalLabel;
     @FXML
-    public Label carbsLabel;
+    private Label carbsLabel;
     @FXML
-    public Label proteinsLabel;
+    private Label proteinsLabel;
     @FXML
-    public Label fatsLabel;
+    private Label fatsLabel;
     @FXML
     private Button mainMenuButton;
     @FXML
-    public Label recipeUsages;
-
+    private Label recipeUsages;
 
     @FXML
     private MenuButton languageButton;
@@ -63,42 +60,71 @@ public class FoodItemMainCtrl {
     private final ServerUtils serverUtils;
     private final WebSocketService webSocketService;
 
+    /**
+     * A constructor for the FoodItemMainCtrl class using Dependency Injection
+     * @param mainCtrl - the instance of the Main Ctrl class (for master methods)
+     * @param serverUtils - the instance of the server utilities
+     * @param webSocketService - the instance of the service supporting WebSockets
+     */
     @Inject
-    public FoodItemMainCtrl(MainCtrl mainCtrl, ServerUtils serverUtils, WebSocketService webSocketService) {
+    public FoodItemMainCtrl(MainCtrl mainCtrl, ServerUtils serverUtils,
+                            WebSocketService webSocketService) {
         this.mainCtrl = mainCtrl;
         this.serverUtils = serverUtils;
         this.webSocketService = webSocketService;
     }
 
+    public ListView<FoodItem> getFoodItemListView() {
+        return foodItemListView;
+    }
+
+    public Label getFoodNameLabel() {
+        return foodNameLabel;
+    }
+
+    public Label getNutritionLabel() {
+        return nutritionLabel;
+    }
+
+    public Label getRecipeUsages() {
+        return recipeUsages;
+    }
+
+    public Label getKcalLabel() {
+        return kcalLabel;
+    }
+
+    public Label getCarbsLabel() {
+        return carbsLabel;
+    }
+
+    public Label getProteinsLabel() {
+        return proteinsLabel;
+    }
+
+    public Label getFatsLabel() {
+        return fatsLabel;
+    }
+
+    /**
+     * An initializer method - tries to load all food items
+     */
     @FXML
     public void initialize() {
 
         allFoodItems = webSocketService.getMasterFoodItemsList();
 
-        allFoodItems.addListener((ListChangeListener <FoodItem>) c -> {
-            Platform.runLater(this::updateListView);
-        });
-/**
-        allFoodItems.addListener((ListChangeListener<FoodItem>) c -> {
-            Platform.runLater(() -> {
-                currentlySelected = foodItemListView.getSelectionModel().getSelectedItem();
-                if (currentlySelected != null) {
-                    allFoodItems.stream().
-                            filter(f -> f.getId().equals(currentlySelected.getId()))
-                            .findFirst()
-                            .ifPresent(this::updateFoodDetails);
-                }
-            });
-        });
-**/
+        allFoodItems.addListener((ListChangeListener <FoodItem>) _ ->
+                Platform.runLater(this::updateListView));
+
         try {
             loadFoodItems();
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("Error - Food Items could not be loaded from the database");
         }
 
         foodItemListView.getSelectionModel().selectedItemProperty().
-                addListener((obs, oldVal, newVal) -> {
+                addListener((_, _, newVal) -> {
                     if (newVal != null) {
                         currentlySelected = newVal;
                         selectFoodItem(newVal);
@@ -106,11 +132,12 @@ public class FoodItemMainCtrl {
                 });
 
         /*
-        Here, the behaviour of how each cell is shown in the UI is overridden as we only want to show the name.
-        First super.updateItem is called so nothing else goes wrong.
-        AI was used for help here
-         */
-        foodItemListView.setCellFactory(param -> new ListCell<FoodItem>() {
+            Here, the behaviour of how each cell is shown in the UI is overridden
+            as we only want to show the name.
+            First super.updateItem is called so nothing else goes wrong.
+            AI was used for help here
+        */
+        foodItemListView.setCellFactory(_ -> new ListCell<>() {
             @Override
             protected void updateItem(FoodItem item, boolean empty) {
                 super.updateItem(item, empty);
@@ -126,11 +153,18 @@ public class FoodItemMainCtrl {
         setupLanguageMenu();
     }
 
-    private MenuItem setupMenuItemIcons (String name, String langCode, String iconFileName) {
+    /**
+     * A method which sets up the icons for the language menu
+     * @param name - the name of the language we are adding
+     * @param langCode - the locale code of the language
+     * @param iconFileName - the encoding for the name of the icon file
+     * @return MenuItem - returns the ready-made MenuItem with the proper icon
+     */
+    public MenuItem setupMenuItemIcons (String name, String langCode, String iconFileName) {
         MenuItem menuItem = new MenuItem(name);
 
-        Image flagImage = new Image
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg"));
+        Image flagImage = new Image(Objects.requireNonNull
+                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
 
         ImageView icon = new ImageView(flagImage);
         icon.setFitWidth(16);
@@ -141,14 +175,18 @@ public class FoodItemMainCtrl {
 
         menuItem.setGraphic(icon);
 
-        menuItem.setOnAction(e -> changeLanguage(new Locale(langCode)));
+        menuItem.setOnAction(_ -> changeLanguage(new Locale(langCode)));
 
         return menuItem;
     }
 
-    private void updateButtonGraphic(String iconFileName) {
-        Image img = new Image
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg"));
+    /**
+     * A method which updates the flag icon of the language button when necessary
+     * @param iconFileName - the encoding for the name of the icon file
+     */
+    public void updateButtonGraphic(String iconFileName) {
+        Image img = new Image (Objects.requireNonNull
+                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
         ImageView imageView = new ImageView(img);
 
         imageView.setFitWidth(16);
@@ -161,19 +199,23 @@ public class FoodItemMainCtrl {
         languageButton.setGraphic(imageView);
     }
 
-    private void setupLanguageMenu() {
+    /**
+     * A setup method for the language menu -
+     * adds the constructed MenuItems using the helper methods with the appropriate icon
+     */
+    public void setupLanguageMenu() {
         languageButton.getItems().clear();
 
         MenuItem enItem = setupMenuItemIcons("English", "en", "english");
         MenuItem nlItem = setupMenuItemIcons("Nederlands", "nl", "dutch");
-        MenuItem roItem = setupMenuItemIcons("Română", "ro", "romanian");
         MenuItem bgItem = setupMenuItemIcons("Български", "bg", "bulgarian");
+        MenuItem roItem = setupMenuItemIcons("Română", "ro", "romanian");
+        MenuItem skItem = setupMenuItemIcons("Slovenčina", "sk", "slovak");
+        MenuItem deItem = setupMenuItemIcons("Deutsch", "de", "german");
 
-        languageButton.getItems().addAll(enItem, nlItem, roItem, bgItem);
+        languageButton.getItems().addAll(enItem, nlItem, bgItem, roItem, skItem, deItem);
 
         Locale current = LanguageManager.getLocale();
-
-
 
         switch (current.getLanguage()) {
             case "nl" -> {
@@ -188,6 +230,14 @@ public class FoodItemMainCtrl {
                 languageButton.setText("Български");
                 updateButtonGraphic("bulgarian");
             }
+            case "sk" -> {
+                languageButton.setText("Slovenčina");
+                updateButtonGraphic("slovak");
+            }
+            case "de" -> {
+                languageButton.setText("Deutsch");
+                updateButtonGraphic("german");
+            }
             default -> {
                 languageButton.setText("English");
                 updateButtonGraphic("english");
@@ -195,12 +245,18 @@ public class FoodItemMainCtrl {
         }
     }
 
-    private void changeLanguage(Locale newLocale) {
+    /**
+     * A method for changing the language of the menus to a new Locale
+     * @param newLocale - the new language we want to set the menus to
+     */
+    public void changeLanguage(Locale newLocale) {
         LanguageManager.setLocale(newLocale);
         switch (newLocale.getLanguage()) {
             case "nl" -> languageButton.setText("Nederlands");
             case "ro" -> languageButton.setText("Română");
             case "bg" -> languageButton.setText("Български");
+            case "sk" -> languageButton.setText("Slovenčina");
+            case "de" -> languageButton.setText("Deutsch");
             default -> languageButton.setText("English");
         }
         mainCtrl.reloadScenesForNewLanguage();
@@ -220,20 +276,23 @@ public class FoodItemMainCtrl {
         }
 
         foodItemSubscription = webSocketService.
-                subscribeToFoodItem(currentlySelected.getId(), updated -> {
-                    Platform.runLater(() -> {
-                        updateFoodDetails(updated);
-                        for (int i = 0; i < allFoodItems.size(); i++) {
-                            if (allFoodItems.get(i).getId().equals(updated.getId())) {
-                                allFoodItems.set(i, updated);
-                                break;
-                            }
+                subscribeToFoodItem(currentlySelected.getId(), updated -> Platform.runLater(() -> {
+                    updateFoodDetails(updated);
+                    for (int i = 0; i < allFoodItems.size(); i++) {
+                        if (allFoodItems.get(i).getId().equals(updated.getId())) {
+                            allFoodItems.set(i, updated);
+                            break;
                         }
-                    });
-                });
+                    }
+                }));
         lastSubscribedID = currentlySelected.getId();
     }
 
+    /**
+     * Updates the details screen to show the details
+     * of the currently selected FoodItem
+     * @param item - the FoodItem whose details have been selected
+     */
     @FXML
     public void updateFoodDetails(FoodItem item) {
         if (item == null) {
@@ -268,7 +327,9 @@ public class FoodItemMainCtrl {
         }
     }
 
-
+    /**
+     * Updates the List of FoodItems, listening to the server pushing any changes
+     */
     public void updateListView () {
         // Only show all recipes if we are in "All Recipes" tab
         // Updates the sidebar when it senses changes in the database
@@ -287,19 +348,29 @@ public class FoodItemMainCtrl {
 
     }
 
+    /**
+     * Switches the screen to the AddFoodItem UI - applied
+     * when the user wants to add a new FoodItem to the list
+     */
     @FXML
     public void addFoodItem() {
         mainCtrl.showAddFoodItem();
     }
 
+    /**
+     * Deletes a selected FoodItem the list and the database
+     */
     @FXML
     public void deleteFoodItem() {
         FoodItem selectedFoodItem = foodItemListView.getSelectionModel().getSelectedItem();
         if (selectedFoodItem == null) {
             Alert noSelection = new Alert(Alert.AlertType.WARNING);
-            noSelection.setTitle(resources.getString("foodItem.alert.nothingSelected.title"));
-            noSelection.setHeaderText(resources.getString("foodItem.alert.nothingSelected.header"));
-            noSelection.setContentText(resources.getString("foodItem.alert.nothingSelected.delete"));
+            noSelection.setTitle(resources.getString
+                    ("foodItem.alert.nothingSelected.title"));
+            noSelection.setHeaderText(resources.getString
+                    ("foodItem.alert.nothingSelected.header"));
+            noSelection.setContentText(resources.getString
+                    ("foodItem.alert.nothingSelected.delete"));
             noSelection.showAndWait();
             return;
         }
@@ -317,8 +388,10 @@ public class FoodItemMainCtrl {
         if (result.isPresent() && result.get() == ButtonType.OK) {
             if (recipeUsages > 0) {
                 Alert alertUsedInRecipe = new Alert(Alert.AlertType.CONFIRMATION);
-                alertUsedInRecipe.setTitle(resources.getString("foodItem.alert.usedInRecipes.title"));
-                alertUsedInRecipe.setHeaderText(resources.getString("foodItem.alert.usedInRecipes.header"));
+                alertUsedInRecipe.setTitle(resources.getString
+                        ("foodItem.alert.usedInRecipes.title"));
+                alertUsedInRecipe.setHeaderText(resources.getString
+                        ("foodItem.alert.usedInRecipes.header"));
                 alertUsedInRecipe.setContentText(MessageFormat.format(
                         resources.getString("foodItem.alert.usedInRecipes.content"),
                         selectedFoodItem.getName()));
@@ -330,12 +403,15 @@ public class FoodItemMainCtrl {
                 }
             } else {
                 serverUtils.deleteFoodItem(selectedFoodItem.getId());
+                mainCtrl.handleFoodItemBeingDeleted(selectedFoodItem.getId());
                 unsubscribeFromFoodItem();
             }
         }
     }
 
-
+    /**
+     * Handles the editing of a selected FoodItem
+     */
     @FXML
     public void editFoodItem() {
         FoodItem selectedItem = foodItemListView.getSelectionModel().getSelectedItem();
@@ -352,7 +428,9 @@ public class FoodItemMainCtrl {
         mainCtrl.getAddFoodItemCtrl().setEditingItem(selectedItem);
     }
 
-
+    /**
+     * Returns the user to the Main UI
+     */
     @FXML
     public void showMainUI() {
         mainCtrl.showMainMenu();
@@ -367,6 +445,9 @@ public class FoodItemMainCtrl {
                 getMasterFoodItemsList().setAll(allFoodItems));
     }
 
+    /**
+     * Refreshes the list of FoodItems by pulling directly from the database
+     */
     @FXML
     public void refreshFoodItems(){
         List<FoodItem> allFoodItems = serverUtils.getAllFoodItems();

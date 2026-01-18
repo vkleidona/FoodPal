@@ -9,7 +9,6 @@ import javafx.scene.control.*;
 import javafx.stage.Stage;
 import org.junit.jupiter.api.*;
 import org.testfx.framework.junit5.ApplicationTest;
-import org.mockito.Mockito;
 
 import recipes.FoodItem;
 
@@ -24,8 +23,6 @@ public class FoodItemMainCtrlTest extends ApplicationTest {
 
     private FoodItemMainCtrl ctrl;
     private ServerUtils serverUtils;
-    private MainCtrl mainCtrl;
-    private WebSocketService webSocketService;
 
     @BeforeAll
     static void skipInCiWithoutDisplay() {
@@ -38,8 +35,8 @@ public class FoodItemMainCtrlTest extends ApplicationTest {
     public void start(Stage stage) throws Exception {
         // Mock dependencies
         serverUtils = mock(ServerUtils.class);
-        mainCtrl = mock(MainCtrl.class);
-        webSocketService = mock(WebSocketService.class);
+        MainCtrl mainCtrl = mock(MainCtrl.class);
+        WebSocketService webSocketService = mock(WebSocketService.class);
 
         // Load FXML and set controller
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/client/scenes/FoodItemMain.fxml"));
@@ -55,9 +52,9 @@ public class FoodItemMainCtrlTest extends ApplicationTest {
     public void testInitialSelectionShowsNoDetails() {
         ctrl.updateFoodDetails(null);
 
-        assertEquals("Select food item to see details", ctrl.foodNameLabel.getText());
-        assertEquals("", ctrl.recipeUsages.getText());
-        assertEquals("", ctrl.nutritionLabel.getText());
+        assertEquals("Select food item to see details", ctrl.getFoodNameLabel().getText());
+        assertEquals("", ctrl.getRecipeUsages().getText());
+        assertEquals("", ctrl.getNutritionLabel().getText());
     }
 
     @Test
@@ -74,12 +71,12 @@ public class FoodItemMainCtrlTest extends ApplicationTest {
 
         ctrl.updateFoodDetails(item);
 
-        assertEquals("Food Name: Apple", ctrl.foodNameLabel.getText());
-        assertEquals("Used in 2 recipe(s)", ctrl.recipeUsages.getText());
-        assertEquals("Kcal: 52", ctrl.kcalLabel.getText());
-        assertEquals("Carbohydrates: 14", ctrl.carbsLabel.getText());
-        assertEquals("Proteins: 0", ctrl.proteinsLabel.getText());
-        assertEquals("Fats: 0", ctrl.fatsLabel.getText());
+        assertEquals("Food Name: Apple", ctrl.getFoodNameLabel().getText());
+        assertEquals("Used in 2 recipe(s)", ctrl.getRecipeUsages().getText());
+        assertEquals("Kcal: 52", ctrl.getKcalLabel().getText());
+        assertEquals("Carbohydrates: 14", ctrl.getCarbsLabel().getText());
+        assertEquals("Proteins: 0", ctrl.getProteinsLabel().getText());
+        assertEquals("Fats: 0", ctrl.getFatsLabel().getText());
     }
 
     @Test
@@ -95,7 +92,7 @@ public class FoodItemMainCtrlTest extends ApplicationTest {
 
         ctrl.refreshFoodItems();
 
-        assertEquals(2, ctrl.foodItemListView.getItems().size());
-        assertEquals("Banana", ctrl.foodItemListView.getItems().get(0).getName());
+        assertEquals(2, ctrl.getFoodItemListView().getItems().size());
+        assertEquals("Banana", ctrl.getFoodItemListView().getItems().getFirst().getName());
     }
 }

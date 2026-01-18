@@ -1,5 +1,6 @@
 package client.scenes;
 
+import client.network.WebSocketService;
 import client.utils.ServerUtils;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -14,8 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.testfx.framework.junit5.ApplicationTest;
 import org.testfx.util.WaitForAsyncUtils;
 import recipes.Recipe;
-import client.i18n.LanguageManager;
-import java.util.Locale;
+
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -28,7 +28,6 @@ public class MainUICtrlTest extends ApplicationTest {
 
 
     private MainUICtrl controller;
-    private MockServerUtils mockServer;
     private MockMainCtrl mockMainCtrl;
 
     // UI Elements
@@ -38,22 +37,13 @@ public class MainUICtrlTest extends ApplicationTest {
     private ToggleButton favoriteButton;
     private ToggleButton allRecipesTab;
     private ToggleButton favoritesTab;
-    private VBox ingredientsVBox;
-    private VBox instructionsVBox;
 
     // Buttons
     private Button addRecipeButton;
-    private Button deleteRecipeButton;
-    private Button editNameButton;
     private Button editIngredientsButton;
     private Button editInstructionsButton;
     private Button foodItemButton;
     private Button shoppingListButton;
-    private Button addToShoppingListButton;
-    private Button exitButton;
-    private Button minimizeButton;
-    private Button maximizeButton;
-    private Button refreshButton;
 
     @BeforeAll
     static void skipInCiWithoutDisplay() {
@@ -65,7 +55,7 @@ public class MainUICtrlTest extends ApplicationTest {
     @Override
     public void start(Stage stage) {
         // 1. Initialize Mocks
-        mockServer = new MockServerUtils();
+        MockServerUtils mockServer = new MockServerUtils();
         mockMainCtrl = new MockMainCtrl();
 
         // 2. Initialize Controller
@@ -78,21 +68,21 @@ public class MainUICtrlTest extends ApplicationTest {
         favoriteButton = new ToggleButton("☆");
         allRecipesTab = new ToggleButton("All Recipes");
         favoritesTab = new ToggleButton("Favorites");
-        ingredientsVBox = new VBox();
-        instructionsVBox = new VBox();
+        VBox ingredientsVBox = new VBox();
+        VBox instructionsVBox = new VBox();
 
         addRecipeButton = new Button("Add");
-        deleteRecipeButton = new Button("Delete");
-        editNameButton = new Button("Edit Name");
+        Button deleteRecipeButton = new Button("Delete");
+        Button editNameButton = new Button("Edit Name");
         editIngredientsButton = new Button("Edit Ingred.");
         editInstructionsButton = new Button("Edit Instr.");
         foodItemButton = new Button("Food Items");
         shoppingListButton = new Button("Shopping List");
-        addToShoppingListButton = new Button("Add to List");
-        exitButton = new Button("X");
-        minimizeButton = new Button("-");
-        maximizeButton = new Button("+");
-        refreshButton = new Button("Refresh");
+        Button addToShoppingListButton = new Button("Add to List");
+        Button exitButton = new Button("X");
+        Button minimizeButton = new Button("-");
+        Button maximizeButton = new Button("+");
+        Button refreshButton = new Button("Refresh");
 
         // 4. Inject components via Reflection
         injectField("recipeListView", recipeListView);
@@ -119,13 +109,13 @@ public class MainUICtrlTest extends ApplicationTest {
 
         // 5. Manually Wire Actions (Simulating FXML behavior)
         // Public methods:
-        favoriteButton.setOnAction(e -> controller.toggleFavorite());
-        allRecipesTab.setOnAction(e -> controller.showAllRecipes());
-        favoritesTab.setOnAction(e -> controller.showFavoriteRecipes());
+        favoriteButton.setOnAction(_ -> controller.toggleFavorite());
+        allRecipesTab.setOnAction(_ -> controller.showAllRecipes());
+        favoritesTab.setOnAction(_ -> controller.showFavoriteRecipes());
 
         // Private methods (Need reflection helper to wire):
-        shoppingListButton.setOnAction(e -> invokePrivateMethod("handleGoToShoppingList"));
-        addToShoppingListButton.setOnAction(e -> invokePrivateMethod("handleAddRecipeToShoppingList"));
+        shoppingListButton.setOnAction(_ -> invokePrivateMethod("handleGoToShoppingList"));
+        addToShoppingListButton.setOnAction(_ -> invokePrivateMethod("handleAddRecipeToShoppingList"));
 
         // 6. Initialize Controller logic
         controller.initialize();
@@ -158,7 +148,7 @@ public class MainUICtrlTest extends ApplicationTest {
         WaitForAsyncUtils.waitForFxEvents();
         assertFalse(recipeListView.getItems().isEmpty());
         assertEquals(2, recipeListView.getItems().size());
-        assertEquals("Pancakes", recipeListView.getItems().get(0).getName());
+        assertEquals("Pancakes", recipeListView.getItems().getFirst().getName());
     }
 
     @Test
@@ -194,7 +184,7 @@ public class MainUICtrlTest extends ApplicationTest {
         WaitForAsyncUtils.waitForFxEvents();
 
         assertEquals(1, recipeListView.getItems().size());
-        assertEquals("Pancakes", recipeListView.getItems().get(0).getName());
+        assertEquals("Pancakes", recipeListView.getItems().getFirst().getName());
     }
 
     @Test
@@ -316,7 +306,8 @@ public class MainUICtrlTest extends ApplicationTest {
         }
 
         @Override
-        public Recipe updateRecipe(Recipe r) { return r; }
+        public void updateRecipe(Recipe r) {
+        }
     }
 
     static class MockMainCtrl extends MainCtrl {
@@ -328,7 +319,7 @@ public class MainUICtrlTest extends ApplicationTest {
         public boolean infoShown = false;
         public boolean foodItemMainShown = false;
 
-        public MockMainCtrl() { super(); }
+        public MockMainCtrl() { super(null, new WebSocketService(), null); }
 
         @Override public void showCreateRecipe() { createRecipeShown = true; }
         @Override public void showEditIngredients(Recipe r) { editIngredientsShown = true; }

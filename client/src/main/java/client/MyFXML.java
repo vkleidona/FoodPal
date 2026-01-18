@@ -33,15 +33,27 @@ import javafx.util.BuilderFactory;
 import javafx.util.Callback;
 import javafx.util.Pair;
 
-public class MyFXML {
+public record MyFXML(Injector injector) {
 
-    private Injector injector;
-
+    /**
+     * A constructor of the MyFXML class taking only an injector
+     *
+     * @param injector - the injector will perform dependency injection for all classes
+     */
     @Inject
-    public MyFXML(Injector injector) {
-        this.injector = injector;
+    public MyFXML {
     }
 
+    /**
+     * The method which performs dependency injection of the
+     * controller classes for the UI scenes
+     *
+     * @param c     - the class which should be injected
+     * @param parts - the parts of the path of the FXML file which locate
+     *              the controller class
+     * @param <T>   - the type of class which will be injected
+     * @return Pair - returns a Pair object with a class and a filepath
+     */
     public <T> Pair<T, Parent> load(Class<T> c, String... parts) {
         try {
 
@@ -74,12 +86,7 @@ public class MyFXML {
         @Override
         @SuppressWarnings("rawtypes")
         public Builder<?> getBuilder(Class<?> type) {
-            return new Builder() {
-                @Override
-                public Object build() {
-                    return injector.getInstance(type);
-                }
-            };
+            return (Builder) () -> injector.getInstance(type);
         }
 
         @Override

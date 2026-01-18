@@ -10,6 +10,7 @@ import javafx.stage.Stage;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.testfx.framework.junit5.ApplicationTest;
 import org.testfx.matcher.base.NodeMatchers;
 import org.testfx.matcher.control.LabeledMatchers;
@@ -31,6 +32,10 @@ import static org.testfx.api.FxAssert.verifyThat;
 public class ShoppingListMainCtrlTest extends ApplicationTest {
 
     private ShoppingListMainCtrl shoppingListMainCtrl;
+
+    @TempDir
+    Path tempDir;
+    File file = tempDir.resolve("test_list.json").toFile();
 
     /**
      * If the display is not available, we skip the tests
@@ -60,7 +65,7 @@ public class ShoppingListMainCtrlTest extends ApplicationTest {
         // We use DI to load the ServerUtils and MainCtrl into the controller class and link it to the UI
         serverUtils = mock(ServerUtils.class);
         mainCtrl = mock(MainCtrl.class);
-        s = new ShoppingList();
+        s = new ShoppingList(file);
         shoppingListMainCtrl = new ShoppingListMainCtrl(serverUtils, mainCtrl, s);
         loader.setController(shoppingListMainCtrl);
 
@@ -99,7 +104,7 @@ public class ShoppingListMainCtrlTest extends ApplicationTest {
     @Test
     public void testPrint () throws IOException {
         // We set up the Shopping List
-        ShoppingList s = new ShoppingList();
+        ShoppingList s = new ShoppingList(file);
         s.setIngredients(new ArrayList<>());
         s.addIngredient(new Ingredient(new FoodItem("salmon"), 20, "g"));
 
@@ -118,7 +123,7 @@ public class ShoppingListMainCtrlTest extends ApplicationTest {
     @Test
     public void testAddNewIngredient () {
         // We set up the Shopping List
-        ShoppingList s = new ShoppingList();
+        ShoppingList s = new ShoppingList(file);
         s.setIngredients(new ArrayList<>());
 
         // We find the button to add ingredients and click it
@@ -195,7 +200,7 @@ public class ShoppingListMainCtrlTest extends ApplicationTest {
     @Test
     public void testEditIngredient () {
         // We set up the Shopping List and add 1 ingredient to it
-        ShoppingList s = new ShoppingList();
+        ShoppingList s = new ShoppingList(file);
         Ingredient i = new Ingredient(new FoodItem("Sirene"), 20, "g");
         s.setIngredients(List.of(i));
 
@@ -235,7 +240,7 @@ public class ShoppingListMainCtrlTest extends ApplicationTest {
     @Test
     public void testDeleteIngredient () {
         // We set up the Shopping List
-        ShoppingList s = new ShoppingList();
+        ShoppingList s = new ShoppingList(file);
         Ingredient i = new Ingredient(new FoodItem("Sirene"), 20, "g");
         s.setIngredients(List.of(i));
         s.storeFile();
@@ -257,7 +262,7 @@ public class ShoppingListMainCtrlTest extends ApplicationTest {
     @Test
     public void testAddFoodItemThroughShoppingList () {
         // Sets up the ShoppingList
-        ShoppingList s = new ShoppingList();
+        ShoppingList s = new ShoppingList(file);
         s.setIngredients(new ArrayList<>());
 
         clickOn("#addIngredientButton");

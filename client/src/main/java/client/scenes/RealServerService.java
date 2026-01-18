@@ -15,32 +15,35 @@ import java.util.List;
 public class RealServerService implements ServerService {
 
     private final Client client = ClientBuilder.newClient();
-    private final String recipeEndpointUrl = "http://localhost:8080/api/recipes";
-    private final String foodItemEndpointUrl = "http://localhost:8080/api/fooditems";
 
+    /**
+     * A method for creating a new recipe on the server
+     * @param recipe - the recipe to be sent to the server
+     */
     @Override
     public void sendRecipe(Recipe recipe) {
+        String recipeEndpointUrl = "http://localhost:8080/api/recipes";
         client.target(recipeEndpointUrl)
                 .request(MediaType.APPLICATION_JSON) // Use constant for safety
                 .post(Entity.entity(recipe, MediaType.APPLICATION_JSON));
     }
 
+    /**
+     * A method which retrieves all food items from the database
+     * @return List <FoodItem> - a list of all food items in the database
+     */
     @Override
     public List<FoodItem> getAllFoodItems() {
         try {
+            String foodItemEndpointUrl = "http://localhost:8080/api/fooditems";
             return client.target(foodItemEndpointUrl)
                     .request(MediaType.APPLICATION_JSON)
-                    .get(new GenericType<List<FoodItem>>() {});
+                    .get(new GenericType<>() {
+                    });
         } catch (Exception e) {
             System.err.println("Failed to fetch food items: " + e.getMessage());
-            e.printStackTrace();
             return new ArrayList<>(); // return empty list on failure
         }
-    }
-
-    @Override
-    public List<recipes.FoodItem> getFoodItems() {
-        return getAllFoodItems();
     }
 
 }

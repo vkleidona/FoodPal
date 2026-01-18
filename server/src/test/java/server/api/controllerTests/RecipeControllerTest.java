@@ -6,12 +6,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import recipes.FoodItem;
 import recipes.Ingredient;
 import recipes.Recipe;
+import server.api.controllers.RecipeController;
 import server.repositories.FoodItemRepository;
+import server.repositories.IngredientRepository;
 import server.repositories.RecipeRepository;
 
 import java.util.ArrayList;
@@ -42,16 +45,26 @@ public class RecipeControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private IngredientRepository ingredientRepository;
+
+    @Autowired
+    private SimpMessagingTemplate messageTemplate;
+
+    private RecipeController recipeController;
+
     @BeforeEach
     void setup() {
         recipeRepository.deleteAll();
         foodItemRepository.deleteAll();
+        recipeController = new RecipeController(recipeRepository, foodItemRepository,
+                ingredientRepository, messageTemplate);
     }
 
     @Test
     void testSaveRecipe() throws Exception {
         // arrange: build Recipe with Ingredient and FoodItem
-        Recipe recipe = new Recipe("TestRecipe");
+        Recipe recipe = new Recipe("TestRecipe", new Locale ("bg"));
         Ingredient ingredient = new Ingredient(100, "g");
         FoodItem foodItem = foodItemRepository.findByName("Apple").
                 orElseGet(() -> foodItemRepository.save(new FoodItem("Apple", 50, 14, 0, 0)));
@@ -61,8 +74,6 @@ public class RecipeControllerTest {
         ingredients.add(ingredient);
         recipe.setIngredients(ingredients);
         recipe.setId(null);
-        Locale locale = new Locale("en");
-        recipe.setLocale(locale);
 
         // convert to JSON format
         String json = objectMapper.writeValueAsString(recipe);
@@ -76,13 +87,13 @@ public class RecipeControllerTest {
         // verify in database
         assertEquals(1, recipeRepository.count());
         assertEquals(1, foodItemRepository.count());
-        assertEquals("TestRecipe", recipeRepository.findAll().get(0).getName());
+        assertEquals("TestRecipe", recipeRepository.findAll().getFirst().getName());
     }
 
     @Test
     public void getAllRecipesTest() throws Exception{
-        recipeRepository.save(new Recipe("Pasta"));
-        recipeRepository.save(new Recipe("Pizza"));
+        recipeRepository.save(new Recipe("Pasta", new Locale("bg")));
+        recipeRepository.save(new Recipe("Pizza", new Locale ("bg")));
 
         String jsonResponse = mockMvc.perform(get("/api/recipes")
                 .contentType(MediaType.APPLICATION_JSON))
@@ -100,7 +111,7 @@ public class RecipeControllerTest {
 
     @Test
     public void setAllIngredientsTest() throws Exception{
-        Recipe r = new Recipe("Omelette");
+        Recipe r = new Recipe("Omelette", new Locale("bg"));
         r = recipeRepository.save(r);
 
         Ingredient i =  new Ingredient();
@@ -122,7 +133,7 @@ public class RecipeControllerTest {
 
     @Test
     public void deleteRecipeTest() throws Exception{
-        Recipe recipe = new Recipe("To be deleted");
+        Recipe recipe = new Recipe("To be deleted", new Locale("bg"));
         recipe = recipeRepository.save(recipe);
 
         mockMvc.perform(delete("/api/recipes/" + recipe.getId()))
@@ -135,7 +146,7 @@ public class RecipeControllerTest {
 
     @Test
     public void updateRecipeNameTest() throws Exception{
-        Recipe original = new Recipe("Old name");
+        Recipe original = new Recipe("Old name", new Locale("bg"));
         original = recipeRepository.save(original);
 
         Recipe updated = new Recipe("New name");
@@ -146,7 +157,8 @@ public class RecipeControllerTest {
                 .content(inputJson))
                 .andExpect(status().isOk());
 
-        Recipe dbRecipe = recipeRepository.findById(original.getId()).get();
+        Recipe dbRecipe = recipeRepository.findById(original.getId()).isPresent() ?
+                recipeRepository.findById(original.getId()).get() : new Recipe("");
         assertEquals("New name", dbRecipe.getName());
     }
 

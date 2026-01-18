@@ -7,9 +7,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import recipes.Ingredient;
 
-import java.beans.BeanProperty;
 import java.io.*;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -17,13 +15,23 @@ import java.util.Objects;
 public class ShoppingList implements Serializable {
 
     private List<Ingredient> ingredients = new ArrayList<>();
-    private static final File SHOPPING_LIST_FILE =
-            new File(System.getProperty("user.home"), ".foodpal/shopping_list.json");
+    private final File fileLocation;
+
 
     /**
-     * A constructor for the ShoppingList class
+     * A constructor for the ShoppingList class for default production
      */
     public ShoppingList() {
+        this(new File(System.getProperty("user.home"), ".foodpal/shopping_list.json"));
+    }
+
+    /**
+     * A constructor for the ShoppingList class for testing
+     * @param customFile - File - where should the ShoppingList be
+     * stored / saved at
+     */
+    public ShoppingList (File customFile) {
+        this.fileLocation = customFile;
         loadFile();
     }
 
@@ -71,10 +79,10 @@ public class ShoppingList implements Serializable {
     public void storeFile () {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            SHOPPING_LIST_FILE.getParentFile().mkdirs();
-            objectMapper.writeValue(SHOPPING_LIST_FILE, ingredients);
+            fileLocation.getParentFile().mkdirs();
+            objectMapper.writeValue(fileLocation, ingredients);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Error - Shopping List file could not be stored" + e.getMessage());
         }
     }
 
@@ -82,19 +90,19 @@ public class ShoppingList implements Serializable {
      * Loads the local file into the Shopping list
      */
     public void loadFile () {
-        if (!SHOPPING_LIST_FILE.exists()) {
+        if (!fileLocation.exists()) {
             ingredients.clear();
             return;
         }
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            List<Ingredient> loaded = objectMapper.readValue(SHOPPING_LIST_FILE,
+            List<Ingredient> loaded = objectMapper.readValue(fileLocation,
                     new TypeReference<>() {
                     });
             this.ingredients.clear();
             this.ingredients.addAll(loaded);
         }catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Error - Shopping List could not be loaded" + e.getMessage());
             ingredients = new ArrayList<>();
         }
     }

@@ -1,24 +1,14 @@
 package recipes;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSetter;
 import jakarta.persistence.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 
 import java.io.Serializable;
+import java.util.Locale;
 import java.util.Objects;
 
-/*
-I removed the recipeId field, because to define the relationship, we do not need
-a separate field, having a Recipe object reference in the
-Ingredient class is enough.
-Also, by having multiple Ids, Jpa expects a composite key, which is
-not needed here.
- */
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Entity
@@ -102,6 +92,11 @@ public class Ingredient implements Serializable {
         this.measurement = measurement;
     }
 
+    /**
+     * A constructor for the Ingredient class using only quantity and measurement
+     * @param quantity - the quantity of the ingredient
+     * @param measurement - the measurement unit of the ingredient
+     */
     public Ingredient(double quantity, String measurement) {
         this.quantity = quantity;
         this.measurement = measurement;
@@ -182,13 +177,7 @@ public class Ingredient implements Serializable {
      * to the user in the ShoppingList
      */
     public String toString () {
-        String ingredientToString = this.getFoodName() + " - " +
+        return this.getFoodName() + " - " +
                 this.getQuantity() + " " + this.getMeasurement();
-        if (this.getRecipeName() != null && !this.recipeName.isEmpty()) {
-            ingredientToString += " (for preparing " + recipeName + ")";
-        } else if (this.getRecipe() != null) {
-            ingredientToString += " (for preparing " + recipe.getName() + ")";
-        }
-        return ingredientToString;
     }
 }

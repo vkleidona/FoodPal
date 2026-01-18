@@ -18,12 +18,11 @@ import recipes.Ingredient;
 import recipes.Recipe;
 import shopping.ShoppingList;
 import client.i18n.LanguageManager;
-import java.util.Locale;
+
+import java.util.*;
+
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 public class AddRecipeToShoppingListCtrl {
 
@@ -43,12 +42,12 @@ public class AddRecipeToShoppingListCtrl {
     private ListView <Ingredient> recipeIngredientsListView;
     private ObservableList <Ingredient> recipeIngredientsObservableList;
 
-    private ServerUtils serverUtils;
-    private MainCtrl mainCtrl;
+    private final ServerUtils serverUtils;
+    private final MainCtrl mainCtrl;
 
     private Recipe recipeToAdd;
 
-    private ShoppingList shoppingList;
+    private final ShoppingList shoppingList;
 
     private Ingredient currentIngredient;
     private int selectedIndex;
@@ -60,7 +59,8 @@ public class AddRecipeToShoppingListCtrl {
      * @param shoppingList - the instance of the ShoppingList class, injected
      */
     @Inject
-    public AddRecipeToShoppingListCtrl (ServerUtils serverUtils, MainCtrl mainCtrl, ShoppingList shoppingList) {
+    public AddRecipeToShoppingListCtrl(ServerUtils serverUtils, MainCtrl mainCtrl,
+                                       ShoppingList shoppingList) {
         this.serverUtils = serverUtils;
         this.mainCtrl = mainCtrl;
         this.shoppingList = shoppingList;
@@ -82,10 +82,10 @@ public class AddRecipeToShoppingListCtrl {
     }
 
     /**
-     * Load the cell factory for the ingredients
+     * Loads the cell factory for the ingredients
      */
     public void initialize () {
-        recipeIngredientsListView.setCellFactory(view -> new ListCell<>() {
+        recipeIngredientsListView.setCellFactory(_ -> new ListCell<>() {
             @Override
             protected void updateItem(Ingredient ingredient, boolean empty) {
                 super.updateItem(ingredient, empty);
@@ -94,13 +94,13 @@ public class AddRecipeToShoppingListCtrl {
                     setText(null);
                     setGraphic(null);
                 } else {
-                    Label nameLabel = new Label(ingredient.toString());
+                    Label nameLabel = new Label(ingredientFormatter(ingredient));
 
                     Button editButton = new Button("Edit");
                     Button deleteButton = new Button("Delete");
 
-                    editButton.setOnAction(e -> showDialog(ingredient));
-                    deleteButton.setOnAction(e -> deleteIngredient(ingredient));
+                    editButton.setOnAction(_ -> showDialog(ingredient));
+                    deleteButton.setOnAction(_ -> deleteIngredient(ingredient));
 
                     HBox container = new HBox(10, nameLabel, editButton, deleteButton);
                     container.setAlignment(Pos.CENTER_LEFT);
@@ -112,11 +112,38 @@ public class AddRecipeToShoppingListCtrl {
         setupLanguageMenu();
     }
 
-    private MenuItem setupMenuItemIcons (String name, String langCode, String iconFileName) {
+
+    /**
+     * A method which displays the proper visualization of the ingredient
+     * @param ingredient - the Ingredient currently being visualized
+     * @return String - the correct addition to the ShoppingList
+     */
+    public String ingredientFormatter (Ingredient ingredient) {
+        Locale currentLocale = LanguageManager.getLocale();
+        String sourceName = ingredient.getRecipeName();
+        String initial = ingredient.toString();
+        return switch (currentLocale.getLanguage()) {
+            case "nl" -> initial + " (voor het voorbereiden " + sourceName + ")";
+            case "ro" -> initial + " (pentru pregătire " + sourceName + ")";
+            case "bg" -> initial + " (за приготвяне на " + sourceName + ")";
+            case "sk" -> initial + " (" + sourceName + ")";
+            case "de" -> initial + " (um " + sourceName + " vorzubereiten)";
+            default -> initial + " (for preparing " + sourceName + ")";
+        };
+    }
+
+    /**
+     * A method which sets up the icons for the language menu
+     * @param name - the name of the language we are adding
+     * @param langCode - the locale code of the language
+     * @param iconFileName - the encoding for the name of the icon file
+     * @return MenuItem - returns the ready-made MenuItem with the proper icon
+     */
+    public MenuItem setupMenuItemIcons (String name, String langCode, String iconFileName) {
         MenuItem menuItem = new MenuItem(name);
 
-        Image flagImage = new Image
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg"));
+        Image flagImage = new Image(Objects.requireNonNull
+                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
 
         ImageView icon = new ImageView(flagImage);
         icon.setFitWidth(16);
@@ -127,14 +154,18 @@ public class AddRecipeToShoppingListCtrl {
 
         menuItem.setGraphic(icon);
 
-        menuItem.setOnAction(e -> changeLanguage(new Locale(langCode)));
+        menuItem.setOnAction(_ -> changeLanguage(new Locale(langCode)));
 
         return menuItem;
     }
 
-    private void updateButtonGraphic(String iconFileName) {
-        Image img = new Image
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg"));
+    /**
+     * A method which updates the flag icon of the language button when necessary
+     * @param iconFileName - the encoding for the name of the icon file
+     */
+    public void updateButtonGraphic(String iconFileName) {
+        Image img = new Image (Objects.requireNonNull
+                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
         ImageView imageView = new ImageView(img);
 
         imageView.setFitWidth(16);
@@ -147,19 +178,23 @@ public class AddRecipeToShoppingListCtrl {
         languageButton.setGraphic(imageView);
     }
 
-    private void setupLanguageMenu() {
+    /**
+     * A setup method for the language menu -
+     * adds the constructed MenuItems using the helper methods with the appropriate icon
+     */
+    public void setupLanguageMenu() {
         languageButton.getItems().clear();
 
         MenuItem enItem = setupMenuItemIcons("English", "en", "english");
         MenuItem nlItem = setupMenuItemIcons("Nederlands", "nl", "dutch");
-        MenuItem roItem = setupMenuItemIcons("Română", "ro", "romanian");
         MenuItem bgItem = setupMenuItemIcons("Български", "bg", "bulgarian");
+        MenuItem roItem = setupMenuItemIcons("Română", "ro", "romanian");
+        MenuItem skItem = setupMenuItemIcons("Slovenčina", "sk", "slovak");
+        MenuItem deItem = setupMenuItemIcons("Deutsch", "de", "german");
 
-        languageButton.getItems().addAll(enItem, nlItem, roItem, bgItem);
+        languageButton.getItems().addAll(enItem, nlItem, bgItem, roItem, skItem, deItem);
 
         Locale current = LanguageManager.getLocale();
-
-
 
         switch (current.getLanguage()) {
             case "nl" -> {
@@ -174,6 +209,14 @@ public class AddRecipeToShoppingListCtrl {
                 languageButton.setText("Български");
                 updateButtonGraphic("bulgarian");
             }
+            case "sk" -> {
+                languageButton.setText("Slovenčina");
+                updateButtonGraphic("slovak");
+            }
+            case "de" -> {
+                languageButton.setText("Deutsch");
+                updateButtonGraphic("german");
+            }
             default -> {
                 languageButton.setText("English");
                 updateButtonGraphic("english");
@@ -181,12 +224,18 @@ public class AddRecipeToShoppingListCtrl {
         }
     }
 
-    private void changeLanguage(Locale newLocale) {
+    /**
+     * A method for changing the language of the menus to a new Locale
+     * @param newLocale - the new language we want to set the menus to
+     */
+    public void changeLanguage(Locale newLocale) {
         LanguageManager.setLocale(newLocale);
         switch (newLocale.getLanguage()) {
             case "nl" -> languageButton.setText("Nederlands");
             case "ro" -> languageButton.setText("Română");
             case "bg" -> languageButton.setText("Български");
+            case "sk" -> languageButton.setText("Slovenčina");
+            case "de" -> languageButton.setText("Deutsch");
             default -> languageButton.setText("English");
         }
         mainCtrl.reloadScenesForNewLanguage();
@@ -240,7 +289,7 @@ public class AddRecipeToShoppingListCtrl {
         ingredientInput.getChildren().addAll(foodItemField, quantityField, unitChoice);
         dialogBox.getDialogPane().setContent(ingredientInput);
 
-        ChangeListener <String> inputValidator = (obs, oldVal, newVal) -> {
+        ChangeListener <String> inputValidator = (_, _, _) -> {
             String foodText = foodItemField.getText().trim();
             String quantityText = quantityField.getText().trim();
             String measurementType = unitChoice.getValue();
@@ -276,9 +325,7 @@ public class AddRecipeToShoppingListCtrl {
 
                 // If the FoodItem hasn't been found, show an alert
                 if (foodItem == null) {
-                    if (ingredient == null) {
-
-                    }else{
+                    if (ingredient != null) {
                         askToAddFoodItem(ingredient, input);
                     }
                     return null;
@@ -335,7 +382,6 @@ public class AddRecipeToShoppingListCtrl {
      * @param ingredient - the Ingredient to be added
      */
     public void addIngredientToList (Ingredient ingredient) {
-        //TODO: Convert everything into grams
         recipeIngredientsObservableList.add(ingredient);
     }
 

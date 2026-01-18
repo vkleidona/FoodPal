@@ -54,7 +54,7 @@ public class ShoppingListMainCtrl {
     private ListView <Ingredient> ingredientsListView;
     private ObservableList<Ingredient> ingredientsObservableList;
 
-    private ShoppingList s;
+    private final ShoppingList s;
 
     private Ingredient currentIngredient;
     private int selectedIndex;
@@ -97,7 +97,7 @@ public class ShoppingListMainCtrl {
         refreshInterface();
 
         // sets up a cell factory for the list of ingredients - to display an Edit and Delete button
-        ingredientsListView.setCellFactory(view -> new ListCell<>() {
+        ingredientsListView.setCellFactory(_ -> new ListCell<>() {
             @Override
             protected void updateItem(Ingredient ingredient, boolean empty) {
                 super.updateItem(ingredient, empty);
@@ -108,19 +108,9 @@ public class ShoppingListMainCtrl {
                     setGraphic(null);
                 } else {
                     // set up a label (containing each Ingredient), and Edit and Delete buttons
-                    Label nameLabel = new Label(ingredient.toString());
+                    Label nameLabel = new Label(ingredientFormatter(ingredient));
 
-                    Button editButton = new Button("Edit");
-                    Button deleteButton = new Button("Delete");
-
-                    // the edit button shows the dialog box for changing an ingredient
-                    editButton.setOnAction(e -> showDialog(ingredient));
-
-                    // the delete button deletes the ingredient
-                    deleteButton.setOnAction(e -> deleteIngredient(ingredient));
-
-                    HBox container = new HBox(10, nameLabel, editButton, deleteButton);
-                    container.setAlignment(Pos.CENTER_LEFT);
+                    HBox container = getHBox(ingredient, nameLabel);
 
                     setGraphic(container);
                 }
@@ -129,11 +119,52 @@ public class ShoppingListMainCtrl {
         setupLanguageMenu();
     }
 
-    private MenuItem setupMenuItemIcons (String name, String langCode, String iconFileName) {
+    public HBox getHBox(Ingredient ingredient, Label nameLabel) {
+        Button editButton = new Button("Edit");
+        Button deleteButton = new Button("Delete");
+
+        // the edit button shows the dialog box for changing an ingredient
+        editButton.setOnAction(_ -> showDialog(ingredient));
+
+        // the delete button deletes the ingredient
+        deleteButton.setOnAction(_ -> deleteIngredient(ingredient));
+
+        HBox container = new HBox(10, nameLabel, editButton, deleteButton);
+        container.setAlignment(Pos.CENTER_LEFT);
+        return container;
+    }
+
+    /**
+     * A method which displays the proper visualization of the ingredient
+     * @param ingredient - the Ingredient currently being visualized
+     * @return String - the correct addition to the ShoppingList
+     */
+    public String ingredientFormatter (Ingredient ingredient) {
+        Locale currentLocale = LanguageManager.getLocale();
+        String sourceName = ingredient.getRecipeName();
+        String initial = ingredient.toString();
+        return switch (currentLocale.getLanguage()) {
+            case "nl" -> initial + " (voor het voorbereiden " + sourceName + ")";
+            case "ro" -> initial + " (pentru pregătire " + sourceName + ")";
+            case "bg" -> initial + " (за приготвяне на " + sourceName + ")";
+            case "sk" -> initial + " (" + sourceName + ")";
+            case "de" -> initial + " (um " + sourceName + " vorzubereiten)";
+            default -> initial + " (for preparing " + sourceName + ")";
+        };
+    }
+
+    /**
+     * A method which sets up the icons for the language menu
+     * @param name - the name of the language we are adding
+     * @param langCode - the locale code of the language
+     * @param iconFileName - the encoding for the name of the icon file
+     * @return MenuItem - returns the ready-made MenuItem with the proper icon
+     */
+    public MenuItem setupMenuItemIcons (String name, String langCode, String iconFileName) {
         MenuItem menuItem = new MenuItem(name);
 
-        Image flagImage = new Image
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg"));
+        Image flagImage = new Image(Objects.requireNonNull
+                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
 
         ImageView icon = new ImageView(flagImage);
         icon.setFitWidth(16);
@@ -144,14 +175,18 @@ public class ShoppingListMainCtrl {
 
         menuItem.setGraphic(icon);
 
-        menuItem.setOnAction(e -> changeLanguage(new Locale(langCode)));
+        menuItem.setOnAction(_ -> changeLanguage(new Locale(langCode)));
 
         return menuItem;
     }
 
-    private void updateButtonGraphic(String iconFileName) {
-        Image img = new Image
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg"));
+    /**
+     * A method which updates the flag icon of the language button when necessary
+     * @param iconFileName - the encoding for the name of the icon file
+     */
+    public void updateButtonGraphic(String iconFileName) {
+        Image img = new Image (Objects.requireNonNull
+                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
         ImageView imageView = new ImageView(img);
 
         imageView.setFitWidth(16);
@@ -164,19 +199,23 @@ public class ShoppingListMainCtrl {
         languageButton.setGraphic(imageView);
     }
 
-    private void setupLanguageMenu() {
+    /**
+     * A setup method for the language menu -
+     * adds the constructed MenuItems using the helper methods with the appropriate icon
+     */
+    public void setupLanguageMenu() {
         languageButton.getItems().clear();
 
         MenuItem enItem = setupMenuItemIcons("English", "en", "english");
         MenuItem nlItem = setupMenuItemIcons("Nederlands", "nl", "dutch");
-        MenuItem roItem = setupMenuItemIcons("Română", "ro", "romanian");
         MenuItem bgItem = setupMenuItemIcons("Български", "bg", "bulgarian");
+        MenuItem roItem = setupMenuItemIcons("Română", "ro", "romanian");
+        MenuItem skItem = setupMenuItemIcons("Slovenčina", "sk", "slovak");
+        MenuItem deItem = setupMenuItemIcons("Deutsch", "de", "german");
 
-        languageButton.getItems().addAll(enItem, nlItem, roItem, bgItem);
+        languageButton.getItems().addAll(enItem, nlItem, bgItem, roItem, skItem, deItem);
 
         Locale current = LanguageManager.getLocale();
-
-
 
         switch (current.getLanguage()) {
             case "nl" -> {
@@ -191,6 +230,14 @@ public class ShoppingListMainCtrl {
                 languageButton.setText("Български");
                 updateButtonGraphic("bulgarian");
             }
+            case "sk" -> {
+                languageButton.setText("Slovenčina");
+                updateButtonGraphic("slovak");
+            }
+            case "de" -> {
+                languageButton.setText("Deutsch");
+                updateButtonGraphic("german");
+            }
             default -> {
                 languageButton.setText("English");
                 updateButtonGraphic("english");
@@ -198,12 +245,18 @@ public class ShoppingListMainCtrl {
         }
     }
 
-    private void changeLanguage(Locale newLocale) {
+    /**
+     * A method for changing the language of the menus to a new Locale
+     * @param newLocale - the new language we want to set the menus to
+     */
+    public void changeLanguage(Locale newLocale) {
         LanguageManager.setLocale(newLocale);
         switch (newLocale.getLanguage()) {
             case "nl" -> languageButton.setText("Nederlands");
             case "ro" -> languageButton.setText("Română");
             case "bg" -> languageButton.setText("Български");
+            case "sk" -> languageButton.setText("Slovenčina");
+            case "de" -> languageButton.setText("Deutsch");
             default -> languageButton.setText("English");
         }
         mainCtrl.reloadScenesForNewLanguage();
@@ -250,7 +303,8 @@ public class ShoppingListMainCtrl {
     @FXML
     public void print () throws IOException {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Shopping_list", "*.txt"));
+        fileChooser.getExtensionFilters().
+                add(new FileChooser.ExtensionFilter("Shopping_list", "*.txt"));
 
         Stage stage = (Stage) addIngredientButton.getScene().getWindow();
         File file = fileChooser.showSaveDialog(stage);
@@ -339,7 +393,7 @@ public class ShoppingListMainCtrl {
         dialogBox.getDialogPane().setContent(ingredientInput);
 
         // Disables the OK Button until all items have been entered
-        ChangeListener <String> inputValidator = (obs, oldVal, newVal) -> {
+        ChangeListener <String> inputValidator = (_, _, _) -> {
             String foodText = foodItemField.getText().trim();
             String quantityText = quantityField.getText().trim();
             String measurementType = unitChoice.getValue();
