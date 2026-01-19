@@ -32,6 +32,29 @@ public class ShoppingList implements Serializable {
      */
     public ShoppingList (File customFile) {
         this.fileLocation = customFile;
+
+        File folder = fileLocation.getParentFile();
+        if (folder != null && !folder.exists()) {
+            if (folder.mkdirs()) {
+                System.out.println("Configuration folder successfully initialized");
+            }else{
+                System.err.println("Could not initialize directory");
+            }
+        }
+
+        if (!fileLocation.exists()) {
+            try {
+                if (fileLocation.createNewFile()) {
+                    System.out.println("Shopping list file initialized successfully");
+                }else{
+                    System.err.println("Error: Shopping list file failed to initialize");
+                }
+                java.nio.file.Files.writeString(fileLocation.toPath(), "[]");
+            } catch (IOException e) {
+                System.err.println("Error: Could not create shopping list file: " + e.getMessage());
+            }
+        }
+
         loadFile();
     }
 
