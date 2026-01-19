@@ -159,6 +159,35 @@ public class Recipe implements Serializable {
     }
 
     /**
+     * A method which removes the ingredient from the Recipe if it is present
+     * after a user has deleted a Food Item
+     * @param foodItemID - the FoodItem ID of the item just deleted
+     * @return boolean - returns true if the item was successfully deleted and false otherwise
+     */
+    public boolean removeIngredientIfPresent (Long foodItemID) {
+        return this.ingredients.removeIf(i -> i.getFoodType().getId().equals(foodItemID));
+    }
+
+
+
+    /**
+     * A method which removes the ingredient from the Recipe if it is present
+     * after a user has deleted a Food Item
+     * @param foodItemID - the FoodItem ID of the item just deleted
+     * @param foodItemName - the new name of the FoodItem
+     * @return boolean - returns true if the item was successfully deleted and false otherwise
+     */
+    public boolean changeIngredientIfPresent (Long foodItemID, String foodItemName) {
+        for (int i = 0; i < this.getIngredients().size();i++) {
+            if (this.ingredients.get(i).getFoodType().getId().equals(foodItemID)) {
+                this.ingredients.get(i).getFoodType().setName(foodItemName);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * An implementation of the equals method for the Recipe class
      * @param o - the reference object with which to compare.
      * @return boolean - returns whether the two Objects are equal or not

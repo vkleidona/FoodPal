@@ -136,7 +136,15 @@ public class WebSocketService {
             @Override
             public void handleFrame(StompHeaders headers, Object payload) {
                 MiniUpdate miniUpdate = (MiniUpdate) payload;
-                Platform.runLater(() -> syncFoodItemNameInList(miniUpdate));
+                Platform.runLater(() -> {
+                    syncFoodItemNameInList(miniUpdate);
+                    for (int i=0;i<masterRecipeList.size();i++) {
+                        Recipe recipe = masterRecipeList.get(i);
+                        if (recipe.changeIngredientIfPresent(miniUpdate.id(), miniUpdate.title())) {
+                            masterRecipeList.set(i, recipe);
+                        }
+                    }
+                });
             }
         });
         session.subscribe("/topic/food_items/delete", new StompFrameHandler() {
@@ -148,7 +156,15 @@ public class WebSocketService {
             @Override
             public void handleFrame(StompHeaders headers, Object payload) {
                 Long id = (Long) payload;
-                Platform.runLater(() -> removeItemFromList(id));
+                Platform.runLater(() -> {
+                    removeItemFromList(id);
+                    for (int i=0;i<masterRecipeList.size();i++) {
+                        Recipe recipe = masterRecipeList.get(i);
+                        if (recipe.removeIngredientIfPresent(id)) {
+                            masterRecipeList.set(i, recipe);
+                        }
+                    }
+                });
             }
         });
         session.subscribe("/topic/food_items/new", new StompFrameHandler() {

@@ -269,10 +269,37 @@ public class MainUICtrl {
             }
         });
 
+        addDeleteListener();
+
         setupLanguageMenu();
         setupFilterLanguages();
 
     }
+
+    /**
+     * When a recipe is deleted, the app detects it and warns the user about the favorite
+     * being deleted, and also saves all changes
+     */
+    public void addDeleteListener () {
+        currentRecipes.addListener((ListChangeListener<Recipe>) change -> {
+            while (change.next()) {
+                if (change.wasRemoved()) {
+                    for (Recipe removedRecipe : change.getRemoved()) {
+                        Long id = removedRecipe.getId();
+
+                        if (favoriteRecipeIds.contains(id)) {
+                            Platform.runLater(() -> {
+                                handleFavoriteBeingDeleted(removedRecipe.getName());
+                                favoriteRecipeIds.remove(id);
+                                saveFavorites();
+                            });
+                        }
+                    }
+                }
+            }
+        });
+    }
+
 
     /**
      * A method which sets up the icons for the language menu
