@@ -17,12 +17,11 @@ public class ShoppingList implements Serializable {
     private List<Ingredient> ingredients = new ArrayList<>();
     private final File fileLocation;
 
-
     /**
      * A constructor for the ShoppingList class for default production
      */
     public ShoppingList() {
-        this(new File(System.getProperty("user.home"), ".foodpal/shopping_list.json"));
+        this(new File("./shopping_list.json"));
     }
 
     /**
@@ -102,7 +101,11 @@ public class ShoppingList implements Serializable {
     public void storeFile () {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            fileLocation.getParentFile().mkdirs();
+            if (fileLocation.getParentFile().mkdirs()) {
+                System.out.println("Directory for saving initialized successfully");
+            }else{
+                System.err.println("Error - could not initialize directory for saving");
+            }
             objectMapper.writeValue(fileLocation, ingredients);
         } catch (IOException e) {
             System.err.println("Error - Shopping List file could not be stored" + e.getMessage());
