@@ -38,8 +38,61 @@ public class InformationCtrl {
     @FXML
     private ResourceBundle resources;
 
+    @FXML
+    private TextField scaleFactor ;
+
+
     private final MainCtrl mainCtrl;
+    private Recipe originalRecipe;
     private Recipe currentRecipe;
+
+    /**
+     * Creates a deep copy of the given recipe, including its ingredients,
+     * food items, and instructions, so that any scaling done in
+     * InformationCtrl does not modify the original Recipe from MainUI.
+     *
+     * @param src the source Recipe to copy (may be null)
+     * @return a new Recipe instance with copied data, or null if src is null
+     */
+    private Recipe copyRecipe(Recipe src) {
+        if (src == null) return null;
+
+        Recipe copy = new Recipe(src.getName());
+        copy.setServings(src.getServings());
+        copy.setLocale(src.getLocale());
+
+        if (src.getIngredients() != null) {
+            for (Ingredient ing : src.getIngredients()) {
+                FoodItem f = ing.getFoodType();
+                FoodItem fCopy = null;
+                if (f != null) {
+                    fCopy = new FoodItem(
+                            f.getName(),
+                            f.getKcal(),
+                            f.getProteins(),
+                            f.getCarbs(),
+                            f.getFats()
+                    );
+                }
+
+                Ingredient ingCopy = new Ingredient(
+                        ing.getQuantity(),
+                        ing.getMeasurement(),
+                        ing.getQuantityInGrams()
+                );
+                ingCopy.setFoodType(fCopy);
+                ingCopy.setRecipe(copy);
+                copy.getIngredients().add(ingCopy);
+            }
+        }
+
+        if (src.getInstructions() != null) {
+            copy.setInstructions(new java.util.ArrayList<>(src.getInstructions()));
+        }
+
+        return copy;
+    }
+
 
     /**
      * A constructor for the InformationCtrl class which uses Dependency Injection
@@ -85,6 +138,46 @@ public class InformationCtrl {
 
         return menuItem;
     }
+
+
+    /**
+     * Scales recipe by custom factor (double multiplier).
+     * Updates servings, all ingredients, and refreshes nutrition.
+     */
+    @FXML
+    public void handleScaling() {
+        try {
+            // Read from the TextField
+            double factor = Double.parseDouble(scaleFactor.getText());
+            if (factor <= 0) return;  // Ignore invalid
+
+            // Update Servings (rounded)
+            int newServings = (int) Math.round(currentRecipe.getServings() * factor);
+            if (newServings < 1) newServings = 1;
+            currentRecipe.setServings(newServings);
+            servingsField.setText(String.valueOf(newServings));
+
+            // Scale all ingredients
+            if (currentRecipe.getIngredients() != null) {
+                for (Ingredient ing : currentRecipe.getIngredients()) {
+                    scaleIngredient(ing, factor);
+                }
+            }
+
+            // Refresh everything
+            renderIngredientsList();
+            calculateAndShowNutrition();
+            scaleFactor.clear();   // now this is the TextField
+
+        } catch (NumberFormatException e) {
+            System.err.println("Invalid scale factor");
+            scaleFactor.clear();
+            calculateAndShowNutrition();
+        }
+    }
+
+
+
 
     /**
      * A method which updates the flag icon of the language button when necessary
@@ -190,28 +283,30 @@ public class InformationCtrl {
      * @param recipe - the currently edited Recipe
      */
     public void setRecipe(Recipe recipe) {
-        this.currentRecipe = recipe;
+        // Save original snapshot (for reset / discard)
+        this.originalRecipe = copyRecipe(recipe);
+
+        // Create working copy for this screen
+        this.currentRecipe = copyRecipe(recipe);
 
         // 1. Set Servings Field
-        if (recipe.getServings() != null) {
-            servingsField.setText(String.valueOf(recipe.getServings()));
+        if (currentRecipe.getServings() != null) {
+            servingsField.setText(String.valueOf(currentRecipe.getServings()));
         } else {
             servingsField.setText("1");
-            recipe.setServings(1);
+            currentRecipe.setServings(1);
         }
 
-        if (recipe.getIngredients() != null) {
-            for (Ingredient ing : recipe.getIngredients()) {
+        if (currentRecipe.getIngredients() != null) {
+            for (Ingredient ing : currentRecipe.getIngredients()) {
                 optimizeIngredientUnit(ing);
             }
         }
 
-        // render Ingredients List
         renderIngredientsList();
-
-        // update Nutritional Totals
         calculateAndShowNutrition();
     }
+
 
     /**
      * Helper to redraw the ingredients list.
@@ -262,6 +357,35 @@ public class InformationCtrl {
         qtyField.setOnAction(_ -> handleIngredientChange(ing, qtyField.getText()));
         return qtyField;
     }
+
+    /**
+     * The back button will restore the state when the recipe
+     * was opened
+     */
+    @FXML
+    public void handleResetToOriginal() {
+        if (originalRecipe == null) return;
+
+        // Recreate working copy from original snapshot
+        this.currentRecipe = copyRecipe(originalRecipe);
+
+        // Reset servings field
+        if (currentRecipe.getServings() != null) {
+            servingsField.setText(String.valueOf(currentRecipe.getServings()));
+        } else {
+            currentRecipe.setServings(1);
+            servingsField.setText("1");
+        }
+
+        // Redraw UI
+        renderIngredientsList();
+        calculateAndShowNutrition();
+
+        // Clear scale field and calories field to match fresh state
+        scaleFactor.clear();
+        caloriesRecipe.setText(String.format("%.0f", recalculateTotalCalories()));
+    }
+
 
     /**
      * A method which scales the ingredients according to the servings

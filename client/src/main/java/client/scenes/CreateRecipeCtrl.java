@@ -415,14 +415,22 @@ public class CreateRecipeCtrl {
             servingsTextField.setText(String.valueOf(draft.getServings()));
         }
 
-        // restore Ingredients
+        // Clear existing rows
         ingredientsVBox.getChildren().clear();
 
-        for (Ingredient ing : draft.getIngredients()) {
+        // Collect ingredients and sort alphabetically by name
+        List<Ingredient> sortedIngredients = new ArrayList<>(draft.getIngredients());
+        sortedIngredients.sort(Comparator.comparing(ing -> {
+            String name = ing.getFoodType().getName();
+            return "+ Create New Food Item...".equals(name) ? "" : name.toLowerCase();
+        }));
+
+        // Recreate rows in sorted order
+        for (Ingredient ing : sortedIngredients) {
             handleAddIngredient();
 
             // get the last added row
-            HBox lastRow = (HBox) ingredientsVBox.getChildren().getLast();
+            HBox lastRow = (HBox) ingredientsVBox.getChildren().get(ingredientsVBox.getChildren().size() - 1);
 
             ComboBox<String> nameBox = (ComboBox<String>) lastRow.getChildren().get(0);
             TextField qtyField = (TextField) lastRow.getChildren().get(1);
@@ -444,8 +452,8 @@ public class CreateRecipeCtrl {
         }
 
         mainCtrl.setDraftRecipe(null);
+        handleRefresh();
     }
-
 
     /**
      * helper: iterates through UI rows to build the Ingredient list
@@ -696,11 +704,13 @@ public class CreateRecipeCtrl {
             String unit = unitChoice.getValue();
 
             if (name != null && !name.isEmpty()) {
-                double qty = 0;
-                try {
-                    qty = Double.parseDouble(qtyStr);
-                } catch (Exception e) {
-                    System.err.println("Could not save quantity: non-numeric input");
+                double qty = 0.0;
+                if (!qtyStr.isEmpty()) {  // Skip parse if empty
+                    try {
+                        qty = Double.parseDouble(qtyStr);
+                    } catch (NumberFormatException e) {
+                        System.err.println("Could not save quantity: non-numeric input '" + qtyStr + "'");
+                    }
                 }
 
                 // Create ingredient just to hold data
