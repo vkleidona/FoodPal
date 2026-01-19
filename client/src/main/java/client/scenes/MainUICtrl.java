@@ -314,10 +314,35 @@ public class MainUICtrl {
             }
         });
 
+        addDeleteListener();
+
         setupLanguageMenu();
         setupFilterLanguages();
 
     }
+
+    /**
+     * When a recipe is deleted, the app detects it and warns the user about the favorite
+     * being deleted, and also saves all changes
+     */
+    public void addDeleteListener () {
+        currentRecipes.addListener((ListChangeListener<Recipe>) change -> {
+            while (change.next()) {
+                if (change.wasRemoved()) {
+                    for (Recipe removedRecipe : change.getRemoved()) {
+                        Long id = removedRecipe.getId();
+
+                        if (favoriteRecipeIds.contains(id)) {
+                            handleFavoriteBeingDeleted(removedRecipe.getName());
+                            favoriteRecipeIds.remove(id);
+                            saveFavorites();
+                        }
+                    }
+                }
+            }
+        });
+    }
+
 
     /**
      * A method which sets up the icons for the language menu
@@ -577,6 +602,11 @@ public class MainUICtrl {
                 try {
                     long id = selectedRecipe.getId();
                     System.out.println("Deleting recipe with ID: " + id);
+
+                    if (favoriteRecipeIds.contains(id)) {
+                        handleFavoriteBeingDeleted(selectedRecipe.getName());
+                    }
+
                     mainCtrl.handleRecipeBeingDeleted(id);
                     Response serverResponse = client.target(recipeEndpointUrl + "/" + id)
                             .request()
@@ -947,6 +977,21 @@ public class MainUICtrl {
                     searchedRecipeIds.contains(recipe.getId());
 
             return matchesLanguage && matchesTab && matchesSearch;
+        });
+    }
+
+    /**
+     * Should show an alert that one of the favorites has been deleted
+     * @param name - the name of the favorite being deleted
+     */
+    public void handleFavoriteBeingDeleted (String name) {
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Favorite recipe removed!");
+            alert.setHeaderText("Favorite recipe removed");
+            alert.setContentText("One of your favorite recipes (" +
+                    name + ") has been removed");
+            alert.showAndWait();
         });
     }
 }
