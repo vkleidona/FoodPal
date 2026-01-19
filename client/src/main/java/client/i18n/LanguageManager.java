@@ -28,6 +28,17 @@ public final class LanguageManager {
         saveLocaleToConfig(locale);
     }
 
+    public static String getString(String key) {
+        ResourceBundle bundle = ResourceBundle.getBundle(
+                "client.scenes.i18n.messages",
+                currentLocale,
+                new Utf8Control()
+        );
+        return bundle.getString(key);
+    }
+
+
+
     private static Locale loadLocaleFromConfig() {
         Properties props = new Properties();
 

@@ -337,8 +337,8 @@ public class EditIngredientsCtrl{
         // Clear errorLabel.
         errorLabel.setText("");
         // Is any ingredient selected?
-        if(lastClickedIngredient == null){
-            errorLabel.setText("No ingredient selected");
+        if (lastClickedIngredient == null) {
+            errorLabel.setText(LanguageManager.getString("editIngredients.noSelected"));
             return;
         }
 
@@ -351,7 +351,7 @@ public class EditIngredientsCtrl{
                     // If the food quantity can't be parsed to a double output an error message.
                     ingredient.setQuantity(Double.parseDouble(inputQuantity.getText()));
                 } catch (NumberFormatException e) {
-                    errorLabel.setText("Quantity must be a double.");
+                    errorLabel.setText(LanguageManager.getString("editIngredients.quantityNotNumber"));
                 }
                 ingredient.setMeasurement(inputMeasurement.getValue());
 
@@ -379,12 +379,13 @@ public class EditIngredientsCtrl{
         errorLabel.setText("");
 
         // If the ingredient is already in the list don't add it again.
-        for(Ingredient ingredient : listOfIngredients.getItems()){
+        for (Ingredient ingredient : listOfIngredients.getItems()) {
             if (inputFoodName.getEditor().getText().equals(ingredient.getFoodType().getName())) {
-                errorLabel.setText("Food is already in the list.");
+                errorLabel.setText(LanguageManager.getString("editIngredients.duplicate"));
                 return;
             }
         }
+
 
         // Try making the new ingredient.
         try {

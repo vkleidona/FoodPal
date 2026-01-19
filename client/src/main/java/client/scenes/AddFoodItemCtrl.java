@@ -230,9 +230,9 @@ public class AddFoodItemCtrl {
 
         } catch(NumberFormatException e){
             Alert invalidInput = new Alert(Alert.AlertType.WARNING);
-            invalidInput.setTitle("Error");
-            invalidInput.setHeaderText("Invalid Input");
-            invalidInput.setContentText("Please enter a valid number as shown in the examples.");
+            invalidInput.setTitle(LanguageManager.getString("alert.warning.title"));
+            invalidInput.setHeaderText(LanguageManager.getString("alert.warning.invalid.header"));
+            invalidInput.setContentText(LanguageManager.getString("alert.warning.invalid.content"));
             invalidInput.showAndWait();
         }
     }
@@ -247,8 +247,8 @@ public class AddFoodItemCtrl {
         } catch (jakarta.ws.rs.ClientErrorException e) {
             if (e.getResponse().getStatus() == HttpStatus.CONFLICT.value()) {
                 Alert invalidInput = new Alert(Alert.AlertType.ERROR);
-                invalidInput.setTitle("Duplicate Name");
-                invalidInput.setContentText("A food item with this name already exists.");
+                invalidInput.setTitle(LanguageManager.getString("alert.error.title"));
+                invalidInput.setContentText(LanguageManager.getString("alert.error.duplicate.content"));
                 invalidInput.showAndWait();
             }
         }
@@ -264,8 +264,8 @@ public class AddFoodItemCtrl {
         } catch (jakarta.ws.rs.ClientErrorException e) {
             if (e.getResponse().getStatus() == 409) {
                 Alert invalidInput = new Alert(Alert.AlertType.ERROR);
-                invalidInput.setTitle("Duplicate Name");
-                invalidInput.setContentText("A food item with the same already exists");
+                invalidInput.setTitle(LanguageManager.getString("alert.error.title"));
+                invalidInput.setContentText(LanguageManager.getString("alert.error.duplicate.edit.content"));
                 invalidInput.showAndWait();
             } else {
                 System.err.println("Edited FoodItem could not be saved.");
