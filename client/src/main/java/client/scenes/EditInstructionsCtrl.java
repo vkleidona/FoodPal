@@ -184,12 +184,11 @@ public class EditInstructionsCtrl {
     /**
      * The method behind the add button
      */
-    @FXML
     public void addInstruction() {
         TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle(resources.getString("editInstructions.dialog.add.title"));
-        dialog.setHeaderText(resources.getString("editInstructions.dialog.add.header"));
-        dialog.setContentText(resources.getString("editInstructions.dialog.add.content"));
+        dialog.setTitle(resources.getString("editInstructions.addDialog.title"));
+        dialog.setHeaderText(resources.getString("editInstructions.addDialog.header"));
+        dialog.setContentText(resources.getString("editInstructions.addDialog.content"));
 
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(step -> {
@@ -200,22 +199,24 @@ public class EditInstructionsCtrl {
     }
 
 
+
     /**
      * A method responsible for editing a specific instruction
      */
-    @FXML
     public void editInstruction() {
         int selectedIdx = instructionList.getSelectionModel().getSelectedIndex();
         if (selectedIdx < 0) {
-            showAlert(resources.getString("editInstructions.alert.noSelection.title"),
-                    resources.getString("editInstructions.alert.noSelection.edit"));
+            showAlert(
+                    resources.getString("editInstructions.noSelectionAlert.title"),
+                    resources.getString("editInstructions.noSelectionAlert.edit")
+            );
             return;
         }
 
         String currentStep = steps.get(selectedIdx);
         TextInputDialog dialog = new TextInputDialog(currentStep);
-        dialog.setTitle(resources.getString("editInstructions.dialog.edit.title"));
-        dialog.setHeaderText(resources.getString("editInstructions.dialog.edit.header"));
+        dialog.setTitle(resources.getString("editInstructions.editDialog.title"));
+        dialog.setHeaderText(resources.getString("editInstructions.editDialog.header"));
 
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(newStep -> {
@@ -226,19 +227,22 @@ public class EditInstructionsCtrl {
     }
 
 
+
     /**
      * A method responsible for deleting an instruction
      */
-    @FXML
     public void deleteInstruction() {
         int selectedIdx = instructionList.getSelectionModel().getSelectedIndex();
         if (selectedIdx >= 0) {
             steps.remove(selectedIdx);
         } else {
-            showAlert(resources.getString("editInstructions.alert.noSelection.title"),
-                    resources.getString("editInstructions.alert.noSelection.delete"));
+            showAlert(
+                    resources.getString("editInstructions.noSelectionAlert.title"),
+                    resources.getString("editInstructions.noSelectionAlert.delete")
+            );
         }
     }
+
 
     /**
      * The method behind the save changes button
@@ -246,19 +250,18 @@ public class EditInstructionsCtrl {
     @FXML
     public void saveChanges() {
         try {
-            // Convert ObservableList back to a regular List and save it to the recipe object
             currentRecipe.setInstructions(new ArrayList<>(steps));
-            // Send the updated recipe to the server
             server.updateRecipe(currentRecipe);
             returnToMainUI();
-
         } catch (Exception e) {
-            showAlert(resources.getString("editInstructions.alert.error.title"),
-                    resources.getString("editInstructions.alert.error.saveFailed")
-                            + " " + e.getMessage());
+            showAlert(
+                    resources.getString("editInstructions.saveErrorAlert.title"),
+                    resources.getString("editInstructions.saveErrorAlert.message") + " " + e.getMessage()
+            );
             System.err.println("Error: Saving instructions failed.");
         }
     }
+
 
     /**
      * Refreshes the recipe content upon a server-pushed change

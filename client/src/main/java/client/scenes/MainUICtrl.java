@@ -123,12 +123,12 @@ public class MainUICtrl {
 
     private void showFavoriteDeletedWarning() {
         Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle("Favorite deleted");
-        alert.setHeaderText("Some favorites are no longer available");
-        alert.setContentText("One or more favorite recipes were deleted by someone else.\n" +
-                "Your favorites list has been updated.");
+        alert.setTitle(LanguageManager.getString("main.favoriteDeleted.title"));
+        alert.setHeaderText(LanguageManager.getString("main.favoriteDeleted.header"));
+        alert.setContentText(LanguageManager.getString("main.favoriteDeleted.content"));
         alert.showAndWait();
     }
+
 
 
     /**
@@ -565,12 +565,17 @@ public class MainUICtrl {
         Recipe selectedRecipe = currentRecipes.get(selectedIndex);
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Delete Recipe");
-        alert.setHeaderText("Are you sure you want to delete '" + selectedRecipe.getName() + "'?");
+        alert.setTitle(LanguageManager.getString("main.delete.title"));
+        alert.setHeaderText(
+                java.text.MessageFormat.format(
+                        LanguageManager.getString("main.delete.header"),
+                        selectedRecipe.getName()
+                )
+        );
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
                 try {
-                    long id = selectedRecipe.getId(); // primitive long is fine
+                    long id = selectedRecipe.getId();
                     System.out.println("Deleting recipe with ID: " + id);
                     mainCtrl.handleRecipeBeingDeleted(id);
                     Response serverResponse = client.target(recipeEndpointUrl + "/" + id)
@@ -587,6 +592,7 @@ public class MainUICtrl {
         });
     }
 
+
     /**
      * Handles the functionality of the Edit Name button
      */
@@ -600,7 +606,8 @@ public class MainUICtrl {
         okButton.setDisable(false);
 
         TextField editNameNameField = new TextField(selectedRecipe.getName());
-        Label nameLabel = new Label ("Name:");
+        Label nameLabel = new Label(LanguageManager.getString("main.editName.label"));
+
 
         HBox hBox = new HBox();
         hBox.setSpacing(15);
@@ -731,20 +738,22 @@ public class MainUICtrl {
         if (index < 0 || index >= currentRecipes.size()) return;
         Recipe selectedRecipe = currentRecipes.get(index);
 
-        TextInputDialog dialog = new TextInputDialog("Copy of " + selectedRecipe.getName());
-        dialog.setTitle("Clone Recipe");
-        dialog.setHeaderText("Create a new copy");
-        dialog.setContentText("Enter a name for the new recipe");
+        TextInputDialog dialog = new TextInputDialog(
+                LanguageManager.getString("main.clone.defaultPrefix") + " " + selectedRecipe.getName()
+        );
+        dialog.setTitle(LanguageManager.getString("main.clone.title"));
+        dialog.setHeaderText(LanguageManager.getString("main.clone.header"));
+        dialog.setContentText(LanguageManager.getString("main.clone.content"));
 
         Optional<String> result = dialog.showAndWait();
-
-        if(result.isPresent()){
+        if (result.isPresent()) {
             String newName = result.get();
-            Recipe cloneRecipe =  new Recipe(selectedRecipe);
+            Recipe cloneRecipe = new Recipe(selectedRecipe);
             cloneRecipe.setName(newName);
             serverService.sendRecipe(cloneRecipe);
         }
     }
+
 
     /**
      * A method for accessing the Information of a recipe
@@ -753,9 +762,9 @@ public class MainUICtrl {
     public void handleInformation() {
         if (recipeListView.getSelectionModel().isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("No Selection");
+            alert.setTitle(LanguageManager.getString("main.info.noSelection.title"));
             alert.setHeaderText(null);
-            alert.setContentText("Please select a recipe from the list first!");
+            alert.setContentText(LanguageManager.getString("main.info.noSelection.content"));
             alert.showAndWait();
             return;
         }
@@ -773,10 +782,9 @@ public class MainUICtrl {
                 selectedRecipe.getName().trim().isEmpty()) {
 
             Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("Invalid Selection");
+            alert.setTitle(LanguageManager.getString("main.info.invalid.title"));
             alert.setHeaderText(null);
-            alert.setContentText("Cannot open detailed view: " +
-                    "The selected recipe has no name/data.");
+            alert.setContentText(LanguageManager.getString("main.info.invalid.content"));
             alert.showAndWait();
             return;
         }
