@@ -90,6 +90,48 @@ public class MainUICtrl {
     private static final File FAVORITES_FILE = new File("favorites.json");
 
     /**
+     * Cleans up the local favorites list by removing recipe IDs that no longer
+     * exist in the current master recipe list received from the server.
+     * This method detects favorites that were deleted by someone else on the
+     * server, removes those IDs from {@code favoriteRecipeIds}, updates the
+     * persisted favorites file, refreshes the favorites filter, and shows a
+     * warning alert to inform the user that some favorite recipes are gone.
+     */
+    private void cleanupDeletedFavorites() {
+        Set<Long> stillFavoriteIds = new HashSet<>();
+        boolean anyDeleted = false;
+
+        for (Long favId : favoriteRecipeIds) {
+            // Check if this ID still exists in currentRecipes (master list from WebSocket)
+            boolean existsInList = currentRecipes.stream()
+                    .anyMatch(r -> Objects.equals(r.getId(), favId));
+
+            if (existsInList) {
+                stillFavoriteIds.add(favId);
+            } else {
+                anyDeleted = true;
+            }
+        }
+
+        if (anyDeleted) {
+            favoriteRecipeIds = stillFavoriteIds;
+            saveFavorites();
+            updatePredicate();  // so favorites tab hides dead ones
+            showFavoriteDeletedWarning();
+        }
+    }
+
+    private void showFavoriteDeletedWarning() {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Favorite deleted");
+        alert.setHeaderText("Some favorites are no longer available");
+        alert.setContentText("One or more favorite recipes were deleted by someone else.\n" +
+                "Your favorites list has been updated.");
+        alert.showAndWait();
+    }
+
+
+    /**
      * reads a list of favorite recipe IDs from a local file (favorites.json)
      * and loads them into the application's memory.
      */
@@ -218,7 +260,10 @@ public class MainUICtrl {
                     }
                 });
 
-        refreshButton.setOnAction(_ -> initialRecipeFetch());
+        refreshButton.setOnAction(_ -> {
+            initialRecipeFetch();
+            cleanupDeletedFavorites();          // check after manual refresh
+        });
 
         // Bottom sidebar buttons
         addRecipeButton.setOnAction(_ -> openCreateRecipeUI());

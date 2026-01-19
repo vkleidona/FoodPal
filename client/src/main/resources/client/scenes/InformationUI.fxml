@@ -52,6 +52,17 @@
                 </Label>
 
                 <TextField fx:id="caloriesRecipe" layoutX="686.0" layoutY="89.0" onAction="#handleCaloriesRecipe" prefHeight="26.0" prefWidth="82.0" />
+            <Label layoutX="518.0" layoutY="123.0" text="Scale by: ">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Label>
+            <TextField fx:id="scaleFactor" layoutX="686.0" layoutY="123.0" onAction="#handleScaling" prefHeight="26.0" prefWidth="102.0" promptText="%info.scaleBy" />
+            <Button layoutX="518.0" layoutY="148.0" mnemonicParsing="false" onAction="#handleResetToOriginal" prefHeight="22.0" prefWidth="30.0" text="⟲">
+               <font>
+                  <Font size="10.0" />
+               </font>
+            </Button>
             </children>
         </AnchorPane>
     </children>
