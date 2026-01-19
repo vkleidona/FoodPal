@@ -527,6 +527,11 @@ public class MainUICtrl {
                 try {
                     long id = selectedRecipe.getId(); // primitive long is fine
                     System.out.println("Deleting recipe with ID: " + id);
+
+                    if (favoriteRecipeIds.contains(id)) {
+                        handleFavoriteBeingDeleted(selectedRecipe.getName());
+                    }
+
                     mainCtrl.handleRecipeBeingDeleted(id);
                     Response serverResponse = client.target(recipeEndpointUrl + "/" + id)
                             .request()
@@ -894,6 +899,21 @@ public class MainUICtrl {
                     searchedRecipeIds.contains(recipe.getId());
 
             return matchesLanguage && matchesTab && matchesSearch;
+        });
+    }
+
+    /**
+     * Should show an alert that one of the favorites has been deleted
+     * @param name - the name of the favorite being deleted
+     */
+    public void handleFavoriteBeingDeleted (String name) {
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Favorite recipe removed!");
+            alert.setHeaderText("Favorite recipe removed");
+            alert.setContentText("One of your favorite recipes (" +
+                    name + ") has been removed");
+            alert.showAndWait();
         });
     }
 }

@@ -173,8 +173,8 @@ public class WebSocketService {
     public void syncFoodItemNameInList (MiniUpdate update) {
         for (int i = 0; i < masterFoodItemsList.size(); i++) {
             FoodItem f = masterFoodItemsList.get(i);
-            if (f.getId().equals(update.getId())) {
-                f.setName(update.getTitle());
+            if (f.getId().equals(update.id())) {
+                f.setName(update.title());
                 masterFoodItemsList.set(i, f);
                 return;
             }
@@ -188,8 +188,8 @@ public class WebSocketService {
     public void syncRecipeNameInList (MiniUpdate update) {
         for (int i = 0; i < masterRecipeList.size(); i++) {
             Recipe r = masterRecipeList.get(i);
-            if (r.getId().equals(update.getId())) {
-                r.setName(update.getTitle());
+            if (r.getId().equals(update.id())) {
+                r.setName(update.title());
                 masterRecipeList.set(i, r);
                 return;
             }
