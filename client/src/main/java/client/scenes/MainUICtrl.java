@@ -288,11 +288,9 @@ public class MainUICtrl {
                         Long id = removedRecipe.getId();
 
                         if (favoriteRecipeIds.contains(id)) {
-                            Platform.runLater(() -> {
-                                handleFavoriteBeingDeleted(removedRecipe.getName());
-                                favoriteRecipeIds.remove(id);
-                                saveFavorites();
-                            });
+                            handleFavoriteBeingDeleted(removedRecipe.getName());
+                            favoriteRecipeIds.remove(id);
+                            saveFavorites();
                         }
                     }
                 }
