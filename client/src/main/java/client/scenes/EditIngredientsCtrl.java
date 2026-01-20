@@ -1,6 +1,7 @@
 package client.scenes;
 
 
+import jakarta.annotation.Resource;
 import jakarta.inject.Inject;
 import javafx.application.Platform;
 import javafx.scene.control.*;
@@ -35,9 +36,11 @@ public class EditIngredientsCtrl{
     @FXML
     private MenuButton languageButton;
     @FXML
-    private Label errorLabel;
-    @FXML
     private Label recipeName;
+
+    @FXML
+    private ResourceBundle resources;
+
 
     @FXML
     private ComboBox<String> inputFoodName;
@@ -247,6 +250,7 @@ public class EditIngredientsCtrl{
      */
     public void changeLanguage(Locale newLocale) {
         LanguageManager.setLocale(newLocale);
+
         switch (newLocale.getLanguage()) {
             case "nl" -> languageButton.setText("Nederlands");
             case "ro" -> languageButton.setText("Română");
@@ -301,8 +305,6 @@ public class EditIngredientsCtrl{
      */
     @FXML
     void rowClicked() {
-        // Clear the errorLabel.
-        errorLabel.setText("");
         lastClickedIngredient = listOfIngredients.getSelectionModel().getSelectedItem();
         String unit = null;
         // Show values of the clicked ingredient in the input fields.
@@ -334,11 +336,9 @@ public class EditIngredientsCtrl{
      */
     @FXML
     void submitEdit() {
-        // Clear errorLabel.
-        errorLabel.setText("");
         // Is any ingredient selected?
         if(lastClickedIngredient == null){
-            errorLabel.setText("No ingredient selected");
+            showAlert("editIngredients.alert.noSelection.title", "editIngredients.alert.noSelection.content");
             return;
         }
 
@@ -351,7 +351,8 @@ public class EditIngredientsCtrl{
                     // If the food quantity can't be parsed to a double output an error message.
                     ingredient.setQuantity(Double.parseDouble(inputQuantity.getText()));
                 } catch (NumberFormatException e) {
-                    errorLabel.setText("Quantity must be a double.");
+                    showAlert("editIngredients.alert.invalidNumber.title", "editIngredients.alert.invalidNumber.content");
+                    return;
                 }
                 ingredient.setMeasurement(inputMeasurement.getValue());
 
@@ -375,13 +376,17 @@ public class EditIngredientsCtrl{
     }
 
     @FXML
-    void addIngredient() {
-        errorLabel.setText("");
+    public void addIngredient() {
+        if(inputFoodName.getValue() == null || inputFoodName.getValue().trim().isEmpty() ||
+                inputQuantity == null || inputMeasurement==null ){
+            showAlert("editIngredients.alert.missingField.title", "editIngredients.alert.missingField.content");
+            return;
+        }
 
         // If the ingredient is already in the list don't add it again.
         for(Ingredient ingredient : listOfIngredients.getItems()){
-            if (inputFoodName.getEditor().getText().equals(ingredient.getFoodType().getName())) {
-                errorLabel.setText("Food is already in the list.");
+            if (inputFoodName.getValue().equals(ingredient.getFoodType().getName())) {
+                showAlert("editIngredients.alert.duplicate.title", "editIngredients.alert.duplicate.content");
                 return;
             }
         }
@@ -401,13 +406,12 @@ public class EditIngredientsCtrl{
             recipe.addIngredient(ingredient);
             ingredient.setRecipe(recipe);
             // to be removed
-            System.out.println(recipe);
             listOfIngredients.getItems().add(ingredient);
 
             listOfIngredients.refresh();
         } catch (NumberFormatException e) {
             // If the given quantity cannot be parsed to a double give error.
-            errorLabel.setText("Quantity must be a double.");
+            showAlert("editIngredients.alert.invalidNUmber.title", "editIngredients.alert.invalidNumber.content");
         }
 
         resetForm();
@@ -418,7 +422,10 @@ public class EditIngredientsCtrl{
      */
     @FXML
     void removeIngredient() {
-        errorLabel.setText("");
+        if(lastClickedIngredient == null){
+            showAlert("editIngredients.alert.noSelection.title", "editIngredients.alert.noSelection.content");
+            return;
+        }
         listOfIngredients.getItems().remove(lastClickedIngredient);
         listOfIngredients.refresh();
         resetForm();
@@ -450,8 +457,19 @@ public class EditIngredientsCtrl{
         }
     }
 
-
     private void closeUI() {
         mainCtrl.showMainMenu();
+    }
+
+    /**
+     * A helper method for showing alerts
+     * @param title - the title of the alert to be shown
+     * @param content - the content of the alert
+     */
+    public void showAlert(String title, String content) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle(resources.getString(title));
+        alert.setContentText(resources.getString(content));
+        alert.showAndWait();
     }
 }
