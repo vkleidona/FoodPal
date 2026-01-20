@@ -1,160 +1,199 @@
 package server.api.controllerTests;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import exceptions.ResourceNotFoundException;
+import exceptions.ServerErrorException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import recipes.FoodItem;
 import recipes.Ingredient;
 import recipes.Recipe;
 import server.api.controllers.RecipeController;
-import server.repositories.FoodItemRepository;
-import server.repositories.RecipeRepository;
 import server.service.RecipeService;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.*;
 
-@ActiveProfiles("test")
-@SpringBootTest
-// we 'start' the application, so that we load all
-// the beans, setting up the environment for testing
-@AutoConfigureMockMvc
-// we use this  to call /recipes just like a real
-// client would, but inside the tests.
+// This is a Unit Test for the new Controller class.
+// Another Integration test was created earlier, which will be kept,
+// as it provides useful testing functionality.
 public class RecipeControllerTest {
-    @Autowired
-    private MockMvc mockMvc;
-    // used to simulate requests
-    @Autowired
-    private RecipeRepository recipeRepository;
 
-    @Autowired
-    private FoodItemRepository foodItemRepository;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
-    private SimpMessagingTemplate messageTemplate;
+    private RecipeController ctrl;
+    private RecipeService service;
 
     @BeforeEach
     void setup() {
-        recipeRepository.deleteAll();
-        foodItemRepository.deleteAll();
-        RecipeService service = new RecipeService(recipeRepository, foodItemRepository, messageTemplate);
-        RecipeController recipeController = new RecipeController(service);
+        service = mock(RecipeService.class);
+        ctrl = new RecipeController(service);
     }
 
     @Test
-    void testSaveRecipe() throws Exception {
+    void testSaveRecipe(){
         // arrange: build Recipe with Ingredient and FoodItem
         Recipe recipe = new Recipe("TestRecipe", new Locale ("bg"));
         Ingredient ingredient = new Ingredient(100, "g");
-        FoodItem foodItem = foodItemRepository.findByName("Apple").
-                orElseGet(() -> foodItemRepository.save(new FoodItem("Apple", 50, 14, 0, 0)));
+        FoodItem foodItem = new FoodItem("Banitsa");
         ingredient.setFoodType(foodItem);
         ingredient.setRecipe(recipe);
         List<Ingredient> ingredients = new ArrayList<>();
         ingredients.add(ingredient);
         recipe.setIngredients(ingredients);
-        recipe.setId(null);
+        recipe.setId(1L);
 
-        // convert to JSON format
-        String json = objectMapper.writeValueAsString(recipe);
+        when(service.saveRecipe(recipe)).thenReturn(1L);
 
-        // sending the POST request
-        mockMvc.perform(post("/api/recipes")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().isOk());
-
-        // verify in database
-        assertEquals(1, recipeRepository.count());
-        assertEquals(1, foodItemRepository.count());
-        assertEquals("TestRecipe", recipeRepository.findAll().getFirst().getName());
+        ResponseEntity <Long> response = ctrl.issueSaveRecipe(recipe);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(1L, response.getBody());
     }
 
     @Test
-    public void getAllRecipesTest() throws Exception{
-        recipeRepository.save(new Recipe("Pasta", new Locale("bg")));
-        recipeRepository.save(new Recipe("Pizza", new Locale ("bg")));
+    void testSaveRecipeUnsuccessfully(){
+        // arrange: build Recipe with Ingredient and FoodItem
+        Recipe recipe = new Recipe("TestRecipe", new Locale ("bg"));
+        Ingredient ingredient = new Ingredient(100, "g");
+        FoodItem foodItem = new FoodItem("Баница");
+        ingredient.setFoodType(foodItem);
+        ingredient.setRecipe(recipe);
+        List<Ingredient> ingredients = new ArrayList<>();
+        ingredients.add(ingredient);
+        recipe.setIngredients(ingredients);
+        recipe.setId(1L);
 
-        String jsonResponse = mockMvc.perform(get("/api/recipes")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
+        when(service.saveRecipe(recipe)).thenThrow(new ServerErrorException("Could not save recipe"));
 
-        Recipe[] recipes = objectMapper.readValue(jsonResponse, Recipe[].class);
-
-        assertEquals(2, recipes.length);
-        assertEquals("Pasta", recipes[0].getName());
-        assertEquals("Pizza", recipes[1].getName());
+        assertThrows(ServerErrorException.class, () -> {
+            ctrl.issueSaveRecipe(recipe);
+        });
     }
 
     @Test
-    public void issueSetAllIngredientsTest() throws Exception{
-        Recipe r = new Recipe("Omelette", new Locale("bg"));
-        r = recipeRepository.save(r);
+    public void getAllRecipesTest() {
+        Recipe recipe1 = new Recipe("Баница", new Locale("bg"));
+        Recipe recipe2 = new Recipe("Шопска салата", new Locale ("bg"));
+
+        List<Recipe> mockList = List.of(recipe1, recipe2);
+        when(service.getAllRecipes()).thenReturn(mockList);
+
+        ResponseEntity <List<Recipe>> result = ctrl.issueGetAllRecipes();
+
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertNotNull(result.getBody());
+        assertEquals(2, result.getBody().size());
+        assertEquals("Баница", result.getBody().getFirst().getName());
+    }
+
+    @Test
+    public void issueSetAllIngredientsTest(){
+        Recipe r = new Recipe("Яйца по панагюрски", new Locale("bg"));
 
         Ingredient i =  new Ingredient();
-        i.setFoodType(new FoodItem("egg"));
+        i.setFoodType(new FoodItem("яйце"));
         List<Ingredient> ingredients = new ArrayList<>();
         ingredients.add(i);
+        r.setId(1L);
 
-        String jsonInput = objectMapper.writeValueAsString(ingredients);
+        Recipe expected = new Recipe("Яйца по панагюрски", new Locale("bg"));
+        expected.setIngredients(ingredients);
+        expected.setId(1L);
 
-        String responseJson = mockMvc.perform(put("/api/recipes/ingredients/set/" + r.getId())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(jsonInput))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
+        when(service.setAllIngredients(ingredients, 1L)).thenReturn(expected);
 
-        Recipe result = objectMapper.readValue(responseJson, Recipe.class);
-        assertEquals(1, result.getIngredients().size());
+        ResponseEntity<Recipe> response = ctrl.issueSetAllIngredients(ingredients, 1L);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(ingredients, response.getBody().getIngredients());
     }
 
     @Test
-    public void issueDeleteRecipeTest() throws Exception{
-        Recipe recipe = new Recipe("To be deleted", new Locale("bg"));
-        recipe = recipeRepository.save(recipe);
+    public void issueSetAllIngredientsTestFail(){
+        Recipe r = new Recipe("Яйца по панагюрски", new Locale("bg"));
 
-        mockMvc.perform(delete("/api/recipes/" + recipe.getId()))
-                .andExpect(status().isNoContent());
+        Ingredient i =  new Ingredient();
+        i.setFoodType(new FoodItem("яйце"));
+        List<Ingredient> ingredients = new ArrayList<>();
+        ingredients.add(i);
+        r.setId(1L);
 
-        assertEquals(0, recipeRepository.count());
-        assertFalse(recipeRepository.existsById(recipe.getId()));
+        when(service.setAllIngredients(ingredients, 1L)).thenThrow(new ServerErrorException());
+
+        assertThrows(ServerErrorException.class, () -> {
+            ctrl.issueSetAllIngredients(ingredients, 1L);
+        });
+    }
+
+    @Test
+    public void issueDeleteRecipeTest() {
+        Recipe recipe = new Recipe("Deleted", new Locale("bg"));
+        recipe.setId(1L);
+
+        when(service.deleteRecipe(1L)).thenReturn(true);
+
+        ResponseEntity<Void> response = ctrl.issueDeleteRecipe(1L);
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+    }
+
+    @Test
+    public void issueDeleteRecipeUnsuccessfullyTest() {
+        Recipe recipe = new Recipe("Deleted", new Locale("bg"));
+        recipe.setId(1L);
+
+        when(service.deleteRecipe(1L)).thenReturn(false);
+
+        ResponseEntity<Void> response = ctrl.issueDeleteRecipe(1L);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
 
     @Test
-    public void issueUpdateRecipeNameTest() throws Exception{
-        Recipe original = new Recipe("Old name", new Locale("bg"));
-        original = recipeRepository.save(original);
+    public void issueUpdateRecipeTest() {
+        Recipe r = new Recipe("Яйца по панагюрски", new Locale("bg"));
 
-        Recipe updated = new Recipe("New name");
-        String inputJson = objectMapper.writeValueAsString(updated);
+        Ingredient i =  new Ingredient();
+        i.setFoodType(new FoodItem("яйце"));
+        List<Ingredient> ingredients = new ArrayList<>();
+        ingredients.add(i);
+        r.setId(1L);
+        r.setIngredients(ingredients);
 
-        mockMvc.perform(put("/api/recipes/" + original.getId())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(inputJson))
-                .andExpect(status().isOk());
+        Recipe r2 = new Recipe("Яйце по панагюрски", new Locale("bg"));
+        r2.setIngredients(ingredients);
+        r2.setInstructions(List.of("Boil"));
 
-        Recipe dbRecipe = recipeRepository.findById(original.getId()).isPresent() ?
-                recipeRepository.findById(original.getId()).get() : new Recipe("");
-        assertEquals("New name", dbRecipe.getName());
+        when(service.updateRecipe(1L ,r2)).thenReturn(r2);
+
+        ResponseEntity<Recipe> response = ctrl.issueUpdateRecipe(1L, r2);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(r2, response.getBody());
+    }
+
+    @Test
+    public void issueUpdateRecipeUnsuccessfulTest() {
+        Recipe r = new Recipe("Яйца по панагюрски", new Locale("bg"));
+
+        Ingredient i =  new Ingredient();
+        i.setFoodType(new FoodItem("яйце"));
+        List<Ingredient> ingredients = new ArrayList<>();
+        ingredients.add(i);
+        r.setId(1L);
+        r.setIngredients(ingredients);
+
+        Recipe r2 = new Recipe("Яйце по панагюрски", new Locale("bg"));
+        r2.setIngredients(ingredients);
+        r2.setInstructions(List.of("Boil"));
+
+        when(service.updateRecipe(1L ,r2)).thenThrow(new ResourceNotFoundException());
+
+        assertThrows(ResourceNotFoundException.class, () -> {
+            ctrl.issueUpdateRecipe(1L, r2);
+        });
     }
 
 }

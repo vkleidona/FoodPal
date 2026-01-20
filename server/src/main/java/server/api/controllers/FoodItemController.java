@@ -53,7 +53,7 @@ public class FoodItemController {
     public ResponseEntity<Void> issueDeleteFoodItem(@PathVariable Long id) {
         boolean deleted = service.deleteFoodItem(id);
         if (deleted) {
-            return ResponseEntity.ok().build();
+            return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
     }
@@ -66,7 +66,7 @@ public class FoodItemController {
      * or a warning for an unsuccessful operation
      */
     @PutMapping("/{id}")
-    public ResponseEntity<?> issueUpdateFoodItem(@PathVariable Long id,
+    public ResponseEntity<FoodItem> issueUpdateFoodItem(@PathVariable Long id,
                                                  @RequestBody FoodItem updatedItem) {
         FoodItem addedFoodItem = service.updateFoodItem(id, updatedItem);
         return ResponseEntity.ok(addedFoodItem);

@@ -1,7 +1,6 @@
 package server.api.controllerTests;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
+import exceptions.ResourceNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
@@ -44,10 +43,11 @@ public class IngredientControllerTest {
         testItem.setId(1L);
 
         when(service.getFoodItemRecipeUsage(99L)).
-                thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Food Item not found"));
+                thenThrow(new ResourceNotFoundException("Food Item not found"));
 
-        ResponseEntity <Integer> response = ctrl.issueGetFoodItemRecipeUsage(99L);
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertThrows(ResourceNotFoundException.class, () -> {
+            ctrl.issueGetFoodItemRecipeUsage(99L);
+        });
     }
 
 }

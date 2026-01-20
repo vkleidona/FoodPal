@@ -1,21 +1,19 @@
 package server.api.controllerTests;
 
+import exceptions.ExistingFoodItemException;
+import exceptions.MalformedRequestException;
+import exceptions.ResourceNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.web.server.ResponseStatusException;
 import recipes.FoodItem;
 import server.api.controllers.FoodItemController;
-import server.repositories.FoodItemRepository;
 import server.service.FoodItemService;
 
 import java.util.List;
-import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class FoodItemControllerTest {
@@ -36,7 +34,7 @@ public class FoodItemControllerTest {
 
         when(service.addFoodItem(savedItem)).thenReturn(savedItem);
 
-        ResponseEntity<FoodItem> response = ctrl.issueAddFoodItem(item);
+        ResponseEntity<FoodItem> response = ctrl.issueAddFoodItem(savedItem);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(savedItem, response.getBody());
@@ -44,7 +42,6 @@ public class FoodItemControllerTest {
 
     @Test
     public void addFoodItemTestUnsuccessfully(){
-        FoodItem item = new FoodItem("Milk");
         FoodItem savedItem = new FoodItem("Milk");
         savedItem.setId(2L);
 
@@ -52,16 +49,17 @@ public class FoodItemControllerTest {
         FoodItem foodItem2 = new FoodItem("Milk");
 
         when(service.addFoodItem(foodItem1)).thenThrow
-                (new ResponseStatusException(HttpStatus.BAD_REQUEST));
+                (new MalformedRequestException());
 
         when(service.addFoodItem(foodItem2)).thenThrow
-                (new ResponseStatusException(HttpStatus.CONFLICT));
+                (new ExistingFoodItemException());
 
-        ResponseEntity<FoodItem> response = ctrl.issueAddFoodItem(foodItem1);
-        ResponseEntity<FoodItem> response1 = ctrl.issueAddFoodItem(foodItem2);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals(HttpStatus.CONFLICT, response1.getStatusCode());
+        assertThrows(MalformedRequestException.class, () -> {
+            ctrl.issueAddFoodItem(foodItem1);
+        });
+        assertThrows(ExistingFoodItemException.class, () -> {
+            ctrl.issueAddFoodItem(foodItem2);
+        });
     }
 
     @Test
@@ -84,7 +82,7 @@ public class FoodItemControllerTest {
 
         ResponseEntity<Void> response = ctrl.issueDeleteFoodItem(10L);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
     }
 
     @Test
@@ -95,7 +93,6 @@ public class FoodItemControllerTest {
         ResponseEntity<Void> response = ctrl.issueDeleteFoodItem(id);
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        //verify(repo, times(0)).deleteById(id);
     }
 
     @Test
@@ -104,14 +101,35 @@ public class FoodItemControllerTest {
         old.setId(1L);
         FoodItem updated = new FoodItem("lemon2");
 
-        //when(repo.findById(1L)).thenReturn(Optional.of(old));
-        //when(repo.existsByNameAndIdNot("lemon2", 1L)).thenReturn(false);
-        //when(repo.save(any())).thenReturn(old);
+        when(service.updateFoodItem(1L, updated)).thenReturn(updated);
 
-        ResponseEntity<?> response = ctrl.issueUpdateFoodItem(1L, updated);
+        ResponseEntity<FoodItem> response = ctrl.issueUpdateFoodItem(1L, updated);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("lemon2", old.getName());
+        assertNotNull(response.getBody());
+        assertEquals("lemon2", response.getBody().getName());
+    }
+
+    @Test
+    public void issueUpdateFoodItemTestUnsuccessful(){
+        FoodItem old = new FoodItem("lemon");
+        old.setId(1L);
+        FoodItem updated = new FoodItem("lemon2");
+
+        when(service.updateFoodItem(3L, updated)).thenThrow(new ResourceNotFoundException());
+
+        FoodItem sameName = new FoodItem("lemon");
+        sameName.setId(4L);
+
+        when(service.updateFoodItem(1L, sameName)).thenThrow(new ExistingFoodItemException ());
+
+        assertThrows(ResourceNotFoundException.class, () -> {
+            ctrl.issueUpdateFoodItem(3L, updated);
+        });
+
+        assertThrows(ExistingFoodItemException.class, () -> {
+            ctrl.issueUpdateFoodItem(1L, sameName);
+        });
     }
 
 }

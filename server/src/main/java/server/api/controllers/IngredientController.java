@@ -33,7 +33,6 @@ public class IngredientController {
     public ResponseEntity<Integer> issueGetFoodItemRecipeUsage(@PathVariable Long id) {
         int usageCount = ingredientService.getFoodItemRecipeUsage(id);
         return ResponseEntity.ok(usageCount);
-
     }
 }
 
