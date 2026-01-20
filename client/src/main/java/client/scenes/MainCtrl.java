@@ -268,6 +268,12 @@ public class MainCtrl {
         primaryStage.setScene(addRecipeToShoppingList);
     }
 
+    public void showAddScaledRecipeToShoppingList(Recipe recipeToAdd){
+        primaryStage.setTitle("Add Recipe to Shopping List");
+        addRecipeToShoppingListCtrl.setRecipe(recipeToAdd);
+        primaryStage.setScene(addRecipeToShoppingList);
+    }
+
     public AddFoodItemCtrl getAddFoodItemCtrl() {
         return addFoodItemCtrl;
     }

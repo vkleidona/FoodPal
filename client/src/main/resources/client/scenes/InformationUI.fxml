@@ -34,6 +34,7 @@
                 </Label>
 
                 <Button layoutX="743.0" layoutY="496.0" mnemonicParsing="false" onAction="#handleCancel" prefHeight="26.0" prefWidth="82.0" text="%button.cancel" />
+            <Button layoutX="533.0" layoutY="496.0" mnemonicParsing="false" onAction="#handleSaveScaledRecipeToShoppingList" text="%button.saveToShoppingList" />
 
                 <Label layoutX="518.0" layoutY="56.0" text="%info.servings">
                     <font><Font size="16.0" /></font>

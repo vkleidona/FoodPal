@@ -368,6 +368,7 @@ public class ShoppingListMainCtrl {
 
         // Setting up the three parameters the user has to enter
         ComboBox<String> foodItemField = new ComboBox<>();
+        foodItemField.setEditable(true);  //so that the user can type in a new food item and get a warning if doesnt exist
         List<FoodItem> items = server.getAllFoodItems();
 
         for(FoodItem item : items){
