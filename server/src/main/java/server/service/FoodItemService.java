@@ -1,11 +1,9 @@
 package server.service;
 
 import commons.MiniUpdate;
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.NotFoundException;
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import exceptions.ExistingFoodItemException;
+import exceptions.MalformedRequestException;
+import exceptions.ServerErrorException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -42,11 +40,11 @@ public class FoodItemService {
     public FoodItem addFoodItem(FoodItem foodItem) {
 
         if(foodItem.getName() == null || foodItem.getName().isEmpty()) {
-            throw new BadRequestException();
+            throw new MalformedRequestException("The name of the FoodItem is null");
         }
 
         if(repo.findByName(foodItem.getName()).isPresent()) {
-            throw new DuplicateKeyException("Found an item with the same name");
+            throw new ExistingFoodItemException("Found an item with the same name");
         }
 
         FoodItem saved = repo.save(foodItem);
@@ -92,11 +90,11 @@ public class FoodItemService {
 
         Optional<FoodItem> foodItem = repo.findById(id);
         if (foodItem.isEmpty()) {
-            throw new NotFoundException();
+            throw new ServerErrorException("Food item with the following name not found");
         }
 
         if (repo.existsByNameAndIdNot(updatedItem.getName(), id)) {
-            throw new DuplicateKeyException("A food item with the same name already exists");
+            throw new ExistingFoodItemException("A FoodItem with this name already exists");
         }
 
         FoodItem item = foodItem.get();

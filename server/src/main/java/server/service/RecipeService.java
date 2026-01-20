@@ -1,8 +1,9 @@
 package server.service;
 
 import commons.MiniUpdate;
+import exceptions.ResourceNotFoundException;
+import exceptions.ServerErrorException;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -73,7 +74,7 @@ public class RecipeService {
             return saved.getId();
         }catch (Exception e) {
             System.err.println("Error - could not save recipe due to a database error");
-            throw new RuntimeException();
+            throw new ServerErrorException();
         }
     }
 
@@ -115,7 +116,7 @@ public class RecipeService {
     public Recipe setAllIngredients(@RequestBody List<Ingredient> ingredients,
                                                     @PathVariable Long recipeId) {
         if (recipeRepository.findById(recipeId).isEmpty()) {
-            throw new RuntimeException();
+            throw new ResourceNotFoundException();
         }
 
         return recipeRepository.findById(recipeId).map(currentRecipe -> {
@@ -130,7 +131,7 @@ public class RecipeService {
             messageTemplate.convertAndSend("/topic/recipes", miniUpdate);
             messageTemplate.convertAndSend("/topic/recipes/" + saved.getId(), saved);
             return saved;
-        }).orElseThrow();
+        }).orElseThrow(ServerErrorException::new);
     }
 
     /**
@@ -144,7 +145,7 @@ public class RecipeService {
     public Recipe updateRecipe(@PathVariable("id") Long id,
                                                @RequestBody Recipe updatedRecipe) {
         if (recipeRepository.findById(id).isEmpty()) {
-            throw new NotFoundException();
+            throw new ResourceNotFoundException();
         }
 
         return recipeRepository.findById(id).map(oldRecipe -> {
@@ -160,7 +161,7 @@ public class RecipeService {
             messageTemplate.convertAndSend("/topic/recipes", miniUpdate);
             messageTemplate.convertAndSend("/topic/recipes/" + newRecipe.getId(), newRecipe);
             return newRecipe;
-        }).orElseThrow();
+        }).orElseThrow(ServerErrorException::new);
     }
 
     /**

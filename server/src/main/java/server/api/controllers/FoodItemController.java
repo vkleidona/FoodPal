@@ -31,16 +31,8 @@ public class FoodItemController {
      */
     @PostMapping(path = { "", "/" })
     public ResponseEntity<FoodItem> issueAddFoodItem(@RequestBody FoodItem foodItem) {
-        try {
-            FoodItem addedFoodItem = service.addFoodItem(foodItem);
-            return ResponseEntity.ok(addedFoodItem);
-        }catch (DuplicateKeyException e) {
-            System.err.println("Error - Food Item with the same name already found");
-            return ResponseEntity.status(409).build();
-        }catch (RuntimeException e) {
-            System.err.println("Error - Could not save FoodItem");
-            return ResponseEntity.internalServerError().build();
-        }
+        FoodItem addedFoodItem = service.addFoodItem(foodItem);
+        return ResponseEntity.ok(addedFoodItem);
     }
 
     /**
@@ -76,16 +68,8 @@ public class FoodItemController {
     @PutMapping("/{id}")
     public ResponseEntity<?> issueUpdateFoodItem(@PathVariable Long id,
                                                  @RequestBody FoodItem updatedItem) {
-        try {
-            FoodItem addedFoodItem = service.updateFoodItem(id, updatedItem);
-            return ResponseEntity.ok(addedFoodItem);
-        }catch (DuplicateKeyException e) {
-            System.err.println("Error - Food Item with the same name already found");
-            return ResponseEntity.status(409).build();
-        }catch (RuntimeException e) {
-            System.err.println("Error - Could not save FoodItem");
-            return ResponseEntity.internalServerError().build();
-        }
+        FoodItem addedFoodItem = service.updateFoodItem(id, updatedItem);
+        return ResponseEntity.ok(addedFoodItem);
     }
 
     /**

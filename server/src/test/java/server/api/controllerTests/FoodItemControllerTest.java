@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.web.server.ResponseStatusException;
 import recipes.FoodItem;
 import server.api.controllers.FoodItemController;
 import server.repositories.FoodItemRepository;
@@ -19,13 +20,11 @@ import static org.mockito.Mockito.*;
 
 public class FoodItemControllerTest {
     private FoodItemController ctrl;
-    private FoodItemRepository repo;
+    private FoodItemService service;
 
     @BeforeEach
     public void setup(){
-        repo = mock(FoodItemRepository.class);
-        SimpMessagingTemplate msg = mock(SimpMessagingTemplate.class);
-        FoodItemService service = new FoodItemService(repo, msg);
+        service = mock(FoodItemService.class);
         ctrl = new FoodItemController(service);
     }
 
@@ -35,20 +34,40 @@ public class FoodItemControllerTest {
         FoodItem savedItem = new FoodItem("Milk");
         savedItem.setId(2L);
 
-        when(repo.findByName("Milk")).thenReturn(Optional.empty());
-        when(repo.save(item)).thenReturn(savedItem);
+        when(service.addFoodItem(savedItem)).thenReturn(savedItem);
 
         ResponseEntity<FoodItem> response = ctrl.issueAddFoodItem(item);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(savedItem, response.getBody());
+    }
 
+    @Test
+    public void addFoodItemTestUnsuccessfully(){
+        FoodItem item = new FoodItem("Milk");
+        FoodItem savedItem = new FoodItem("Milk");
+        savedItem.setId(2L);
+
+        FoodItem foodItem1 = new FoodItem("");
+        FoodItem foodItem2 = new FoodItem("Milk");
+
+        when(service.addFoodItem(foodItem1)).thenThrow
+                (new ResponseStatusException(HttpStatus.BAD_REQUEST));
+
+        when(service.addFoodItem(foodItem2)).thenThrow
+                (new ResponseStatusException(HttpStatus.CONFLICT));
+
+        ResponseEntity<FoodItem> response = ctrl.issueAddFoodItem(foodItem1);
+        ResponseEntity<FoodItem> response1 = ctrl.issueAddFoodItem(foodItem2);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals(HttpStatus.CONFLICT, response1.getStatusCode());
     }
 
     @Test
     public void issueGetAllFoodItemsTest(){
         List<FoodItem> mockList = List.of(new FoodItem("Bread"));
-        when(repo.findAllByOrderByNameAsc()).thenReturn(mockList);
+        when(service.getAllFoodItems()).thenReturn(mockList);
 
         List<FoodItem> result = ctrl.issueGetAllFoodItems();
 
@@ -61,7 +80,7 @@ public class FoodItemControllerTest {
         FoodItem test = new FoodItem("Milk");
         test.setId(10L);
 
-        when(repo.existsById(10L)).thenReturn(true);
+        when(service.deleteFoodItem(10L)).thenReturn(true);
 
         ResponseEntity<Void> response = ctrl.issueDeleteFoodItem(10L);
 
@@ -71,12 +90,12 @@ public class FoodItemControllerTest {
     @Test
     public void issueDeleteFoodItemMissingItem(){
         Long id = 99L;
-        when(repo.existsById(id)).thenReturn(false);
+        when(service.deleteFoodItem(id)).thenReturn(false);
 
         ResponseEntity<Void> response = ctrl.issueDeleteFoodItem(id);
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        verify(repo, times(0)).deleteById(id);
+        //verify(repo, times(0)).deleteById(id);
     }
 
     @Test
@@ -85,9 +104,9 @@ public class FoodItemControllerTest {
         old.setId(1L);
         FoodItem updated = new FoodItem("lemon2");
 
-        when(repo.findById(1L)).thenReturn(Optional.of(old));
-        when(repo.existsByNameAndIdNot("lemon2", 1L)).thenReturn(false);
-        when(repo.save(any())).thenReturn(old);
+        //when(repo.findById(1L)).thenReturn(Optional.of(old));
+        //when(repo.existsByNameAndIdNot("lemon2", 1L)).thenReturn(false);
+        //when(repo.save(any())).thenReturn(old);
 
         ResponseEntity<?> response = ctrl.issueUpdateFoodItem(1L, updated);
 

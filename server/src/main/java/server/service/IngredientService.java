@@ -1,6 +1,6 @@
 package server.service;
 
-import jakarta.ws.rs.NotFoundException;
+import exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import recipes.FoodItem;
@@ -33,7 +33,7 @@ public class IngredientService {
      */
     public int getFoodItemRecipeUsage(Long id) {
         FoodItem foodItem = foodItemRepo.findById(id).orElseThrow(() ->
-                new NotFoundException("Food Item not found"));
+                new ResourceNotFoundException("Food Item not found"));
         return ingredientRepo.countFoodItemRecipeUsages(foodItem);
     }
 }
