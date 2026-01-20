@@ -3,9 +3,7 @@ package server.service;
 import exceptions.ResourceNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.ResponseEntity;
 import recipes.FoodItem;
-import server.api.controllers.IngredientController;
 import server.repositories.FoodItemRepository;
 import server.repositories.IngredientRepository;
 
@@ -45,9 +43,7 @@ public class IngredientServiceTest {
         testItem.setId(1L);
 
         when(foodItemRepo.findById(1L)).thenThrow(new ResourceNotFoundException());
-        assertThrows(ResourceNotFoundException.class, () -> {
-            service.getFoodItemRecipeUsage(testItem.getId());
-        });
+        assertThrows(ResourceNotFoundException.class, () -> service.getFoodItemRecipeUsage(testItem.getId()));
     }
 
 }

@@ -40,7 +40,7 @@ public class RecipeServiceTest {
     @Test
     void testSaveRecipe() {
         // arrange: build Recipe with Ingredient and FoodItem
-        Recipe recipe = new Recipe("TestRecipe", new Locale("bg"));
+        Recipe recipe = new Recipe("TestRecipe", Locale.of("bg"));
         Ingredient ingredient = new Ingredient(100, "g");
         FoodItem foodItem = new FoodItem("Apple");
         ingredient.setFoodType(foodItem);
@@ -59,7 +59,7 @@ public class RecipeServiceTest {
     @Test
     void testSaveRecipeUnsuccessfully() {
         // arrange: build Recipe with Ingredient and FoodItem
-        Recipe recipe = new Recipe("TestRecipe", new Locale("bg"));
+        Recipe recipe = new Recipe("TestRecipe", Locale.of("bg"));
         Ingredient ingredient = new Ingredient(100, "g");
         FoodItem foodItem = new FoodItem("Apple");
         ingredient.setFoodType(foodItem);
@@ -76,7 +76,7 @@ public class RecipeServiceTest {
 
     @Test
     public void getAllRecipesTest() {
-        Recipe recipe = new Recipe("TestRecipe", new Locale("bg"));
+        Recipe recipe = new Recipe("TestRecipe", Locale.of("bg"));
         Ingredient ingredient = new Ingredient(100, "g");
         FoodItem foodItem = foodItemRepository.findByName("Apple").
                 orElseGet(() -> foodItemRepository.save(new FoodItem("Apple", 50, 14, 0, 0)));
@@ -93,7 +93,7 @@ public class RecipeServiceTest {
 
     @Test
     public void setAllIngredientsTest(){
-        Recipe r = new Recipe("Яйца по панагюрски", new Locale("bg"));
+        Recipe r = new Recipe("Яйца по панагюрски", Locale.of("bg"));
 
         Ingredient i =  new Ingredient();
         i.setFoodType(new FoodItem("яйце"));
@@ -101,7 +101,7 @@ public class RecipeServiceTest {
         ingredients.add(i);
         r.setId(1L);
 
-        Recipe expected = new Recipe("Яйца по панагюрски", new Locale("bg"));
+        Recipe expected = new Recipe("Яйца по панагюрски", Locale.of("bg"));
         expected.setIngredients(ingredients);
         Ingredient i2 = new Ingredient(new FoodItem("egg"), 20.0, "g");
         expected.addIngredient(i2);
@@ -119,7 +119,7 @@ public class RecipeServiceTest {
 
     @Test
     public void issueSetAllIngredientsTestFail(){
-        Recipe r = new Recipe("Яйца по панагюрски", new Locale("bg"));
+        Recipe r = new Recipe("Яйца по панагюрски", Locale.of("bg"));
 
         Ingredient i =  new Ingredient();
         i.setFoodType(new FoodItem("яйце"));
@@ -129,14 +129,12 @@ public class RecipeServiceTest {
 
         when(recipeRepository.findById(1L)).thenThrow(new ServerErrorException());
 
-        assertThrows(ServerErrorException.class, () -> {
-            service.setAllIngredients(ingredients, 1L);
-        });
+        assertThrows(ServerErrorException.class, () -> service.setAllIngredients(ingredients, 1L));
     }
 
     @Test
     public void issueDeleteRecipeTest() {
-        Recipe recipe = new Recipe("Deleted", new Locale("bg"));
+        Recipe recipe = new Recipe("Deleted", Locale.of("bg"));
         recipe.setId(1L);
 
         when(recipeRepository.existsById(1L)).thenReturn(true);
@@ -147,7 +145,7 @@ public class RecipeServiceTest {
 
     @Test
     public void issueDeleteRecipeUnsuccessfullyTest() {
-        Recipe recipe = new Recipe("Deleted", new Locale("bg"));
+        Recipe recipe = new Recipe("Deleted", Locale.of("bg"));
         recipe.setId(1L);
 
         when(recipeRepository.existsById(1L)).thenReturn(false);
@@ -158,7 +156,7 @@ public class RecipeServiceTest {
 
     @Test
     public void issueUpdateRecipeTest() {
-        Recipe r = new Recipe("Яйца по панагюрски", new Locale("bg"));
+        Recipe r = new Recipe("Яйца по панагюрски", Locale.of("bg"));
 
         Ingredient i =  new Ingredient();
         i.setFoodType(new FoodItem("яйце"));
@@ -167,7 +165,7 @@ public class RecipeServiceTest {
         r.setId(1L);
         r.setIngredients(ingredients);
 
-        Recipe r2 = new Recipe("Яйце по панагюрски", new Locale("bg"));
+        Recipe r2 = new Recipe("Яйце по панагюрски", Locale.of("bg"));
         r2.setIngredients(ingredients);
         r2.setInstructions(List.of("Boil"));
         r2.setId(1L);
@@ -180,7 +178,7 @@ public class RecipeServiceTest {
 
     @Test
     public void issueUpdateRecipeUnsuccessfulTest() {
-        Recipe r = new Recipe("Яйца по панагюрски", new Locale("bg"));
+        Recipe r = new Recipe("Яйца по панагюрски", Locale.of("bg"));
 
         Ingredient i =  new Ingredient();
         i.setFoodType(new FoodItem("яйце"));
@@ -189,7 +187,7 @@ public class RecipeServiceTest {
         r.setId(1L);
         r.setIngredients(ingredients);
 
-        Recipe r2 = new Recipe("Яйце по панагюрски", new Locale("bg"));
+        Recipe r2 = new Recipe("Яйце по панагюрски", Locale.of("bg"));
         r2.setIngredients(ingredients);
         r2.setInstructions(List.of("Boil"));
 

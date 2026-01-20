@@ -51,7 +51,7 @@ public final class LanguageManager {
         }
 
         String lang = props.getProperty(KEY_LANGUAGE, "en"); // default EN
-        return new Locale(lang);
+        return Locale.of(lang);
     }
 
     private static void saveLocaleToConfig(Locale locale) {
@@ -89,7 +89,7 @@ public final class LanguageManager {
         }
 
         return Arrays.stream(filters.split(",")).
-                map(Locale::new).collect(Collectors.toSet());
+                map(Locale::of).collect(Collectors.toSet());
     }
 
     /**

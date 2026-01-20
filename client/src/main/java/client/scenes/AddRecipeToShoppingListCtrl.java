@@ -157,7 +157,7 @@ public class AddRecipeToShoppingListCtrl {
 
         menuItem.setGraphic(icon);
 
-        menuItem.setOnAction(_ -> changeLanguage(new Locale(langCode)));
+        menuItem.setOnAction(_ -> changeLanguage(Locale.of(langCode)));
 
         return menuItem;
     }
@@ -341,7 +341,8 @@ public class AddRecipeToShoppingListCtrl {
                 }catch (NumberFormatException e) {
                     Alert wrongNumberInput = new Alert(Alert.AlertType.ERROR);
                     wrongNumberInput.setTitle(LanguageManager.getString("alert.decimal.title"));
-                    wrongNumberInput.setContentText(LanguageManager.getString("alert.decimal.content"));
+                    wrongNumberInput.setContentText(LanguageManager.getString
+                            ("alert.decimal.content"));
                     wrongNumberInput.showAndWait();
 
                     return null;

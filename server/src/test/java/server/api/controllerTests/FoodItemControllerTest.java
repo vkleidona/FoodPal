@@ -28,7 +28,7 @@ public class FoodItemControllerTest {
 
     @Test
     public void addFoodItemTest(){
-        FoodItem item = new FoodItem("Milk");
+        new FoodItem("Milk");
         FoodItem savedItem = new FoodItem("Milk");
         savedItem.setId(2L);
 
@@ -54,12 +54,8 @@ public class FoodItemControllerTest {
         when(service.addFoodItem(foodItem2)).thenThrow
                 (new ExistingFoodItemException());
 
-        assertThrows(MalformedRequestException.class, () -> {
-            ctrl.issueAddFoodItem(foodItem1);
-        });
-        assertThrows(ExistingFoodItemException.class, () -> {
-            ctrl.issueAddFoodItem(foodItem2);
-        });
+        assertThrows(MalformedRequestException.class, () -> ctrl.issueAddFoodItem(foodItem1));
+        assertThrows(ExistingFoodItemException.class, () -> ctrl.issueAddFoodItem(foodItem2));
     }
 
     @Test
@@ -123,13 +119,22 @@ public class FoodItemControllerTest {
 
         when(service.updateFoodItem(1L, sameName)).thenThrow(new ExistingFoodItemException ());
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            ctrl.issueUpdateFoodItem(3L, updated);
-        });
+        assertThrows(ResourceNotFoundException.class, () -> ctrl.issueUpdateFoodItem(3L, updated));
 
-        assertThrows(ExistingFoodItemException.class, () -> {
-            ctrl.issueUpdateFoodItem(1L, sameName);
-        });
+        assertThrows(ExistingFoodItemException.class, () -> ctrl.issueUpdateFoodItem(1L, sameName));
+    }
+
+    @Test
+    public void searchByTermTest() {
+        FoodItem f1 = new FoodItem ("egg");
+        FoodItem f2 = new FoodItem("Potato");
+
+        List <FoodItem> testList = List.of(f1, f2);
+
+        when(service.searchByName("egg")).thenReturn(f1);
+
+        FoodItem returned = ctrl.issueSearchByName("egg");
+        assertEquals(testList.getFirst(), returned);
     }
 
 }

@@ -6,16 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import recipes.FoodItem;
 import recipes.Ingredient;
 import recipes.Recipe;
-import server.api.controllers.RecipeController;
 import server.repositories.FoodItemRepository;
 import server.repositories.RecipeRepository;
-import server.service.RecipeService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,21 +42,16 @@ public class RecipeIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
-    private SimpMessagingTemplate messageTemplate;
-
     @BeforeEach
     void setup() {
         recipeRepository.deleteAll();
         foodItemRepository.deleteAll();
-        RecipeService service = new RecipeService(recipeRepository, foodItemRepository, messageTemplate);
-        RecipeController recipeController = new RecipeController(service);
     }
 
     @Test
     void testSaveRecipe() throws Exception {
         // arrange: build Recipe with Ingredient and FoodItem
-        Recipe recipe = new Recipe("TestRecipe", new Locale ("bg"));
+        Recipe recipe = new Recipe("TestRecipe", Locale.of("bg"));
         Ingredient ingredient = new Ingredient(100, "g");
         FoodItem foodItem = foodItemRepository.findByName("Apple").
                 orElseGet(() -> foodItemRepository.save(new FoodItem("Apple", 50, 14, 0, 0)));
@@ -87,8 +79,8 @@ public class RecipeIntegrationTest {
 
     @Test
     public void getAllRecipesTest() throws Exception{
-        recipeRepository.save(new Recipe("Pasta", new Locale("bg")));
-        recipeRepository.save(new Recipe("Pizza", new Locale ("bg")));
+        recipeRepository.save(new Recipe("Pasta", Locale.of("bg")));
+        recipeRepository.save(new Recipe("Pizza", Locale.of("bg")));
 
         String jsonResponse = mockMvc.perform(get("/api/recipes")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -106,7 +98,7 @@ public class RecipeIntegrationTest {
 
     @Test
     public void issueSetAllIngredientsTest() throws Exception{
-        Recipe r = new Recipe("Omelette", new Locale("bg"));
+        Recipe r = new Recipe("Omelette", Locale.of("bg"));
         r = recipeRepository.save(r);
 
         Ingredient i =  new Ingredient();
@@ -128,7 +120,7 @@ public class RecipeIntegrationTest {
 
     @Test
     public void issueDeleteRecipeTest() throws Exception{
-        Recipe recipe = new Recipe("To be deleted", new Locale("bg"));
+        Recipe recipe = new Recipe("To be deleted", Locale.of("bg"));
         recipe = recipeRepository.save(recipe);
 
         mockMvc.perform(delete("/api/recipes/" + recipe.getId()))
@@ -141,7 +133,7 @@ public class RecipeIntegrationTest {
 
     @Test
     public void issueUpdateRecipeNameTest() throws Exception{
-        Recipe original = new Recipe("Old name", new Locale("bg"));
+        Recipe original = new Recipe("Old name", Locale.of("bg"));
         original = recipeRepository.save(original);
 
         Recipe updated = new Recipe("New name");

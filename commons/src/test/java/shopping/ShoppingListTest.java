@@ -36,7 +36,7 @@ class ShoppingListTest {
         f = new FoodItem("slanina", 10, 20, 30, 40);
         i = new Ingredient(20, "g");
         i2 = new Ingredient(30, "g");
-        r = new Recipe("bryndzové halušky", new Locale("en"));
+        r = new Recipe("bryndzové halušky", Locale.ENGLISH);
         i.setRecipe(r);
         i.setFoodType(f);
         i2.setRecipe(r);

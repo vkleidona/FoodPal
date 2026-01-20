@@ -20,7 +20,7 @@ public class RecipeRepositoryTest {
     @Test
     void testSaveAndFindById() {
         Recipe recipe = new Recipe("Pasta");
-        recipe.setLocale(new Locale("en"));
+        recipe.setLocale(Locale.ENGLISH);
         Recipe saved = recipeRepository.save(recipe);
 
         assertNotNull(saved.getId(), "Id should be generated after saving");
@@ -34,8 +34,8 @@ public class RecipeRepositoryTest {
     void testFindAll() {
         Recipe r = new Recipe("Salad");
         Recipe r2 = new Recipe("Soup");
-        r.setLocale(new Locale("en"));
-        r2.setLocale(new Locale("en"));
+        r.setLocale(Locale.ENGLISH);
+        r2.setLocale(Locale.ENGLISH);
         recipeRepository.save(r);
         recipeRepository.save(r2);
 
@@ -46,7 +46,7 @@ public class RecipeRepositoryTest {
     @Test
     void testDelete() {
         Recipe recipe = new Recipe("Cake");
-        recipe.setLocale(new Locale("bg"));
+        recipe.setLocale(Locale.ENGLISH);
         Recipe saved = recipeRepository.save(recipe);
         long id = saved.getId();
 

@@ -45,9 +45,7 @@ public class IngredientControllerTest {
         when(service.getFoodItemRecipeUsage(99L)).
                 thenThrow(new ResourceNotFoundException("Food Item not found"));
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            ctrl.issueGetFoodItemRecipeUsage(99L);
-        });
+        assertThrows(ResourceNotFoundException.class, () -> ctrl.issueGetFoodItemRecipeUsage(99L));
     }
 
 }
