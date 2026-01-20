@@ -3,7 +3,6 @@ package client.scenes;
 import jakarta.inject.Inject;
 
 import javafx.fxml.FXML;
-import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
@@ -11,7 +10,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
-import org.w3c.dom.Text;
 import recipes.FoodItem;
 import recipes.Ingredient;
 import recipes.Recipe;
@@ -664,6 +662,11 @@ public class InformationCtrl {
         }
     }
 
+    /**
+     * Creates a copy of the scaled recipe,
+     * appends the scale factor to the recipe name and opens the
+     * add to shopping list screen, passing this copy.
+     */
     @FXML
     public void handleSaveScaledRecipeToShoppingList(){
         Recipe scaledRecipe = copyRecipe(currentRecipe);
@@ -672,9 +675,7 @@ public class InformationCtrl {
         String label = String.format(" (%.2gx)", factor); // to stop after 2 decimal places and to round
         scaledRecipe.setName(scaledRecipe.getName() + label);
 
-        if (scaledRecipe != null){
-            mainCtrl.showAddScaledRecipeToShoppingList(scaledRecipe);
-        }
+        mainCtrl.showAddScaledRecipeToShoppingList(scaledRecipe);
     }
 
 }

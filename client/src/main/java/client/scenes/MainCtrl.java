@@ -268,6 +268,11 @@ public class MainCtrl {
         primaryStage.setScene(addRecipeToShoppingList);
     }
 
+    /**
+     * Opens the add to shopping list screen populated with the provided
+     * scaled recipe.
+     * @param recipeToAdd The scaled recipe object to be passed to the view.
+     */
     public void showAddScaledRecipeToShoppingList(Recipe recipeToAdd){
         primaryStage.setTitle("Add Recipe to Shopping List");
         addRecipeToShoppingListCtrl.setRecipe(recipeToAdd);

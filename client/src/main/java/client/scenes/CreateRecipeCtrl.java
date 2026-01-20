@@ -590,7 +590,7 @@ public class CreateRecipeCtrl {
     public void handleAddIngredient() {
         // creating ComboBox for Food Items
         ComboBox<String> foodItemBox = new ComboBox<>();
-        foodItemBox.setEditable(true); // Allow typing to filter
+        foodItemBox.setEditable(false);
         foodItemBox.setPromptText("Select Ingredient");
         foodItemBox.setPrefWidth(150);
 
