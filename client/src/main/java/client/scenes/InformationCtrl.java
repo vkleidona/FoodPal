@@ -30,7 +30,6 @@ public class InformationCtrl {
     @FXML private Label fatsLabel;
     @FXML private TextField servingsField;
     @FXML private VBox ingredientsContainer;
-    @FXML private TextField caloriesRecipe;
 
     @FXML
     private MenuButton languageButton;
@@ -383,7 +382,7 @@ public class InformationCtrl {
 
         // Clear scale field and calories field to match fresh state
         scaleFactor.clear();
-        caloriesRecipe.setText(String.format("%.0f", recalculateTotalCalories()));
+
     }
 
 
@@ -450,47 +449,6 @@ public class InformationCtrl {
         }
     }
 
-    /**
-     *  Scaling logic: User changes Total Calories -> Scale Servings & Ingredients
-     */
-    @FXML
-    public void handleCaloriesRecipe() {
-        try {
-            double newTotalCalories = Double.parseDouble(caloriesRecipe.getText());
-            if (newTotalCalories < 0) return;
-
-            // 1. Calculate current total calories to determine scale factor
-            double currentTotalCalories = 0;
-            if (currentRecipe.getIngredients() != null) {
-                currentTotalCalories = recalculateTotalCalories();
-            }
-
-            if (currentTotalCalories == 0) return;
-
-            // determine Scale Factor
-            double scaleFactor = newTotalCalories / currentTotalCalories;
-
-            // update Servings (Rounded)
-            int newServings = (int) Math.round(currentRecipe.getServings() * scaleFactor);
-            if (newServings < 1) newServings = 1;
-
-            currentRecipe.setServings(newServings);
-            servingsField.setText(String.valueOf(newServings));
-
-            // scale all ingredients
-            for (Ingredient ing : currentRecipe.getIngredients()) {
-                scaleIngredient(ing, scaleFactor);
-            }
-
-            // refresh UI
-            renderIngredientsList();
-            calculateAndShowNutrition();
-
-        } catch (NumberFormatException e) {
-            // ignore invalid input
-            calculateAndShowNutrition(); // reset field to correct value
-        }
-    }
 
     /**
      * A method which recalculates the total calories for one recipe
@@ -528,7 +486,7 @@ public class InformationCtrl {
      */
     public void calculateAndShowNutrition() {
 
-        double [] data = new double[]{0, 0, 0, 0, 0};
+        double[] data = new double[]{0, 0, 0, 0, 0};
         if (currentRecipe.getIngredients() != null) {
             data = calculateNutrition();
         }
@@ -539,39 +497,41 @@ public class InformationCtrl {
         double totalFat = data[3];
         double totalWeightInGrams = data[4];
 
-        caloriesRecipe.setText(String.format("%.0f", totalCal));
-
-        // Calculate values per 100g of the final dish
         if (totalWeightInGrams > 0) {
             double factor = 100.0 / totalWeightInGrams;
 
+            double calPer100  = totalCal  * factor;
+            double protPer100 = totalProt * factor;
+            double carbPer100 = totalCarb * factor;
+            double fatPer100  = totalFat  * factor;
+
             caloriesLabel.setText(MessageFormat.format(
                     resources.getString("info.caloriesPer100.value"),
-                    totalCal * factor));
+                    calPer100, totalCal));
 
             proteinsLabel.setText(MessageFormat.format(
                     resources.getString("info.proteinsPer100.value"),
-                    totalProt * factor));
+                    protPer100, totalProt));
 
             carbsLabel.setText(MessageFormat.format(
                     resources.getString("info.carbsPer100.value"),
-                    totalCarb * factor));
+                    carbPer100, totalCarb));
 
             fatsLabel.setText(MessageFormat.format(
                     resources.getString("info.fatsPer100.value"),
-                    totalFat * factor));
+                    fatPer100, totalFat));
         } else {
             caloriesLabel.setText(MessageFormat.format(
-                    resources.getString("info.caloriesPer100.value"), 0.0));
+                    resources.getString("info.caloriesPer100.value"), 0.0, 0.0));
             proteinsLabel.setText(MessageFormat.format(
-                    resources.getString("info.proteinsPer100.value"), 0.0));
+                    resources.getString("info.proteinsPer100.value"), 0.0, 0.0));
             carbsLabel.setText(MessageFormat.format(
-                    resources.getString("info.carbsPer100.value"), 0.0));
+                    resources.getString("info.carbsPer100.value"), 0.0, 0.0));
             fatsLabel.setText(MessageFormat.format(
-                    resources.getString("info.fatsPer100.value"), 0.0));
+                    resources.getString("info.fatsPer100.value"), 0.0, 0.0));
         }
-
     }
+
 
     /**
      * A helper method which returns an array of all nutritional values
@@ -587,23 +547,19 @@ public class InformationCtrl {
 
         for (Ingredient ing : currentRecipe.getIngredients()) {
             FoodItem food = ing.getFoodType();
-
-            // track total weight of the recipe to normalize to 100g later
             double grams = ing.getQuantityInGrams();
             totalWeightInGrams += grams;
 
             if (food != null) {
-                // add actual total nutrients for this ingredient to the recipe totals
-                // ratio: (Grams / 100) because FoodItem values are stored per 100g
                 double ratio = grams / 100.0;
-
-                totalCal += ratio * food.getKcal();
+                totalCal  += ratio * food.getKcal();
                 totalProt += ratio * food.getProteins();
                 totalCarb += ratio * food.getCarbs();
-                totalFat += ratio * food.getFats();
+                totalFat  += ratio * food.getFats();
             }
         }
-        return new double[]{totalCal, totalCarb, totalProt, totalFat, totalWeightInGrams};
+        // [0]=kcal, [1]=proteins, [2]=carbs, [3]=fats, [4]=weight
+        return new double[]{totalCal, totalProt, totalCarb, totalFat, totalWeightInGrams};
     }
     /**
      * Automatically converts units based on quantity thresholds.
