@@ -2,6 +2,7 @@ package server.api.controllerTests;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.ResponseEntity;
 import recipes.FoodItem;
 import server.api.controllers.IngredientController;
 import server.repositories.FoodItemRepository;
@@ -10,7 +11,7 @@ import server.service.IngredientService;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -36,7 +37,10 @@ public class IngredientControllerTest {
         when(foodItemRepo.findById(1L)).thenReturn(Optional.of(testItem));
         when(ingredientRepo.countFoodItemRecipeUsages(testItem)).thenReturn(5);
 
-        int result = ctrl.issueGetFoodItemRecipeUsage(1L);
+        ResponseEntity<Integer> response = ctrl.issueGetFoodItemRecipeUsage(1L);
+        assertFalse(response.getStatusCode().isError());
+        assertNotNull(response.getBody());
+        int result = response.getBody();
         assertEquals(5, result);
     }
 

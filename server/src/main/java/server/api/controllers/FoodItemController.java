@@ -1,5 +1,6 @@
 package server.api.controllers;
 
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +31,16 @@ public class FoodItemController {
      */
     @PostMapping(path = { "", "/" })
     public ResponseEntity<FoodItem> issueAddFoodItem(@RequestBody FoodItem foodItem) {
-        return service.addFoodItem(foodItem);
+        try {
+            FoodItem addedFoodItem = service.addFoodItem(foodItem);
+            return ResponseEntity.ok(addedFoodItem);
+        }catch (DuplicateKeyException e) {
+            System.err.println("Error - Food Item with the same name already found");
+            return ResponseEntity.status(409).build();
+        }catch (RuntimeException e) {
+            System.err.println("Error - Could not save FoodItem");
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     /**
@@ -49,7 +59,11 @@ public class FoodItemController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> issueDeleteFoodItem(@PathVariable Long id) {
-        return service.deleteFoodItem(id);
+        boolean deleted = service.deleteFoodItem(id);
+        if (deleted) {
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 
     /**
@@ -62,8 +76,16 @@ public class FoodItemController {
     @PutMapping("/{id}")
     public ResponseEntity<?> issueUpdateFoodItem(@PathVariable Long id,
                                                  @RequestBody FoodItem updatedItem) {
-
-        return service.updateFoodItem(id, updatedItem);
+        try {
+            FoodItem addedFoodItem = service.updateFoodItem(id, updatedItem);
+            return ResponseEntity.ok(addedFoodItem);
+        }catch (DuplicateKeyException e) {
+            System.err.println("Error - Food Item with the same name already found");
+            return ResponseEntity.status(409).build();
+        }catch (RuntimeException e) {
+            System.err.println("Error - Could not save FoodItem");
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     /**

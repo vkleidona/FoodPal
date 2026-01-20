@@ -1,6 +1,8 @@
 package server.api.controllers;
 
+import jakarta.ws.rs.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import recipes.*;
@@ -31,7 +33,13 @@ public class RecipeController {
      */
     @PostMapping(consumes = "application/json")
     public ResponseEntity<Long> issueSaveRecipe(@RequestBody Recipe recipe) {
-        return recipeService.saveRecipe(recipe);
+        try {
+            Long id = recipeService.saveRecipe(recipe);
+            return ResponseEntity.status(HttpStatus.CREATED).body(id);
+        }catch (RuntimeException e) {
+            return ResponseEntity.internalServerError().build();
+        }
+
     }
 
     /**
@@ -39,8 +47,9 @@ public class RecipeController {
      * @return List <Recipe> - returns a list of all Recipe objects
      */
     @GetMapping
-    public List<Recipe> issueGetAllRecipes() {
-        return recipeService.getAllRecipes();
+    public ResponseEntity<List<Recipe>> issueGetAllRecipes() {
+        List <Recipe> recipes = recipeService.getAllRecipes();
+        return ResponseEntity.ok(recipes);
     }
 
     /**
@@ -50,7 +59,11 @@ public class RecipeController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> issueDeleteRecipe(@PathVariable Long id) {
-        return recipeService.deleteRecipe(id);
+        boolean successfulDelete = recipeService.deleteRecipe(id);
+        if (successfulDelete) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.internalServerError().build();
     }
 
     /**
@@ -63,7 +76,14 @@ public class RecipeController {
     @PutMapping(path = "/ingredients/set/{recipeId}")
     public ResponseEntity<Recipe> issueSetAllIngredients(@RequestBody List<Ingredient> ingredients,
                                                          @PathVariable Long recipeId) {
-        return recipeService.setAllIngredients(ingredients, recipeId);
+        try {
+            Recipe recipe = recipeService.setAllIngredients(ingredients, recipeId);
+            return ResponseEntity.ok(recipe);
+        }catch (RuntimeException e) {
+            System.err.println("Error - could not save ingredients");
+            return ResponseEntity.internalServerError().build();
+        }
+
     }
 
     /**
@@ -75,7 +95,17 @@ public class RecipeController {
     @PutMapping(path = "/{id}")
     public ResponseEntity <Recipe> issueUpdateRecipe(@PathVariable("id") Long id,
                                                      @RequestBody Recipe updatedRecipe) {
-        return recipeService.updateRecipe(id, updatedRecipe);
+        try {
+            Recipe updated = recipeService.updateRecipe(id, updatedRecipe);
+            return ResponseEntity.ok(updated);
+        }catch (NotFoundException e) {
+            System.err.println("Error - recipe ID not found");
+            return ResponseEntity.notFound().build();
+        }catch(RuntimeException e) {
+            System.err.println("Error - recipe could not be updated");
+            return ResponseEntity.internalServerError().build();
+        }
+
     }
 
     /**

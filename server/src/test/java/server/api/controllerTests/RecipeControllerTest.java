@@ -14,7 +14,6 @@ import recipes.Ingredient;
 import recipes.Recipe;
 import server.api.controllers.RecipeController;
 import server.repositories.FoodItemRepository;
-import server.repositories.IngredientRepository;
 import server.repositories.RecipeRepository;
 import server.service.RecipeService;
 
@@ -47,17 +46,13 @@ public class RecipeControllerTest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private IngredientRepository ingredientRepository;
-
-    @Autowired
     private SimpMessagingTemplate messageTemplate;
 
     @BeforeEach
     void setup() {
         recipeRepository.deleteAll();
         foodItemRepository.deleteAll();
-        RecipeService service = new RecipeService(recipeRepository, foodItemRepository,
-                ingredientRepository, messageTemplate);
+        RecipeService service = new RecipeService(recipeRepository, foodItemRepository, messageTemplate);
         RecipeController recipeController = new RecipeController(service);
     }
 

@@ -1,6 +1,8 @@
 package server.api.controllers;
 
+import jakarta.ws.rs.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,8 +30,14 @@ public class IngredientController {
      * @return int - how many times has this FoodItem been used in recipes
      */
     @GetMapping("/usage/{id}")
-    public int issueGetFoodItemRecipeUsage(@PathVariable Long id) {
-        return ingredientService.getFoodItemRecipeUsage(id);
+    public ResponseEntity<Integer> issueGetFoodItemRecipeUsage(@PathVariable Long id) {
+        try {
+            int usageCount = ingredientService.getFoodItemRecipeUsage(id);
+            return ResponseEntity.ok(usageCount);
+        }catch (NotFoundException e) {
+            System.err.println("Error - ingredient could not be found");
+            return ResponseEntity.notFound().build();
+        }
     }
 }
 

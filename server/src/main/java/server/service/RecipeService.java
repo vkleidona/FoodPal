@@ -1,8 +1,9 @@
 package server.service;
 
 import commons.MiniUpdate;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
@@ -10,7 +11,6 @@ import recipes.FoodItem;
 import recipes.Ingredient;
 import recipes.Recipe;
 import server.repositories.FoodItemRepository;
-import server.repositories.IngredientRepository;
 import server.repositories.RecipeRepository;
 
 import java.util.List;
@@ -23,25 +23,20 @@ public class RecipeService {
 
     private final FoodItemRepository foodItemRepository;
 
-    private final IngredientRepository ingredientRepository;
-
     private final SimpMessagingTemplate messageTemplate;
 
     /**
      * A Dependency-Injection using constructor for all fields of the service class
      * @param recipeRepository - the repository for recipes
      * @param foodItemRepository - the repository for FoodItems
-     * @param ingredientRepository - the repository for ingredients
      * @param messageTemplate - the message template used to communicate with the client
      */
     @Autowired
     public RecipeService(RecipeRepository recipeRepository,
                          FoodItemRepository foodItemRepository,
-                         IngredientRepository ingredientRepository,
                          SimpMessagingTemplate messageTemplate) {
         this.recipeRepository = recipeRepository;
         this.foodItemRepository = foodItemRepository;
-        this.ingredientRepository = ingredientRepository;
         this.messageTemplate = messageTemplate;
     }
 
@@ -51,8 +46,8 @@ public class RecipeService {
      * @return ResponseEntity <Long> - the ID of the newly added recipe,
      * as well as a status code for the response
      */
-    @PostMapping(consumes = "application/json")
-    public ResponseEntity<Long> saveRecipe(@RequestBody Recipe recipe) {
+    @Transactional
+    public Long saveRecipe(@RequestBody Recipe recipe) {
         for (Ingredient ingredient : recipe.getIngredients()) {
 
             FoodItem incoming = ingredient.getFoodType();
@@ -69,13 +64,17 @@ public class RecipeService {
             ingredient.setFoodType(foodItem);
             ingredient.setRecipe(recipe);
         }
-
-        Recipe saved = recipeRepository.save(recipe);
-        MiniUpdate miniUpdate = new MiniUpdate(saved.getId(), saved.getName());
-        messageTemplate.convertAndSend("/topic/recipes/" + saved.getId(), saved);
-        messageTemplate.convertAndSend("/topic/recipes/new", saved);
-        messageTemplate.convertAndSend("/topic/recipes", miniUpdate);
-        return ResponseEntity.ok(saved.getId());
+        try {
+            Recipe saved = recipeRepository.save(recipe);
+            MiniUpdate miniUpdate = new MiniUpdate(saved.getId(), saved.getName());
+            messageTemplate.convertAndSend("/topic/recipes/" + saved.getId(), saved);
+            messageTemplate.convertAndSend("/topic/recipes/new", saved);
+            messageTemplate.convertAndSend("/topic/recipes", miniUpdate);
+            return saved.getId();
+        }catch (Exception e) {
+            System.err.println("Error - could not save recipe due to a database error");
+            throw new RuntimeException();
+        }
     }
 
     /**
@@ -90,18 +89,17 @@ public class RecipeService {
 
     /**
      * Deletes a recipe from the server by ID
-     *
      * @param id - the ID of the recipe to be deleted
-     * @return ResponseEntity <Void> - sends the status of the request
+     * @return Boolean - the ID of the recipe deleted (if successful)
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteRecipe(@PathVariable Long id) {
+    public Boolean deleteRecipe(@PathVariable Long id) {
         if (recipeRepository.existsById(id)) {
             recipeRepository.deleteById(id);
             messageTemplate.convertAndSend("/topic/recipes/delete", id);
-            return ResponseEntity.noContent().build();
+            return true;
         } else {
-            return ResponseEntity.notFound().build();
+            return false;
         }
     }
 
@@ -114,10 +112,10 @@ public class RecipeService {
      * together with the response's status code
      */
     @PutMapping(path = "/ingredients/set/{recipeId}")
-    public ResponseEntity<Recipe> setAllIngredients(@RequestBody List<Ingredient> ingredients,
+    public Recipe setAllIngredients(@RequestBody List<Ingredient> ingredients,
                                                     @PathVariable Long recipeId) {
         if (recipeRepository.findById(recipeId).isEmpty()) {
-            return ResponseEntity.notFound().build();
+            throw new RuntimeException();
         }
 
         return recipeRepository.findById(recipeId).map(currentRecipe -> {
@@ -131,8 +129,8 @@ public class RecipeService {
             MiniUpdate miniUpdate = new MiniUpdate(saved.getId(), saved.getName());
             messageTemplate.convertAndSend("/topic/recipes", miniUpdate);
             messageTemplate.convertAndSend("/topic/recipes/" + saved.getId(), saved);
-            return ResponseEntity.ok(saved);
-        }).orElse(ResponseEntity.notFound().build());
+            return saved;
+        }).orElseThrow();
     }
 
     /**
@@ -143,13 +141,13 @@ public class RecipeService {
      * @return ResponseEntity <Recipe> - the updated recipe, as well as the response status
      */
     @PutMapping(path = "/{id}")
-    public ResponseEntity<Recipe> updateRecipe(@PathVariable("id") Long id,
+    public Recipe updateRecipe(@PathVariable("id") Long id,
                                                @RequestBody Recipe updatedRecipe) {
         if (recipeRepository.findById(id).isEmpty()) {
-            return ResponseEntity.notFound().build();
+            throw new NotFoundException();
         }
 
-        recipeRepository.findById(id).map(oldRecipe -> {
+        return recipeRepository.findById(id).map(oldRecipe -> {
             oldRecipe.setName(updatedRecipe.getName());
             oldRecipe.setServings(updatedRecipe.getServings());
             oldRecipe.setInstructions(updatedRecipe.getInstructions());
@@ -161,9 +159,8 @@ public class RecipeService {
             MiniUpdate miniUpdate = new MiniUpdate(newRecipe.getId(), newRecipe.getName());
             messageTemplate.convertAndSend("/topic/recipes", miniUpdate);
             messageTemplate.convertAndSend("/topic/recipes/" + newRecipe.getId(), newRecipe);
-            return ResponseEntity.ok(newRecipe);
-        });
-        return ResponseEntity.ok().build();
+            return newRecipe;
+        }).orElseThrow();
     }
 
     /**

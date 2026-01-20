@@ -1,6 +1,9 @@
 package server.service;
 
 import commons.MiniUpdate;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.NotFoundException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,17 +39,14 @@ public class FoodItemService {
      * @param foodItem - the FoodItem item to be saved
      * @return ResponseEntity <FoodItem> - a response containing the FoodItem and the status
      */
-    @PostMapping(path = { "", "/" })
-    public ResponseEntity<FoodItem> addFoodItem(@RequestBody FoodItem foodItem) {
+    public FoodItem addFoodItem(FoodItem foodItem) {
 
         if(foodItem.getName() == null || foodItem.getName().isEmpty()) {
-            return ResponseEntity.badRequest().build();
+            throw new BadRequestException();
         }
 
         if(repo.findByName(foodItem.getName()).isPresent()) {
-            return ResponseEntity
-                    .status(HttpStatus.CONFLICT)
-                    .body(foodItem);
+            throw new DuplicateKeyException("Found an item with the same name");
         }
 
         FoodItem saved = repo.save(foodItem);
@@ -54,14 +54,13 @@ public class FoodItemService {
         messageTemplate.convertAndSend("/topic/food_items", miniUpdate);
         messageTemplate.convertAndSend("/topic/food_items/" + foodItem.getId(), saved);
         messageTemplate.convertAndSend("/topic/food_items/new", saved);
-        return ResponseEntity.ok(saved);
+        return saved;
     }
 
     /**
      * Retrieves all FoodItems from the database
      * @return List <FoodItem> - a List of all FoodItems from the database
      */
-    @GetMapping(path = { "", "/"})
     public List<FoodItem> getAllFoodItems() {
         return repo.findAllByOrderByNameAsc();
     }
@@ -71,15 +70,14 @@ public class FoodItemService {
      * @param id - the id of the FoodItem entity to be deleted
      * @return ResponseEntity - returns whether the method was a success or a failure
      */
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteFoodItem(@PathVariable Long id) {
+    public boolean deleteFoodItem(@PathVariable Long id) {
         if (!repo.existsById(id)) {
-            return ResponseEntity.notFound().build();
+            return false;
         }
 
         repo.deleteById(id);
         messageTemplate.convertAndSend("/topic/food_items/delete", id);
-        return ResponseEntity.ok().build();
+        return true;
     }
 
     /**
@@ -89,18 +87,16 @@ public class FoodItemService {
      * @return ResponseEntity - returns either the updated FoodItem
      * or a warning for unsuccessful operation
      */
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateFoodItem(@PathVariable Long id,
+    public FoodItem updateFoodItem(@PathVariable Long id,
                                             @RequestBody FoodItem updatedItem) {
 
         Optional<FoodItem> foodItem = repo.findById(id);
         if (foodItem.isEmpty()) {
-            return ResponseEntity.notFound().build();
+            throw new NotFoundException();
         }
 
         if (repo.existsByNameAndIdNot(updatedItem.getName(), id)) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).
-                    body("A food item with the same already exists");
+            throw new DuplicateKeyException("A food item with the same name already exists");
         }
 
         FoodItem item = foodItem.get();
@@ -114,7 +110,7 @@ public class FoodItemService {
         MiniUpdate miniUpdate = new MiniUpdate (saved.getId(), saved.getName());
         messageTemplate.convertAndSend("/topic/food_items", miniUpdate);
         messageTemplate.convertAndSend("/topic/food_items/" + saved.getId(), saved);
-        return ResponseEntity.ok(saved);
+        return saved;
     }
 
     /**
@@ -122,7 +118,6 @@ public class FoodItemService {
      * @param foodType - the String denoting the name of the FoodItem to be sent
      * @return FoodItem - returns the found FoodItem by name
      */
-    @GetMapping("/search")
     public FoodItem searchByName(@RequestParam("name") String foodType) {
         return repo.findByName(foodType).orElse(null);
     }
