@@ -62,6 +62,8 @@ public class MainCtrl {
 
     private final WebSocketService webSocketService;
 
+    private boolean cameFromEditIngredients;
+
     /**
      * A constructor for the MainCtrl class using Dependency Injection
      * @param fxml - the FXML module which loads the scenes
@@ -427,6 +429,23 @@ public class MainCtrl {
         this.shoppingListMainCtrl = shoppingListMainPair.getKey();
         this.shoppingListMainScene = new Scene(shoppingListMainPair.getValue());
     }
+
+    /**
+     * A helper method to remember if the user accessed a screen through the edit ingredients screen.
+     * @param cameFromEditIngredients
+     */
+    public void setCameFromEditIngredients(boolean cameFromEditIngredients){
+        this.cameFromEditIngredients = cameFromEditIngredients;
+    }
+
+    /**
+     * Checks whether the previous screen was edit ingredients.
+     * @return - returns true if a screen was accessed through the edit ingredients screen. Otherwise, it returns false.
+     */
+    public boolean isCameFromEditIngredients(){
+        return cameFromEditIngredients;
+    }
+
 
     /**
      * A testing constructor for the MainCtrl
