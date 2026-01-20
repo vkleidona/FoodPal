@@ -8,6 +8,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import recipes.FoodItem;
 import server.api.controllers.FoodItemController;
 import server.repositories.FoodItemRepository;
+import server.service.FoodItemService;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,8 +25,8 @@ public class FoodItemControllerTest {
     public void setup(){
         repo = mock(FoodItemRepository.class);
         SimpMessagingTemplate msg = mock(SimpMessagingTemplate.class);
-
-        ctrl = new FoodItemController(repo, msg);
+        FoodItemService service = new FoodItemService(repo, msg);
+        ctrl = new FoodItemController(service);
     }
 
     @Test

@@ -1,36 +1,26 @@
 package server.api.controllers;
 
-import commons.MiniUpdate;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import recipes.FoodItem;
-import server.repositories.FoodItemRepository;
+import server.service.FoodItemService;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("api/fooditems")
 public class FoodItemController {
 
-    @Autowired
-    private final FoodItemRepository repo;
-
-    @Autowired
-    private final SimpMessagingTemplate messageTemplate;
+    private final FoodItemService service;
 
     /**
      * A constructor for the FoodItemController class
-     * @param repo - the repository which is to be saved
-     * @param messageTemplate - the communication tool to push server changes to the client
+     * @param service - the injected Service class which handles this controller's requests
      */
     @Autowired
-    public FoodItemController(FoodItemRepository repo, SimpMessagingTemplate messageTemplate) {
-        this.repo = repo;
-        this.messageTemplate = messageTemplate;
+    public FoodItemController(FoodItemService service) {
+        this.service = service;
     }
 
     /**
@@ -40,23 +30,7 @@ public class FoodItemController {
      */
     @PostMapping(path = { "", "/" })
     public ResponseEntity<FoodItem> addFoodItem(@RequestBody FoodItem foodItem) {
-
-        if(foodItem.getName() == null || foodItem.getName().isEmpty()) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        if(repo.findByName(foodItem.getName()).isPresent()) {
-            return ResponseEntity
-                    .status(HttpStatus.CONFLICT)
-                    .body(foodItem);
-        }
-
-        FoodItem saved = repo.save(foodItem);
-        MiniUpdate miniUpdate = new MiniUpdate (saved.getId(), saved.getName());
-        messageTemplate.convertAndSend("/topic/food_items", miniUpdate);
-        messageTemplate.convertAndSend("/topic/food_items/" + foodItem.getId(), saved);
-        messageTemplate.convertAndSend("/topic/food_items/new", saved);
-        return ResponseEntity.ok(saved);
+        return service.addFoodItem(foodItem);
     }
 
     /**
@@ -65,7 +39,7 @@ public class FoodItemController {
      */
     @GetMapping(path = { "", "/"})
     public List<FoodItem> getAllFoodItems() {
-        return repo.findAllByOrderByNameAsc();
+        return service.getAllFoodItems();
     }
 
     /**
@@ -75,13 +49,7 @@ public class FoodItemController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteFoodItem(@PathVariable Long id) {
-        if (!repo.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-
-        repo.deleteById(id);
-        messageTemplate.convertAndSend("/topic/food_items/delete", id);
-        return ResponseEntity.ok().build();
+        return service.deleteFoodItem(id);
     }
 
     /**
@@ -95,28 +63,7 @@ public class FoodItemController {
     public ResponseEntity<?> updateFoodItem(@PathVariable Long id,
                                             @RequestBody FoodItem updatedItem) {
 
-        Optional<FoodItem> foodItem = repo.findById(id);
-        if (foodItem.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        if (repo.existsByNameAndIdNot(updatedItem.getName(), id)) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).
-                    body("A food item with the same already exists");
-        }
-
-        FoodItem item = foodItem.get();
-        item.setName(updatedItem.getName());
-        item.setKcal(updatedItem.getKcal());
-        item.setCarbs(updatedItem.getCarbs());
-        item.setProteins(updatedItem.getProteins());
-        item.setFats(updatedItem.getFats());
-
-        FoodItem saved = repo.save(item);
-        MiniUpdate miniUpdate = new MiniUpdate (saved.getId(), saved.getName());
-        messageTemplate.convertAndSend("/topic/food_items", miniUpdate);
-        messageTemplate.convertAndSend("/topic/food_items/" + saved.getId(), saved);
-        return ResponseEntity.ok(saved);
+        return service.updateFoodItem(id, updatedItem);
     }
 
     /**
@@ -126,6 +73,6 @@ public class FoodItemController {
      */
     @GetMapping("/search")
     public FoodItem searchByName(@RequestParam("name") String foodType) {
-        return repo.findByName(foodType).orElse(null);
+        return service.searchByName(foodType);
     }
 }

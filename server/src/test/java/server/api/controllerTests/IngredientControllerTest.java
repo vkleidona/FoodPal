@@ -6,6 +6,7 @@ import recipes.FoodItem;
 import server.api.controllers.IngredientController;
 import server.repositories.FoodItemRepository;
 import server.repositories.IngredientRepository;
+import server.service.IngredientService;
 
 import java.util.Optional;
 
@@ -23,7 +24,8 @@ public class IngredientControllerTest {
     public void setup(){
         ingredientRepo = mock(IngredientRepository.class);
         foodItemRepo = mock(FoodItemRepository.class);
-        ctrl = new IngredientController(ingredientRepo, foodItemRepo);
+        IngredientService service = new IngredientService(ingredientRepo, foodItemRepo);
+        ctrl = new IngredientController(service);
     }
 
     @Test

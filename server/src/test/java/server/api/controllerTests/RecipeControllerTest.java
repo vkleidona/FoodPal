@@ -16,6 +16,7 @@ import server.api.controllers.RecipeController;
 import server.repositories.FoodItemRepository;
 import server.repositories.IngredientRepository;
 import server.repositories.RecipeRepository;
+import server.service.RecipeService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,14 +52,13 @@ public class RecipeControllerTest {
     @Autowired
     private SimpMessagingTemplate messageTemplate;
 
-    private RecipeController recipeController;
-
     @BeforeEach
     void setup() {
         recipeRepository.deleteAll();
         foodItemRepository.deleteAll();
-        recipeController = new RecipeController(recipeRepository, foodItemRepository,
+        RecipeService service = new RecipeService(recipeRepository, foodItemRepository,
                 ingredientRepository, messageTemplate);
+        RecipeController recipeController = new RecipeController(service);
     }
 
     @Test
