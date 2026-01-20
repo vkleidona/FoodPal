@@ -1,55 +1,81 @@
 package server.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import exceptions.ResourceNotFoundException;
+import exceptions.ServerErrorException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.test.web.servlet.MockMvc;
 import recipes.FoodItem;
 import recipes.Ingredient;
 import recipes.Recipe;
-import server.api.controllers.RecipeController;
 import server.repositories.FoodItemRepository;
 import server.repositories.RecipeRepository;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class RecipeServiceTest {
-    @Autowired
-    private MockMvc mockMvc;
-    // used to simulate requests
-    @Autowired
+
     private RecipeRepository recipeRepository;
 
-    @Autowired
     private FoodItemRepository foodItemRepository;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
-    private SimpMessagingTemplate messageTemplate;
+    private RecipeService service;
 
     @BeforeEach
     void setup() {
-        recipeRepository.deleteAll();
-        foodItemRepository.deleteAll();
-        RecipeService service = new RecipeService(recipeRepository, foodItemRepository, messageTemplate);
-        RecipeController recipeController = new RecipeController(service);
+        recipeRepository = mock(RecipeRepository.class);
+        foodItemRepository = mock(FoodItemRepository.class);
+        SimpMessagingTemplate messagingTemplate = mock(SimpMessagingTemplate.class);
+        service = new RecipeService(recipeRepository, foodItemRepository, messagingTemplate);
     }
 
     @Test
-    void testSaveRecipe() throws Exception {
+    void testSaveRecipe() {
         // arrange: build Recipe with Ingredient and FoodItem
+        Recipe recipe = new Recipe("TestRecipe", new Locale("bg"));
+        Ingredient ingredient = new Ingredient(100, "g");
+        FoodItem foodItem = new FoodItem("Apple");
+        ingredient.setFoodType(foodItem);
+        ingredient.setRecipe(recipe);
+        List<Ingredient> ingredients = new ArrayList<>();
+        ingredients.add(ingredient);
+        recipe.setIngredients(ingredients);
+        recipe.setId(1L);
+
+        when(recipeRepository.save(recipe)).thenReturn(recipe);
+
+        Long id = service.saveRecipe(recipe);
+        assertEquals(1L, id);
+    }
+
+    @Test
+    void testSaveRecipeUnsuccessfully() {
+        // arrange: build Recipe with Ingredient and FoodItem
+        Recipe recipe = new Recipe("TestRecipe", new Locale("bg"));
+        Ingredient ingredient = new Ingredient(100, "g");
+        FoodItem foodItem = new FoodItem("Apple");
+        ingredient.setFoodType(foodItem);
+        ingredient.setRecipe(recipe);
+        List<Ingredient> ingredients = new ArrayList<>();
+        ingredients.add(ingredient);
+        recipe.setIngredients(ingredients);
+        recipe.setId(1L);
+
+        when(recipeRepository.save(recipe)).thenThrow(new ServerErrorException());
+
+        assertThrows(ServerErrorException.class, () -> service.saveRecipe(recipe));
+    }
+
+    @Test
+    public void getAllRecipesTest() {
         Recipe recipe = new Recipe("TestRecipe", new Locale("bg"));
         Ingredient ingredient = new Ingredient(100, "g");
         FoodItem foodItem = foodItemRepository.findByName("Apple").
@@ -59,92 +85,116 @@ public class RecipeServiceTest {
         List<Ingredient> ingredients = new ArrayList<>();
         ingredients.add(ingredient);
         recipe.setIngredients(ingredients);
-        recipe.setId(null);
+        recipe.setId(1L);
 
-        // convert to JSON format
-        String json = objectMapper.writeValueAsString(recipe);
-
-        // sending the POST request
-        mockMvc.perform(post("/api/recipes")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().isOk());
-
-        // verify in database
-        assertEquals(1, recipeRepository.count());
-        assertEquals(1, foodItemRepository.count());
-        assertEquals("TestRecipe", recipeRepository.findAll().getFirst().getName());
+        when(recipeRepository.findAll()).thenReturn(List.of(recipe));
+        assertEquals("TestRecipe", service.getAllRecipes().getFirst().getName());
     }
 
     @Test
-    public void getAllRecipesTest() throws Exception{
-        recipeRepository.save(new Recipe("Pasta", new Locale("bg")));
-        recipeRepository.save(new Recipe("Pizza", new Locale ("bg")));
-
-        String jsonResponse = mockMvc.perform(get("/api/recipes")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        Recipe[] recipes = objectMapper.readValue(jsonResponse, Recipe[].class);
-
-        assertEquals(2, recipes.length);
-        assertEquals("Pasta", recipes[0].getName());
-        assertEquals("Pizza", recipes[1].getName());
-    }
-
-    @Test
-    public void issueSetAllIngredientsTest() throws Exception{
-        Recipe r = new Recipe("Omelette", new Locale("bg"));
-        r = recipeRepository.save(r);
+    public void setAllIngredientsTest(){
+        Recipe r = new Recipe("Яйца по панагюрски", new Locale("bg"));
 
         Ingredient i =  new Ingredient();
-        i.setFoodType(new FoodItem("egg"));
+        i.setFoodType(new FoodItem("яйце"));
         List<Ingredient> ingredients = new ArrayList<>();
         ingredients.add(i);
+        r.setId(1L);
 
-        String jsonInput = objectMapper.writeValueAsString(ingredients);
+        Recipe expected = new Recipe("Яйца по панагюрски", new Locale("bg"));
+        expected.setIngredients(ingredients);
+        Ingredient i2 = new Ingredient(new FoodItem("egg"), 20.0, "g");
+        expected.addIngredient(i2);
+        expected.setId(2L);
 
-        String responseJson = mockMvc.perform(put("/api/recipes/ingredients/set/" + r.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonInput))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
+        when(recipeRepository.findById(1L)).thenReturn(Optional.of(r));
+        when(recipeRepository.save(any(Recipe.class))).thenAnswer(j -> j.getArgument(0));
 
-        Recipe result = objectMapper.readValue(responseJson, Recipe.class);
-        assertEquals(1, result.getIngredients().size());
+        Recipe incoming = service.setAllIngredients(expected.getIngredients(), 1L);
+
+        assertNotEquals(incoming, expected);
+        assertEquals(List.of(i, i2),
+                incoming.getIngredients());
     }
 
     @Test
-    public void issueDeleteRecipeTest() throws Exception{
-        Recipe recipe = new Recipe("To be deleted", new Locale("bg"));
-        recipe = recipeRepository.save(recipe);
+    public void issueSetAllIngredientsTestFail(){
+        Recipe r = new Recipe("Яйца по панагюрски", new Locale("bg"));
 
-        mockMvc.perform(delete("/api/recipes/" + recipe.getId()))
-                .andExpect(status().isNoContent());
+        Ingredient i =  new Ingredient();
+        i.setFoodType(new FoodItem("яйце"));
+        List<Ingredient> ingredients = new ArrayList<>();
+        ingredients.add(i);
+        r.setId(1L);
 
-        assertEquals(0, recipeRepository.count());
-        assertFalse(recipeRepository.existsById(recipe.getId()));
+        when(recipeRepository.findById(1L)).thenThrow(new ServerErrorException());
+
+        assertThrows(ServerErrorException.class, () -> {
+            service.setAllIngredients(ingredients, 1L);
+        });
     }
 
+    @Test
+    public void issueDeleteRecipeTest() {
+        Recipe recipe = new Recipe("Deleted", new Locale("bg"));
+        recipe.setId(1L);
+
+        when(recipeRepository.existsById(1L)).thenReturn(true);
+
+        boolean deleted = service.deleteRecipe(1L);
+        assertTrue(deleted);
+    }
 
     @Test
-    public void issueUpdateRecipeNameTest() throws Exception{
-        Recipe original = new Recipe("Old name", new Locale("bg"));
-        original = recipeRepository.save(original);
+    public void issueDeleteRecipeUnsuccessfullyTest() {
+        Recipe recipe = new Recipe("Deleted", new Locale("bg"));
+        recipe.setId(1L);
 
-        Recipe updated = new Recipe("New name");
-        String inputJson = objectMapper.writeValueAsString(updated);
+        when(recipeRepository.existsById(1L)).thenReturn(false);
 
-        mockMvc.perform(put("/api/recipes/" + original.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(inputJson))
-                .andExpect(status().isOk());
+        boolean deleted = service.deleteRecipe(1L);
+        assertFalse(deleted);
+    }
 
-        Recipe dbRecipe = recipeRepository.findById(original.getId()).isPresent() ?
-                recipeRepository.findById(original.getId()).get() : new Recipe("");
-        assertEquals("New name", dbRecipe.getName());
+    @Test
+    public void issueUpdateRecipeTest() {
+        Recipe r = new Recipe("Яйца по панагюрски", new Locale("bg"));
+
+        Ingredient i =  new Ingredient();
+        i.setFoodType(new FoodItem("яйце"));
+        List<Ingredient> ingredients = new ArrayList<>();
+        ingredients.add(i);
+        r.setId(1L);
+        r.setIngredients(ingredients);
+
+        Recipe r2 = new Recipe("Яйце по панагюрски", new Locale("bg"));
+        r2.setIngredients(ingredients);
+        r2.setInstructions(List.of("Boil"));
+        r2.setId(1L);
+
+        when(recipeRepository.findById(1L)).thenReturn(Optional.of(r));
+        when(recipeRepository.save(any(Recipe.class))).thenAnswer(j -> j.getArgument(0));
+
+        assertEquals(r2, service.updateRecipe(1L, r2));
+    }
+
+    @Test
+    public void issueUpdateRecipeUnsuccessfulTest() {
+        Recipe r = new Recipe("Яйца по панагюрски", new Locale("bg"));
+
+        Ingredient i =  new Ingredient();
+        i.setFoodType(new FoodItem("яйце"));
+        List<Ingredient> ingredients = new ArrayList<>();
+        ingredients.add(i);
+        r.setId(1L);
+        r.setIngredients(ingredients);
+
+        Recipe r2 = new Recipe("Яйце по панагюрски", new Locale("bg"));
+        r2.setIngredients(ingredients);
+        r2.setInstructions(List.of("Boil"));
+
+        when(recipeRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> service.updateRecipe(1L, r2));
     }
 }

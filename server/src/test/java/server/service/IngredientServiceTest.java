@@ -1,5 +1,6 @@
 package server.service;
 
+import exceptions.ResourceNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
@@ -15,16 +16,15 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class IngredientServiceTest {
-    private IngredientController ctrl;
     private IngredientRepository ingredientRepo;
     private FoodItemRepository foodItemRepo;
+    private IngredientService service;
 
     @BeforeEach
     public void setup(){
         ingredientRepo = mock(IngredientRepository.class);
         foodItemRepo = mock(FoodItemRepository.class);
-        IngredientService service = new IngredientService(ingredientRepo, foodItemRepo);
-        ctrl = new IngredientController(service);
+        service = new IngredientService(ingredientRepo, foodItemRepo);
     }
 
     @Test
@@ -35,11 +35,19 @@ public class IngredientServiceTest {
         when(foodItemRepo.findById(1L)).thenReturn(Optional.of(testItem));
         when(ingredientRepo.countFoodItemRecipeUsages(testItem)).thenReturn(5);
 
-        ResponseEntity<Integer> response = ctrl.issueGetFoodItemRecipeUsage(1L);
-        assertFalse(response.getStatusCode().isError());
-        assertNotNull(response.getBody());
-        int result = response.getBody();
-        assertEquals(5, result);
+        int usage = service.getFoodItemRecipeUsage(testItem.getId());
+        assertEquals(5, usage);
+    }
+
+    @Test
+    public void getFoodItemRecipeUsageUnsuccessfulTest(){
+        FoodItem testItem = new FoodItem();
+        testItem.setId(1L);
+
+        when(foodItemRepo.findById(1L)).thenThrow(new ResourceNotFoundException());
+        assertThrows(ResourceNotFoundException.class, () -> {
+            service.getFoodItemRecipeUsage(testItem.getId());
+        });
     }
 
 }
