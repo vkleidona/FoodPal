@@ -110,7 +110,7 @@ public class RecipeControllerTest {
     }
 
     @Test
-    public void setAllIngredientsTest() throws Exception{
+    public void issueSetAllIngredientsTest() throws Exception{
         Recipe r = new Recipe("Omelette", new Locale("bg"));
         r = recipeRepository.save(r);
 
@@ -132,7 +132,7 @@ public class RecipeControllerTest {
     }
 
     @Test
-    public void deleteRecipeTest() throws Exception{
+    public void issueDeleteRecipeTest() throws Exception{
         Recipe recipe = new Recipe("To be deleted", new Locale("bg"));
         recipe = recipeRepository.save(recipe);
 
@@ -145,7 +145,7 @@ public class RecipeControllerTest {
 
 
     @Test
-    public void updateRecipeNameTest() throws Exception{
+    public void issueUpdateRecipeNameTest() throws Exception{
         Recipe original = new Recipe("Old name", new Locale("bg"));
         original = recipeRepository.save(original);
 

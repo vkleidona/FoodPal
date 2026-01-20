@@ -15,7 +15,7 @@ public class RecipeController {
     private final RecipeService recipeService;
 
     /**
-     * A Dependency-Injection using constructor for all fields of the controller class
+     * A Dependency-Injection using constructor for the Recipe API
      * @param recipeService - the service class for handling all business logic of recipes
      */
     @Autowired
@@ -30,7 +30,7 @@ public class RecipeController {
      * as well as a status code for the response
      */
     @PostMapping(consumes = "application/json")
-    public ResponseEntity<Long> handleSaveRecipe(@RequestBody Recipe recipe) {
+    public ResponseEntity<Long> issueSaveRecipe(@RequestBody Recipe recipe) {
         return recipeService.saveRecipe(recipe);
     }
 
@@ -39,30 +39,30 @@ public class RecipeController {
      * @return List <Recipe> - returns a list of all Recipe objects
      */
     @GetMapping
-    public List<Recipe> handleGetAllRecipes() {
+    public List<Recipe> issueGetAllRecipes() {
         return recipeService.getAllRecipes();
     }
 
     /**
-     * Issues a recipe delete from the server by ID
+     * Issues a deletion of a recipe from the server given its ID
      * @param id - the ID of the recipe to be deleted
      * @return ResponseEntity <Void> - sends the status of the request
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteRecipe(@PathVariable Long id) {
+    public ResponseEntity<Void> issueDeleteRecipe(@PathVariable Long id) {
         return recipeService.deleteRecipe(id);
     }
 
     /**
-     * Sets an update for all ingredients in a recipe
+     * Issues an update for all ingredients in a recipe
      * @param ingredients - the new List of Ingredients which we provide to the recipe
      * @param recipeId - the recipe to be changed
      * @return ResponseEntity <Recipe> - the Recipe with the new ingredients,
      * together with the response's status code
      */
     @PutMapping(path = "/ingredients/set/{recipeId}")
-    public ResponseEntity<Recipe> setAllIngredients(@RequestBody List<Ingredient> ingredients,
-                                                    @PathVariable Long recipeId) {
+    public ResponseEntity<Recipe> issueSetAllIngredients(@RequestBody List<Ingredient> ingredients,
+                                                         @PathVariable Long recipeId) {
         return recipeService.setAllIngredients(ingredients, recipeId);
     }
 
@@ -73,8 +73,8 @@ public class RecipeController {
      * @return ResponseEntity <Recipe> - the updated recipe, as well as the response status
      */
     @PutMapping(path = "/{id}")
-    public ResponseEntity <Recipe> updateRecipe (@PathVariable("id") Long id,
-                                                 @RequestBody Recipe updatedRecipe) {
+    public ResponseEntity <Recipe> issueUpdateRecipe(@PathVariable("id") Long id,
+                                                     @RequestBody Recipe updatedRecipe) {
         return recipeService.updateRecipe(id, updatedRecipe);
     }
 
@@ -84,7 +84,7 @@ public class RecipeController {
      * @return List <Recipe> - all recipes which match the term
      */
     @GetMapping("/searchByTerm")
-    public List<Recipe> searchRecipesByTerm(@RequestParam String keyword) {
+    public List<Recipe> issueSearchRecipesByTerm(@RequestParam String keyword) {
         return recipeService.searchRecipesByTerm(keyword);
     }
 }

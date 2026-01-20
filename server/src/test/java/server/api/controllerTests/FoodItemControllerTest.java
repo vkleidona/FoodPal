@@ -38,7 +38,7 @@ public class FoodItemControllerTest {
         when(repo.findByName("Milk")).thenReturn(Optional.empty());
         when(repo.save(item)).thenReturn(savedItem);
 
-        ResponseEntity<FoodItem> response = ctrl.addFoodItem(item);
+        ResponseEntity<FoodItem> response = ctrl.issueAddFoodItem(item);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(savedItem, response.getBody());
@@ -46,41 +46,41 @@ public class FoodItemControllerTest {
     }
 
     @Test
-    public void getAllFoodItemsTest(){
+    public void issueGetAllFoodItemsTest(){
         List<FoodItem> mockList = List.of(new FoodItem("Bread"));
         when(repo.findAllByOrderByNameAsc()).thenReturn(mockList);
 
-        List<FoodItem> result = ctrl.getAllFoodItems();
+        List<FoodItem> result = ctrl.issueGetAllFoodItems();
 
         assertEquals(1, result.size());
         assertEquals("Bread", result.getFirst().getName());
     }
 
     @Test
-    public void deleteFoodItemTest(){
+    public void issueDeleteFoodItemTest(){
         FoodItem test = new FoodItem("Milk");
         test.setId(10L);
 
         when(repo.existsById(10L)).thenReturn(true);
 
-        ResponseEntity<Void> response = ctrl.deleteFoodItem(10L);
+        ResponseEntity<Void> response = ctrl.issueDeleteFoodItem(10L);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test
-    public void deleteFoodItemMissingItem(){
+    public void issueDeleteFoodItemMissingItem(){
         Long id = 99L;
         when(repo.existsById(id)).thenReturn(false);
 
-        ResponseEntity<Void> response = ctrl.deleteFoodItem(id);
+        ResponseEntity<Void> response = ctrl.issueDeleteFoodItem(id);
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         verify(repo, times(0)).deleteById(id);
     }
 
     @Test
-    public void updateFoodItemTest(){
+    public void issueUpdateFoodItemTest(){
         FoodItem old = new FoodItem("lemon");
         old.setId(1L);
         FoodItem updated = new FoodItem("lemon2");
@@ -89,7 +89,7 @@ public class FoodItemControllerTest {
         when(repo.existsByNameAndIdNot("lemon2", 1L)).thenReturn(false);
         when(repo.save(any())).thenReturn(old);
 
-        ResponseEntity<?> response = ctrl.updateFoodItem(1L, updated);
+        ResponseEntity<?> response = ctrl.issueUpdateFoodItem(1L, updated);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("lemon2", old.getName());

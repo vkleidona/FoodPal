@@ -30,7 +30,7 @@ public class IngredientService {
      * @param id - the FoodItem to be checked
      * @return int - how many times has this FoodItem been used in recipes
      */
-    public int serveFoodItemRecipeUsage(Long id) {
+    public int getFoodItemRecipeUsage(Long id) {
         FoodItem foodItem = foodItemRepo.findById(id).orElseThrow();
         return ingredientRepo.countFoodItemRecipeUsages(foodItem);
     }

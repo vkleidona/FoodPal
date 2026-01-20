@@ -28,8 +28,8 @@ public class IngredientController {
      * @return int - how many times has this FoodItem been used in recipes
      */
     @GetMapping("/usage/{id}")
-    public int getFoodItemRecipeUsage(@PathVariable Long id) {
-        return ingredientService.serveFoodItemRecipeUsage(id);
+    public int issueGetFoodItemRecipeUsage(@PathVariable Long id) {
+        return ingredientService.getFoodItemRecipeUsage(id);
     }
 }
 

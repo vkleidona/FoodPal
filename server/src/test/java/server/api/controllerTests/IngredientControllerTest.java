@@ -36,7 +36,7 @@ public class IngredientControllerTest {
         when(foodItemRepo.findById(1L)).thenReturn(Optional.of(testItem));
         when(ingredientRepo.countFoodItemRecipeUsages(testItem)).thenReturn(5);
 
-        int result = ctrl.getFoodItemRecipeUsage(1L);
+        int result = ctrl.issueGetFoodItemRecipeUsage(1L);
         assertEquals(5, result);
     }
 
