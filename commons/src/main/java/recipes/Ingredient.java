@@ -6,7 +6,6 @@ import jakarta.persistence.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import java.io.Serializable;
-import java.util.Locale;
 import java.util.Objects;
 
 

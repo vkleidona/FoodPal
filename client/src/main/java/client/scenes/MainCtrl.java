@@ -7,6 +7,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import client.i18n.LanguageManager;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 import client.MyFXML;
@@ -60,6 +61,8 @@ public class MainCtrl {
     private Scene addRecipeToShoppingList;
 
     private final WebSocketService webSocketService;
+
+    private boolean cameFromEditIngredients;
 
     /**
      * A constructor for the MainCtrl class using Dependency Injection
@@ -326,35 +329,38 @@ public class MainCtrl {
      * A method which handles the active recipe being deleted
      * @param id - the id of the recipe being deleted
      */
-    public void handleRecipeBeingDeleted (Long id) {
+    public void handleRecipeBeingDeleted(Long id) {
         Platform.runLater(() -> {
             webSocketService.removeRecipeFromList(id);
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Recipe removed!");
-            alert.setHeaderText("Selected recipe removed");
-            alert.setContentText("The recipe you are currently editing has been removed");
+            alert.setTitle(LanguageManager.getString("main.recipeRemoved.title"));
+            alert.setHeaderText(LanguageManager.getString("main.recipeRemoved.header"));
+            alert.setContentText(LanguageManager.getString("main.recipeRemoved.content"));
             alert.showAndWait();
 
             showMainMenu();
         });
     }
 
+
+
     /**
      * A method which handles the active food item being deleted
      * @param id - the food item id being deleted
      */
-    public void handleFoodItemBeingDeleted (Long id) {
+    public void handleFoodItemBeingDeleted(Long id) {
         Platform.runLater(() -> {
             webSocketService.removeItemFromList(id);
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Food Item removed!");
-            alert.setHeaderText("Selected food item removed");
-            alert.setContentText("The food item you are currently editing has been removed");
+            alert.setTitle(LanguageManager.getString("main.foodItemRemoved.title"));
+            alert.setHeaderText(LanguageManager.getString("main.foodItemRemoved.header"));
+            alert.setContentText(LanguageManager.getString("main.foodItemRemoved.content"));
             alert.showAndWait();
 
             showFoodItemMain();
         });
     }
+
 
     /**
      * Reloads all main scenes in the currently selected language.
@@ -434,6 +440,23 @@ public class MainCtrl {
         this.shoppingListMainCtrl = shoppingListMainPair.getKey();
         this.shoppingListMainScene = new Scene(shoppingListMainPair.getValue());
     }
+
+    /**
+     * A helper method to remember if the user accessed a screen through the edit ingredients screen.
+     * @param cameFromEditIngredients
+     */
+    public void setCameFromEditIngredients(boolean cameFromEditIngredients){
+        this.cameFromEditIngredients = cameFromEditIngredients;
+    }
+
+    /**
+     * Checks whether the previous screen was edit ingredients.
+     * @return - returns true if a screen was accessed through the edit ingredients screen. Otherwise, it returns false.
+     */
+    public boolean isCameFromEditIngredients(){
+        return cameFromEditIngredients;
+    }
+
 
     /**
      * A testing constructor for the MainCtrl
