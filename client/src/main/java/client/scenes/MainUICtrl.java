@@ -73,7 +73,6 @@ public class MainUICtrl {
 
     private final ServerUtils server;
     private final MainCtrl mainCtrl;
-    private final ServerService serverService;
     private final WebSocketService webSocketService;
 
     private Set<Long> favoriteRecipeIds = new HashSet<>();
@@ -225,7 +224,6 @@ public class MainUICtrl {
         this.server = server;
         this.mainCtrl = mainCtrl;
         this.webSocketService = webSocketService;
-        this.serverService = new RealServerService();
     }
 
     /**
@@ -809,7 +807,7 @@ public class MainUICtrl {
             String newName = result.get();
             Recipe cloneRecipe = new Recipe(selectedRecipe);
             cloneRecipe.setName(newName);
-            serverService.sendRecipe(cloneRecipe);
+            server.sendRecipe(cloneRecipe);
         }
     }
 

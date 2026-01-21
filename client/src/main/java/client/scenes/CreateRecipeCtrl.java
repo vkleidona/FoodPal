@@ -1,5 +1,7 @@
 package client.scenes;
 
+import client.utils.ServerUtils;
+import jakarta.inject.Inject;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -25,11 +27,6 @@ public class CreateRecipeCtrl {
      */
     @FXML
     private VBox ingredientsVBox;
-
-    private RecipeActions recipeActions;
-    public void setRecipeActions(RecipeActions recipeActions) {
-        this.recipeActions = recipeActions;
-    }
 
     @FXML
     private MenuButton languageButton;
@@ -103,20 +100,19 @@ public class CreateRecipeCtrl {
     }
 
 
-    private ServerService serverService;
+    private final ServerUtils server;
+    private final MainCtrl mainCtrl;
 
     /**
      * A Constructor for the CreateRecipeCtrl class
+     * @param server - the instance of the ServerUtils class
+     * @param mainCtrl - the instance of the MainCtrl class
      */
-    public CreateRecipeCtrl() {
-        this.serverService = new RealServerService();
+    @Inject
+    public CreateRecipeCtrl(ServerUtils server, MainCtrl mainCtrl) {
+        this.server = server;
+        this.mainCtrl = mainCtrl;
     }
-
-    public void setServerService(ServerService serverService) {
-        this.serverService = serverService;
-    }
-
-    private final String recipeEndpointUrl = "http://localhost:8080/recipes";
 
     /**
      * Updates ONLY the currently selected row to the chosen system
@@ -213,7 +209,7 @@ public class CreateRecipeCtrl {
             recipe.setLocale(currentLocale);
 
             // save
-            serverService.sendRecipe(recipe);
+            server.sendRecipe(recipe);
             goToMainUI();
             resetUI();
 
@@ -372,10 +368,8 @@ public class CreateRecipeCtrl {
      * @param newLocale - the new Locale of the recipe
      */
     public void changeLanguage(Locale newLocale) {
-        // 1) schimbă limba GLOBALĂ a aplicației
         LanguageManager.setLocale(newLocale);
 
-        // 2) actualizează butonul local și limba rețetei
         switch (newLocale.getLanguage()) {
             case "nl" -> {
                 languageButton.setText("Nederlands");
@@ -409,7 +403,6 @@ public class CreateRecipeCtrl {
             }
         }
 
-        // 3) reîncarcă toate scenele în noua limbă și rămâi în același ecran
         if (mainCtrl != null) {
             mainCtrl.reloadScenesForNewLanguage();
         } else {
@@ -561,12 +554,7 @@ public class CreateRecipeCtrl {
     }
 
     private void goToMainUI() {
-
-        if (recipeActions != null) {
-            recipeActions.goToMainUI();
-        } else {
-            System.err.println("Could not initialize the Recipe utilities");
-        }
+        mainCtrl.showMainMenu();
     }
 
     /**
@@ -615,7 +603,7 @@ public class CreateRecipeCtrl {
 
 
         // fetch and Populate Items
-        List<FoodItem> items = serverService.getAllFoodItems();
+        List<FoodItem> items = server.getAllFoodItems();
 
         // sorting alphabetically
         items.sort(Comparator.comparing(FoodItem::getName));
@@ -748,11 +736,7 @@ public class CreateRecipeCtrl {
         return null;
     }
 
-    private MainCtrl mainCtrl;
 
-    public void setMainCtrl(MainCtrl mainCtrl) {
-        this.mainCtrl = mainCtrl;
-    }
 
 
 
@@ -801,7 +785,7 @@ public class CreateRecipeCtrl {
     @FXML
     public void handleRefresh() {
         // fetch latest data
-        List<FoodItem> freshList = serverService.getAllFoodItems();
+        List<FoodItem> freshList = server.getAllFoodItems();
         freshList.sort(Comparator.comparing(FoodItem::getName));
 
         for (Node node : ingredientsVBox.getChildren()) {
