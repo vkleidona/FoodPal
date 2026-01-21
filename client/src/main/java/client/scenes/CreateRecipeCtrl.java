@@ -296,7 +296,7 @@ public class CreateRecipeCtrl {
 
         menuItem.setGraphic(icon);
 
-        menuItem.setOnAction(_ -> changeLanguage(new Locale(langCode)));
+        menuItem.setOnAction(_ -> changeLanguage(Locale.of(langCode)));
 
         return menuItem;
     }
@@ -375,32 +375,32 @@ public class CreateRecipeCtrl {
         switch (newLocale.getLanguage()) {
             case "nl" -> {
                 languageButton.setText("Nederlands");
-                currentLocale = new Locale("nl");
+                currentLocale = Locale.of("nl");
                 updateButtonGraphic("dutch");
             }
             case "ro" -> {
                 languageButton.setText("Română");
-                currentLocale = new Locale("ro");
+                currentLocale = Locale.of("ro");
                 updateButtonGraphic("romanian");
             }
             case "bg" -> {
                 languageButton.setText("Български");
-                currentLocale = new Locale("bg");
+                currentLocale = Locale.of("bg");
                 updateButtonGraphic("bulgarian");
             }
             case "sk" -> {
                 languageButton.setText("Slovenčina");
-                currentLocale = new Locale("sk");
+                currentLocale = Locale.of("sk");
                 updateButtonGraphic("slovak");
             }
             case "de" -> {
                 languageButton.setText("Deutsch");
-                currentLocale = new Locale("de");
+                currentLocale = Locale.GERMAN;
                 updateButtonGraphic("german");
             }
             default -> {
                 languageButton.setText("English");
-                currentLocale = new Locale("en");
+                currentLocale = Locale.ENGLISH;
                 updateButtonGraphic("english");
             }
         }
@@ -436,7 +436,7 @@ public class CreateRecipeCtrl {
             handleAddIngredient();
 
             // get the last added row
-            HBox lastRow = (HBox) ingredientsVBox.getChildren().get(ingredientsVBox.getChildren().size() - 1);
+            HBox lastRow = (HBox) ingredientsVBox.getChildren().getLast();
 
             ComboBox<String> nameBox = (ComboBox<String>) lastRow.getChildren().get(0);
             TextField qtyField = (TextField) lastRow.getChildren().get(1);
@@ -717,7 +717,8 @@ public class CreateRecipeCtrl {
                     try {
                         qty = Double.parseDouble(qtyStr);
                     } catch (NumberFormatException e) {
-                        System.err.println("Could not save quantity: non-numeric input '" + qtyStr + "'");
+                        System.err.println("Could not save quantity: non-numeric input '"
+                                + qtyStr + "'");
                     }
                 }
 

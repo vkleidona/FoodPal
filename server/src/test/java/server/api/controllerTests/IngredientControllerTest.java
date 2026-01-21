@@ -1,29 +1,26 @@
 package server.api.controllerTests;
 
+import exceptions.ResourceNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.ResponseEntity;
 import recipes.FoodItem;
 import server.api.controllers.IngredientController;
-import server.repositories.FoodItemRepository;
-import server.repositories.IngredientRepository;
+import server.service.IngredientService;
 
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class IngredientControllerTest {
 
     private IngredientController ctrl;
-    private IngredientRepository ingredientRepo;
-    private FoodItemRepository foodItemRepo;
+    private IngredientService service;
 
     @BeforeEach
     public void setup(){
-        ingredientRepo = mock(IngredientRepository.class);
-        foodItemRepo = mock(FoodItemRepository.class);
-        ctrl = new IngredientController(ingredientRepo, foodItemRepo);
+        service = mock(IngredientService.class);
+        ctrl = new IngredientController(service);
     }
 
     @Test
@@ -31,11 +28,24 @@ public class IngredientControllerTest {
         FoodItem testItem = new FoodItem();
         testItem.setId(1L);
 
-        when(foodItemRepo.findById(1L)).thenReturn(Optional.of(testItem));
-        when(ingredientRepo.countFoodItemRecipeUsages(testItem)).thenReturn(5);
+        when(service.getFoodItemRecipeUsage(testItem.getId())).thenReturn(5);
+        ResponseEntity<Integer> response = ctrl.issueGetFoodItemRecipeUsage(1L);
 
-        int result = ctrl.getFoodItemRecipeUsage(1L);
+        assertFalse(response.getStatusCode().isError());
+        assertNotNull(response.getBody());
+        int result = response.getBody();
         assertEquals(5, result);
+    }
+
+    @Test
+    public void getFoodItemRecipeUsageTestFalse(){
+        FoodItem testItem = new FoodItem();
+        testItem.setId(1L);
+
+        when(service.getFoodItemRecipeUsage(99L)).
+                thenThrow(new ResourceNotFoundException("Food Item not found"));
+
+        assertThrows(ResourceNotFoundException.class, () -> ctrl.issueGetFoodItemRecipeUsage(99L));
     }
 
 }

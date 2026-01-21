@@ -27,7 +27,7 @@ public class IngredientRepositoryTest {
     @BeforeEach
     void setup () {
         r = new Recipe("orange juice");
-        r.setLocale(new Locale("en"));
+        r.setLocale(Locale.ENGLISH);
         recipeRepo.save(r);
         i = new Ingredient(20, "g");
         i.setRecipe(r);

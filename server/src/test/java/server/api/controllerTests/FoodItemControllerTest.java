@@ -1,97 +1,140 @@
 package server.api.controllerTests;
 
+import exceptions.ExistingFoodItemException;
+import exceptions.MalformedRequestException;
+import exceptions.ResourceNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import recipes.FoodItem;
 import server.api.controllers.FoodItemController;
-import server.repositories.FoodItemRepository;
+import server.service.FoodItemService;
 
 import java.util.List;
-import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class FoodItemControllerTest {
     private FoodItemController ctrl;
-    private FoodItemRepository repo;
+    private FoodItemService service;
 
     @BeforeEach
     public void setup(){
-        repo = mock(FoodItemRepository.class);
-        SimpMessagingTemplate msg = mock(SimpMessagingTemplate.class);
-
-        ctrl = new FoodItemController(repo, msg);
+        service = mock(FoodItemService.class);
+        ctrl = new FoodItemController(service);
     }
 
     @Test
     public void addFoodItemTest(){
-        FoodItem item = new FoodItem("Milk");
+        new FoodItem("Milk");
         FoodItem savedItem = new FoodItem("Milk");
         savedItem.setId(2L);
 
-        when(repo.findByName("Milk")).thenReturn(Optional.empty());
-        when(repo.save(item)).thenReturn(savedItem);
+        when(service.addFoodItem(savedItem)).thenReturn(savedItem);
 
-        ResponseEntity<FoodItem> response = ctrl.addFoodItem(item);
+        ResponseEntity<FoodItem> response = ctrl.issueAddFoodItem(savedItem);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(savedItem, response.getBody());
-
     }
 
     @Test
-    public void getAllFoodItemsTest(){
-        List<FoodItem> mockList = List.of(new FoodItem("Bread"));
-        when(repo.findAllByOrderByNameAsc()).thenReturn(mockList);
+    public void addFoodItemTestUnsuccessfully(){
+        FoodItem savedItem = new FoodItem("Milk");
+        savedItem.setId(2L);
 
-        List<FoodItem> result = ctrl.getAllFoodItems();
+        FoodItem foodItem1 = new FoodItem("");
+        FoodItem foodItem2 = new FoodItem("Milk");
+
+        when(service.addFoodItem(foodItem1)).thenThrow
+                (new MalformedRequestException());
+
+        when(service.addFoodItem(foodItem2)).thenThrow
+                (new ExistingFoodItemException());
+
+        assertThrows(MalformedRequestException.class, () -> ctrl.issueAddFoodItem(foodItem1));
+        assertThrows(ExistingFoodItemException.class, () -> ctrl.issueAddFoodItem(foodItem2));
+    }
+
+    @Test
+    public void issueGetAllFoodItemsTest(){
+        List<FoodItem> mockList = List.of(new FoodItem("Bread"));
+        when(service.getAllFoodItems()).thenReturn(mockList);
+
+        List<FoodItem> result = ctrl.issueGetAllFoodItems();
 
         assertEquals(1, result.size());
         assertEquals("Bread", result.getFirst().getName());
     }
 
     @Test
-    public void deleteFoodItemTest(){
+    public void issueDeleteFoodItemTest(){
         FoodItem test = new FoodItem("Milk");
         test.setId(10L);
 
-        when(repo.existsById(10L)).thenReturn(true);
+        when(service.deleteFoodItem(10L)).thenReturn(true);
 
-        ResponseEntity<Void> response = ctrl.deleteFoodItem(10L);
+        ResponseEntity<Void> response = ctrl.issueDeleteFoodItem(10L);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
     }
 
     @Test
-    public void deleteFoodItemMissingItem(){
+    public void issueDeleteFoodItemMissingItem(){
         Long id = 99L;
-        when(repo.existsById(id)).thenReturn(false);
+        when(service.deleteFoodItem(id)).thenReturn(false);
 
-        ResponseEntity<Void> response = ctrl.deleteFoodItem(id);
+        ResponseEntity<Void> response = ctrl.issueDeleteFoodItem(id);
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        verify(repo, times(0)).deleteById(id);
     }
 
     @Test
-    public void updateFoodItemTest(){
+    public void issueUpdateFoodItemTest(){
         FoodItem old = new FoodItem("lemon");
         old.setId(1L);
         FoodItem updated = new FoodItem("lemon2");
 
-        when(repo.findById(1L)).thenReturn(Optional.of(old));
-        when(repo.existsByNameAndIdNot("lemon2", 1L)).thenReturn(false);
-        when(repo.save(any())).thenReturn(old);
+        when(service.updateFoodItem(1L, updated)).thenReturn(updated);
 
-        ResponseEntity<?> response = ctrl.updateFoodItem(1L, updated);
+        ResponseEntity<FoodItem> response = ctrl.issueUpdateFoodItem(1L, updated);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("lemon2", old.getName());
+        assertNotNull(response.getBody());
+        assertEquals("lemon2", response.getBody().getName());
+    }
+
+    @Test
+    public void issueUpdateFoodItemTestUnsuccessful(){
+        FoodItem old = new FoodItem("lemon");
+        old.setId(1L);
+        FoodItem updated = new FoodItem("lemon2");
+
+        when(service.updateFoodItem(3L, updated)).thenThrow(new ResourceNotFoundException());
+
+        FoodItem sameName = new FoodItem("lemon");
+        sameName.setId(4L);
+
+        when(service.updateFoodItem(1L, sameName)).thenThrow(new ExistingFoodItemException ());
+
+        assertThrows(ResourceNotFoundException.class, () -> ctrl.issueUpdateFoodItem(3L, updated));
+
+        assertThrows(ExistingFoodItemException.class, () -> ctrl.issueUpdateFoodItem(1L, sameName));
+    }
+
+    @Test
+    public void searchByTermTest() {
+        FoodItem f1 = new FoodItem ("egg");
+        FoodItem f2 = new FoodItem("Potato");
+
+        List <FoodItem> testList = List.of(f1, f2);
+
+        when(service.searchByName("egg")).thenReturn(f1);
+
+        FoodItem returned = ctrl.issueSearchByName("egg");
+        assertEquals(testList.getFirst(), returned);
     }
 
 }

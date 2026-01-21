@@ -1,33 +1,26 @@
 package server.api.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import recipes.FoodItem;
-import server.repositories.FoodItemRepository;
-import server.repositories.IngredientRepository;
+import server.service.IngredientService;
 
 @RestController
 @RequestMapping("api/ingredients")
 public class IngredientController {
 
-    @Autowired
-    private final IngredientRepository ingredientRepo;
-    @Autowired
-    private final FoodItemRepository foodItemRepo;
+    private final IngredientService ingredientService;
 
     /**
      * A dependency injection-using controller for the Ingredient API
-     * @param ingredientRepo - the repository for Ingredients
-     * @param foodItemRepo - the repository for FoodItems
+     * @param ingredientService - the service class for the Ingredient controller
      */
     @Autowired
-    public IngredientController(IngredientRepository ingredientRepo,
-                                FoodItemRepository foodItemRepo) {
-        this.ingredientRepo = ingredientRepo;
-        this.foodItemRepo = foodItemRepo;
+    public IngredientController(IngredientService ingredientService) {
+        this.ingredientService = ingredientService;
     }
 
     /**
@@ -36,9 +29,9 @@ public class IngredientController {
      * @return int - how many times has this FoodItem been used in recipes
      */
     @GetMapping("/usage/{id}")
-    public int getFoodItemRecipeUsage(@PathVariable Long id) {
-        FoodItem foodItem = foodItemRepo.findById(id).orElseThrow();
-        return ingredientRepo.countFoodItemRecipeUsages(foodItem);
+    public ResponseEntity<Integer> issueGetFoodItemRecipeUsage(@PathVariable Long id) {
+        int usageCount = ingredientService.getFoodItemRecipeUsage(id);
+        return ResponseEntity.ok(usageCount);
     }
 }
 

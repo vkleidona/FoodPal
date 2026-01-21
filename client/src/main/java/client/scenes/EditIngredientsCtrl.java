@@ -197,7 +197,7 @@ public class EditIngredientsCtrl{
 
         menuItem.setGraphic(icon);
 
-        menuItem.setOnAction(_ -> changeLanguage(new Locale(langCode)));
+        menuItem.setOnAction(_ -> changeLanguage(Locale.of(langCode)));
 
         return menuItem;
     }
@@ -273,7 +273,6 @@ public class EditIngredientsCtrl{
      */
     public void changeLanguage(Locale newLocale) {
         LanguageManager.setLocale(newLocale);
-
         switch (newLocale.getLanguage()) {
             case "nl" -> languageButton.setText("Nederlands");
             case "ro" -> languageButton.setText("Română");
