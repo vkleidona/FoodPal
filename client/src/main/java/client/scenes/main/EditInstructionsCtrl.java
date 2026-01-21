@@ -1,6 +1,6 @@
 package client.scenes.main;
 
-import client.scenes.MainCtrl;
+import client.utils.MainCtrl;
 import client.service.LanguageService;
 import com.google.inject.Inject;
 import javafx.application.Platform;
@@ -8,9 +8,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.shape.Circle;
 import recipes.Recipe;
 
 import java.util.*;

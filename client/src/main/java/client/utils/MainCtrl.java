@@ -1,4 +1,4 @@
-package client.scenes;
+package client.utils;
 
 import client.network.WebSocketService;
 import client.scenes.food_item.AddFoodItemCtrl;

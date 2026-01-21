@@ -1,7 +1,6 @@
 package client;
 
 import client.network.WebSocketService;
-import client.scenes.*;
 import client.scenes.food_item.FoodItemMainCtrl;
 import client.scenes.main.CreateRecipeCtrl;
 import client.scenes.main.EditIngredientsCtrl;
@@ -12,6 +11,7 @@ import client.scenes.shopping_list.AddRecipeToShoppingListCtrl;
 import client.scenes.shopping_list.ShoppingListMainCtrl;
 import client.service.FavoritesService;
 import client.service.FilterService;
+import client.utils.MainCtrl;
 import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.Scopes;

@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 
 import client.network.WebSocketService;
-import client.scenes.*;
 import client.scenes.food_item.AddFoodItemCtrl;
 import client.scenes.food_item.FoodItemMainCtrl;
 import client.scenes.main.CreateRecipeCtrl;
@@ -16,6 +15,7 @@ import client.scenes.main.MainUICtrl;
 import client.scenes.nutrition.InformationCtrl;
 import client.scenes.shopping_list.AddRecipeToShoppingListCtrl;
 import client.scenes.shopping_list.ShoppingListMainCtrl;
+import client.utils.MainCtrl;
 import com.google.inject.Injector;
 
 import client.utils.ServerUtils;

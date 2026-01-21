@@ -1,7 +1,7 @@
 package client.scenes.main;
 
 import client.network.WebSocketService;
-import client.scenes.MainCtrl;
+import client.utils.MainCtrl;
 import client.service.FavoritesService;
 import client.service.FilterService;
 import client.service.LanguageService;
@@ -15,25 +15,18 @@ import java.util.*;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
-import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.springframework.messaging.simp.stomp.StompSession;
 import recipes.Recipe;
 import recipes.Ingredient;
-
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.core.Response;
 
 import java.io.File;
 import java.io.FileWriter;

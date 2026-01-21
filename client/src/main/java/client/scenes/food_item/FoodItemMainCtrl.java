@@ -1,7 +1,7 @@
 package client.scenes.food_item;
 
 import client.network.WebSocketService;
-import client.scenes.MainCtrl;
+import client.utils.MainCtrl;
 import client.service.LanguageService;
 import client.utils.ServerUtils;
 import jakarta.inject.Inject;
@@ -11,9 +11,6 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.shape.Circle;
 import org.springframework.messaging.simp.stomp.StompSession;
 import recipes.FoodItem;
 import client.i18n.LanguageManager;

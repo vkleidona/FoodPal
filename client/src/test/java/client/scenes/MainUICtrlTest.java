@@ -1,7 +1,7 @@
 package client.scenes;
 
-import client.network.WebSocketService;
 import client.scenes.main.MainUICtrl;
+import client.utils.MainCtrl;
 import client.utils.ServerUtils;
 import javafx.application.Platform;
 import javafx.scene.Scene;

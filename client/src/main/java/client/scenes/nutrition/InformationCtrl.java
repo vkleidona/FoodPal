@@ -1,17 +1,14 @@
 package client.scenes.nutrition;
 
-import client.scenes.MainCtrl;
+import client.utils.MainCtrl;
 import client.service.LanguageService;
 import jakarta.inject.Inject;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.shape.Circle;
 import recipes.FoodItem;
 import recipes.Ingredient;
 import recipes.Recipe;

@@ -1,6 +1,6 @@
 package client.scenes.shopping_list;
 
-import client.scenes.MainCtrl;
+import client.utils.MainCtrl;
 import client.service.LanguageService;
 import client.utils.ServerUtils;
 import jakarta.inject.Inject;

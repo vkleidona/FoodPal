@@ -1,6 +1,7 @@
 package client.scenes;
 
 import client.scenes.shopping_list.ShoppingListMainCtrl;
+import client.utils.MainCtrl;
 import client.utils.ServerUtils;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;

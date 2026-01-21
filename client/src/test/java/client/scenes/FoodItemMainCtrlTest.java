@@ -2,6 +2,7 @@ package client.scenes;
 
 import client.network.WebSocketService;
 import client.scenes.food_item.FoodItemMainCtrl;
+import client.utils.MainCtrl;
 import client.utils.ServerUtils;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
