@@ -64,7 +64,6 @@ public class MainUICtrl {
     @FXML private ImageView languageIndicator;
     @FXML private MenuButton filterLanguagesButton;
 
-    private final Client client = ClientBuilder.newClient();
     private final String recipeEndpointUrl = "http://localhost:8080/api/recipes";
 
     private ObservableList<Recipe> currentRecipes;
@@ -440,13 +439,10 @@ public class MainUICtrl {
      * @param newLocale - the new language we want to set the menus to
      */
     public void changeLanguage(Locale newLocale) {
-        // setează limba globală
         LanguageManager.setLocale(newLocale);
 
-        // 1) MEMOREAZĂ rețeta selectată înainte de reload
         mainCtrl.setSelectedRecipeForReload(getSelectedRecipe());
 
-        // 2) actualizează textul și icon-ul butonului
         switch (newLocale.getLanguage()) {
             case "nl" -> {
                 languageButton.setText("Nederlands");
@@ -474,7 +470,6 @@ public class MainUICtrl {
             }
         }
 
-        // 3) reîncarcă scenele în noua limbă
         mainCtrl.reloadScenesForNewLanguage();
     }
 
@@ -635,13 +630,14 @@ public class MainUICtrl {
                     }
 
                     mainCtrl.handleRecipeBeingDeleted(id);
-                    Response serverResponse = client.target(recipeEndpointUrl + "/" + id)
-                            .request()
-                            .delete();
+                    server.deleteRecipe(id);
+                    //Response serverResponse = client.target(recipeEndpointUrl + "/" + id)
+                            //.request()
+                            //.delete();
 
-                    if (serverResponse.getStatus() == 204) {
-                        unsubscribeFromRecipe();
-                    }
+                    //if (serverResponse.getStatus() == 204) {
+                    unsubscribeFromRecipe();
+                    //}
                 } catch (Exception e) {
                     System.err.println("Error - could not delete recipe");
                 }

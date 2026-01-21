@@ -41,6 +41,17 @@ public class ServerUtils {
     }
 
     /**
+     * A method which issues a server request for deleting a recipe
+     * @param id - the recipe to be deleted
+     */
+    public void deleteRecipe (Long id) {
+        ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER + "api/recipes/" + id)
+                .request(APPLICATION_JSON)
+                .delete();
+    }
+
+    /**
      * A method used for updating a recipe on the server
      * @param recipe - the new Recipe object to update
      */
