@@ -1,6 +1,9 @@
 package client.scenes;
 
 import client.scenes.main.CreateRecipeCtrl;
+import client.service.LanguageService;
+import client.utils.MainCtrl;
+import client.utils.ServerUtils;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -12,6 +15,7 @@ import javafx.stage.Stage;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.testfx.framework.junit5.ApplicationTest;
 import org.testfx.util.WaitForAsyncUtils;
 import recipes.Recipe;
@@ -34,6 +38,9 @@ public class CreateRecipeCtrlTest extends ApplicationTest {
     private boolean wasRecipeSent = false;
     private Recipe capturedRecipe = null;
 
+    @Mock
+    private ServerUtils serverUtils;
+
     @Override
     public void start(Stage stage) throws Exception {
         // load the FXML
@@ -43,19 +50,7 @@ public class CreateRecipeCtrlTest extends ApplicationTest {
         // the controller instance
         controller = loader.getController();
 
-        controller.setServerService(new ServerService() {
-            @Override
-            public void sendRecipe(Recipe recipe) {
-                wasRecipeSent = true;
-                capturedRecipe = recipe;
-            }
-
-            @Override
-            public java.util.List<recipes.FoodItem> getAllFoodItems() {
-                return new java.util.ArrayList<>();
-            }
-
-        });
+        controller = new CreateRecipeCtrl(serverUtils, new MainCtrl(), new LanguageService());
 
         stage.setScene(new Scene(root));
         stage.show();
@@ -281,15 +276,6 @@ public class CreateRecipeCtrlTest extends ApplicationTest {
         clickOn("#addIngredientButton");
 
         // 2. Inject a new ServerService that returns a specific item
-        controller.setServerService(new ServerService() {
-            @Override
-            public java.util.List<recipes.FoodItem> getAllFoodItems() {
-                java.util.List<recipes.FoodItem> list = new java.util.ArrayList<>();
-                list.add(new recipes.FoodItem("New Server Item", 0,0,0,0));
-                return list;
-            }
-            @Override public void sendRecipe(Recipe r) {}
-        });
 
         // 3. Call handleRefresh explicitly (since we might not have a button for it in the test UI)
         javafx.application.Platform.runLater(() -> controller.handleRefresh());

@@ -84,7 +84,7 @@ public class FavoritesService {
             // The TypeReference is required because Set<Long> is a generic type,
             // and Java needs this extra help to understand exactly
             // what type of collection to create.
-            favoriteRecipeIds = mapper.readValue(FAVORITES_FILE, new TypeReference<Set<Long>>() {
+            favoriteRecipeIds = mapper.readValue(FAVORITES_FILE, new TypeReference<>() {
             });
         } catch (IOException e) {
             System.err.println("Error - favorites file not found - aborting load");

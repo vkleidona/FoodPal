@@ -1,9 +1,9 @@
 package client.service;
 
-import jakarta.inject.Inject;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import org.springframework.beans.factory.annotation.Autowired;
 import recipes.FoodItem;
 import recipes.Ingredient;
 import recipes.Recipe;
@@ -13,7 +13,10 @@ public class NutritionalService {
     private Recipe originalRecipe;
     private Recipe currentRecipe;
 
-    @Inject
+    /**
+     * Dependency injection-using constructor of the Nutritional Service class
+     */
+    @Autowired
     public NutritionalService () {
 
     }

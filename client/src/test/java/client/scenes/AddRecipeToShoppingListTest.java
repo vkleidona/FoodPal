@@ -67,7 +67,8 @@ public class AddRecipeToShoppingListTest extends ApplicationTest {
         mainCtrl = mock(MainCtrl.class);
         File file = tempDir.resolve("test_list.json").toFile();
         shoppingList = new ShoppingList(file);
-        addRecipeToShoppingListCtrl = new AddRecipeToShoppingListCtrl(serverUtils, mainCtrl, shoppingList, null);
+        addRecipeToShoppingListCtrl = new AddRecipeToShoppingListCtrl(serverUtils, mainCtrl,
+                null, null);
         loader.setController(addRecipeToShoppingListCtrl);
 
         // We load the scene

@@ -15,11 +15,10 @@ import java.util.Locale;
 public class FilterService {
 
     private List<Locale> filteredLocales = new ArrayList<>();
-    private FilteredList<Recipe> filteredRecipes;
+    private final FilteredList<Recipe> filteredRecipes;
     private final List <Long> searchedRecipeIds = new ArrayList<>();
-    private FavoritesService favoritesService;
-    private WebSocketService webSocketService;
-    private ServerUtils server;
+    private final FavoritesService favoritesService;
+    private final ServerUtils server;
 
     private boolean favoritesSelected = false;
 
@@ -33,7 +32,6 @@ public class FilterService {
     public FilterService (FavoritesService favoritesService, WebSocketService webSocketService,
                           ServerUtils serverUtils) {
         this.favoritesService = favoritesService;
-        this.webSocketService = webSocketService;
         this.server = serverUtils;
         filteredRecipes = new FilteredList<>(webSocketService.getMasterRecipeList());
     }
@@ -47,7 +45,7 @@ public class FilterService {
     }
 
     public void setFilteredLocales(List<Locale> filteredLocales) {
-        this.filteredLocales = new ArrayList<>(filteredLocales);;
+        this.filteredLocales = new ArrayList<>(filteredLocales);
     }
 
     public void setFavoritesSelected(boolean selected) {

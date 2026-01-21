@@ -1,5 +1,6 @@
 package client.scenes.shopping_list;
 
+import client.service.ShoppingListService;
 import client.utils.MainCtrl;
 import client.service.LanguageService;
 import client.utils.ServerUtils;
@@ -12,19 +13,15 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import recipes.FoodItem;
 import recipes.Ingredient;
-import shopping.ShoppingList;
 
-import java.io.File;
 import client.i18n.LanguageManager;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
@@ -51,16 +48,13 @@ public class ShoppingListMainCtrl {
 
     @FXML
     private ListView <Ingredient> ingredientsListView;
-    private ObservableList<Ingredient> ingredientsObservableList;
-
-    private final ShoppingList s;
 
     private Ingredient currentIngredient;
-    private int selectedIndex;
 
     private final ServerUtils server;
     private final MainCtrl mainCtrl;
     private final LanguageService languageService;
+    private final ShoppingListService shoppingListService;
 
     /**
      * A constructor which uses dependency injection
@@ -68,33 +62,27 @@ public class ShoppingListMainCtrl {
      *               server access
      * @param mainCtrl - an instance of the Main controller which allows the user
      *                 to switch scenes
-     * @param shoppingList - the instance of the ShoppingList required to operate
+     * @param shoppingListService - the instance of the ShoppingList service class
      * @param languageService - the instance of the language service class
      */
     @Inject
-    public ShoppingListMainCtrl (ServerUtils server, MainCtrl mainCtrl, ShoppingList shoppingList,
+    public ShoppingListMainCtrl (ServerUtils server, MainCtrl mainCtrl,
+                                 ShoppingListService shoppingListService,
                                  LanguageService languageService) {
         this.server = server;
         this.mainCtrl = mainCtrl;
-        this.s = shoppingList;
+        this.shoppingListService = shoppingListService;
         this.languageService = languageService;
     }
 
-    /**
-     * A getter for the ShoppingList parameter - needed for access
-     * from multiple places
-     * @return - ShoppingList - returns the ShoppingList instance
-     */
-    public ShoppingList getS() {
-        return s;
-    }
+
 
     /**
      * Initializes all data for the ShoppingList
      */
     public void initialize() {
         // loads the shopping list from the file
-        s.loadFile();
+        ingredientsListView.setItems(shoppingListService.getIngredientsObservableList());
 
         // refreshes the interface to match the state of the shopping list
         refreshInterface();
@@ -203,35 +191,19 @@ public class ShoppingListMainCtrl {
         LanguageManager.setLocale(newLocale);
         updateLanguageButtonUI(newLocale);
         mainCtrl.reloadScenesForNewLanguage();
-        s.loadFile();
-        ingredientsObservableList.setAll(s.getIngredients());
-        ingredientsListView.setItems(ingredientsObservableList);
+        shoppingListService.getShoppingList().loadFile();
+        shoppingListService.getIngredientsObservableList().setAll(shoppingListService.
+                getShoppingList().getIngredients());
+        ingredientsListView.setItems(shoppingListService.getIngredientsObservableList());
     }
 
     /**
-     * Refreshes the interface to match the current state of the Shopping List
+     * A method for refreshing the ingredients
      */
     public void refreshInterface () {
         // I added this method, as now the ShoppingList is accessed from 2 places
         // and I need to refresh the interface to display the most recent version
-        s.loadFile();
-        List<Ingredient> ingredientList = s.getIngredients();
-
-        // initializes the ingredients if uninitialized
-        if (ingredientList == null) {
-            s.setIngredients(new ArrayList<>());
-            ingredientList = s.getIngredients();
-        }
-        // initializes the observable list if uninitialized
-        if (ingredientsObservableList == null) {
-            ingredientsObservableList = FXCollections.observableArrayList(ingredientList);
-            ingredientsListView.setItems(ingredientsObservableList);
-        }
-
-        // clears the observable list and then shows all items
-        ingredientsObservableList.clear();
-        ingredientsObservableList.addAll(s.getIngredients());
-        ingredientsListView.setItems(ingredientsObservableList);
+        shoppingListService.reloadList();
     }
 
     /**
@@ -239,8 +211,7 @@ public class ShoppingListMainCtrl {
      */
     @FXML
     public void reset () {
-        s.getIngredients().clear();
-        ingredientsObservableList.clear();
+        shoppingListService.reset();
     }
 
     /**
@@ -248,19 +219,8 @@ public class ShoppingListMainCtrl {
      */
     @FXML
     public void print () throws IOException {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.getExtensionFilters().
-                add(new FileChooser.ExtensionFilter("Shopping_list", "*.txt"));
-
         Stage stage = (Stage) addIngredientButton.getScene().getWindow();
-        File file = fileChooser.showSaveDialog(stage);
-
-        try (FileWriter writer = new FileWriter(file)) {
-            for (Ingredient ingredient : ingredientsObservableList) {
-                writer.write(ingredient.toString());
-                writer.write("\n");
-            }
-        }
+        shoppingListService.print(stage);
     }
 
     /**
@@ -276,7 +236,7 @@ public class ShoppingListMainCtrl {
      */
     @FXML
     public void returnToMain () {
-        s.storeFile();
+        shoppingListService.getShoppingList().storeFile();
         mainCtrl.showMainMenu();
     }
 
@@ -285,8 +245,28 @@ public class ShoppingListMainCtrl {
      * @param ingredient - Ingredient to be added
      */
     public void addIngredientToShoppingList (Ingredient ingredient) {
-        ingredientsObservableList.add(ingredient);
-        s.addIngredient(ingredient);
+        shoppingListService.getIngredientsObservableList().add(ingredient);
+        shoppingListService.getShoppingList().addIngredient(ingredient);
+    }
+
+    /**
+     * Handles the propagation of an ingredient to the Shopping List
+     * @param ingredient - the ingredient to be displayed
+     */
+    public void handleIngredientEdit (Ingredient ingredient) {
+        ObservableList<Ingredient> list = shoppingListService.getIngredientsObservableList();
+
+        int index = list.indexOf(ingredient);
+
+        if (index != -1) {
+            list.set(index, ingredient);
+        } else {
+            int selected = ingredientsListView.getSelectionModel().getSelectedIndex();
+            if (selected >= 0) {
+                list.set(selected, ingredient);
+            }
+        }
+        shoppingListService.getShoppingList().storeFile();
     }
 
     /**
@@ -295,171 +275,116 @@ public class ShoppingListMainCtrl {
      * @param ingredient - Ingredient to be edited
      */
     public void showDialog(Ingredient ingredient) {
+        boolean isEditing = (ingredient != null);
 
-        boolean editing = !(ingredient==null);
-        boolean addingNewFoodItem = !(currentIngredient == null);
-        Dialog <Ingredient> dialogBox = new Dialog<>();
-        dialogBox.setTitle(resources.getString("shopping.dialog.change.title"));
-        // Adds an OK button and a Cancel button to the dialog box
-        dialogBox.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-        Button okButton = (Button) dialogBox.getDialogPane().lookupButton(ButtonType.OK);
-
-        // The OK Button is initially disabled
-        okButton.setDisable(true);
-
-        if (addingNewFoodItem) {
-            okButton.setDisable(false);
-        }
-
-        // Setting up the three parameters the user has to enter
-        ComboBox<String> foodItemField = new ComboBox<>();
-        foodItemField.setEditable(true);
-        //so that the user can type in a new food item and get a warning if it doesn't exist
-        List<FoodItem> items = server.getAllFoodItems();
-
-        for(FoodItem item : items){
-            foodItemField.getItems().add(item.getName());
-        }
-
-        TextField quantityField = new TextField();
-        ChoiceBox <String> unitChoice = new ChoiceBox<>();
-        loadItemsIntoChoiceBox(unitChoice);
-
-        // If the user is not editing, we show an empty text box with prompts
-        // If they are editing, we fetch the ingredient's data
-        if (!editing) {
-            foodItemField.setPromptText(
-                    resources.getString("shopping.dialog.food.prompt"));      // !!!
-            quantityField.setPromptText(
-                    resources.getString("shopping.dialog.quantity.prompt"));  // !!!
-        } else {
-            foodItemField.setValue(ingredient.getFoodName());
-            quantityField.setText(String.valueOf(ingredient.getQuantity()));
-            unitChoice.setValue(String.valueOf(ingredient.getMeasurement()));
-        }
-
-        // Sets up the horizontal box with all components
-        HBox ingredientInput = new HBox();
-        ingredientInput.setSpacing(15);
-        ingredientInput.setPadding(new Insets(20));
-        ingredientInput.getChildren().addAll(foodItemField, quantityField, unitChoice);
-        dialogBox.getDialogPane().setContent(ingredientInput);
-
-        // Disables the OK Button until all items have been entered
-        ChangeListener <String> inputValidator = (_, _, _) -> {
-            String foodText = foodItemField.getValue().trim();
-            String quantityText = quantityField.getText().trim();
-            String measurementType = unitChoice.getValue();
-            Double quantity = null;
-            try {
-                quantity = Double.parseDouble(quantityText);
-            } catch (NumberFormatException ignored) {}
-
-            if (!editing) {
-                okButton.setDisable(foodText.isEmpty() ||
-                        quantityText.isEmpty() || measurementType == null);
-            }else{
-                boolean disableCondition =
-                        (foodText.isEmpty() || foodText.equals(ingredient.getFoodName())) &&
-                        (quantityText.isEmpty() || quantity == null ||
-                                quantity == ingredient.getQuantity()) &&
-                        (measurementType == null ||
-                                measurementType.equals(ingredient.getMeasurement()));
-                okButton.setDisable(disableCondition);
-            }
-        };
-
-        // we listen to the clicking of any buttons
-        foodItemField.valueProperty().addListener(inputValidator);
-        quantityField.textProperty().addListener(inputValidator);
-        unitChoice.valueProperty().addListener(inputValidator);
-
-        dialogBox.setResultConverter(button -> {
-            if (button == ButtonType.OK) {
-
-                // Searches the server for the entered FoodItem
-                String input = foodItemField.getValue().trim();
-                FoodItem foodItem = server.getFoodItemByName(input);
-
-                // If the FoodItem hasn't been found, show an alert
-                if (foodItem == null) {
-                    askToAddFoodItem(ingredient, input);
-                    return null;
-                }
-
-                // Catches non-number inputs in the quantity field
-                double quantity;
-                try {
-                    quantity = Double.parseDouble(quantityField.getText());
-                }catch (NumberFormatException e) {
-                    //wrong-number alert text from bundle
-                    Alert wrongNumberInput = new Alert(Alert.AlertType.ERROR);
-                    wrongNumberInput.setTitle(
-                            resources.getString("shopping.dialog.wrongNumber.title"));   // !!!
-                    wrongNumberInput.setContentText(
-                            resources.getString("shopping.dialog.wrongNumber.content")); // !!!
-                    wrongNumberInput.showAndWait();
-                    return null;
-                }
-
-                String measurementType = unitChoice.getValue();
-                // If the user is editing, we edit the currently selected ingredient
-                if (editing) {
-                    ingredient.setFoodType(foodItem);
-                    ingredient.setQuantity(quantity);
-                    ingredient.setMeasurement(measurementType);
-                    return ingredient;
-                }
-                // Otherwise, a new ingredient with the data is returned
-                return new Ingredient(foodItem, quantity, measurementType);
-            }
-            return null;
-        });
-
-        // We edit the ingredients in the list itself
-        int indexClicked = ingredientsObservableList.indexOf(ingredient);
-        if (!addingNewFoodItem) {
-            selectedIndex = indexClicked;
-        }
+        Dialog<Ingredient> dialogBox = setupIngredientDialog(ingredient);
 
         dialogBox.showAndWait().ifPresent(result -> {
-            if (editing) {
-                if (indexClicked >= 0) {
-                    ingredientsObservableList.set(indexClicked, ingredient);
-                    s.storeFile();
-                    refreshInterface();
-                }
-                if (indexClicked == -1) {
-                    ingredientsObservableList.set(selectedIndex, ingredient);
-                    s.setIngredient(selectedIndex, ingredient);
-                    s.storeFile();
-                }
-            }else{
+            if (isEditing) {
+                handleIngredientEdit(result);
+            } else {
                 addIngredientToShoppingList(result);
             }
         });
     }
 
     /**
+     * A helper method for constructing a dialog box
+     * @param ingredient - the ingredient which the dialog box returns
+     * @return Dialog <Ingredient> - a ready-made dialog box
+     */
+    public Dialog<Ingredient> setupIngredientDialog(Ingredient ingredient) {
+        boolean editing = (ingredient != null);
+        Dialog<Ingredient> dialog = new Dialog<>();
+        dialog.setTitle(resources.getString("shopping.dialog.change.title"));
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        ComboBox<String> foodItemField = new ComboBox<>(FXCollections.observableArrayList(
+                server.getAllFoodItems().stream().map(FoodItem::getName).toList()));
+        foodItemField.setEditable(true);
+
+        TextField quantityField = new TextField();
+        ChoiceBox<String> unitChoice = new ChoiceBox<>();
+        shoppingListService.loadItemsIntoChoiceBox(unitChoice);
+
+        if (editing) {
+            foodItemField.setValue(ingredient.getFoodName());
+            quantityField.setText(String.valueOf(ingredient.getQuantity()));
+            unitChoice.setValue(ingredient.getMeasurement());
+        }
+
+        Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK);
+        okButton.setDisable(!editing);
+
+        setupValidator(okButton, foodItemField, quantityField, unitChoice);
+
+        HBox container = new HBox(15, foodItemField, quantityField, unitChoice);
+        container.setPadding(new Insets(20));
+        dialog.getDialogPane().setContent(container);
+
+        dialog.setResultConverter(button -> {
+            if (button == ButtonType.OK) {
+                return processDialogResult(foodItemField, quantityField, unitChoice, ingredient);
+            }
+            return null;
+        });
+
+        return dialog;
+    }
+
+    private void setupValidator(Button ok, ComboBox<String> food, TextField qty,
+                                ChoiceBox<String> unit) {
+        ChangeListener<Object> validator = (_, _, _) -> {
+            boolean empty = food.getValue() == null ||
+                    qty.getText().isEmpty() || unit.getValue() == null;
+            ok.setDisable(empty);
+        };
+        food.valueProperty().addListener(validator);
+        qty.textProperty().addListener(validator);
+        unit.valueProperty().addListener(validator);
+    }
+
+    private Ingredient processDialogResult(ComboBox<String> food, TextField qty,
+                                           ChoiceBox<String> unit, Ingredient existing) {
+        String inputName = food.getValue().trim();
+        FoodItem foodItem = server.getFoodItemByName(inputName);
+
+        if (foodItem == null) {
+            askToAddFoodItem(existing, inputName);
+            return null;
+        }
+
+        try {
+            double quantity = Double.parseDouble(qty.getText());
+            if (existing != null) {
+                existing.setFoodType(foodItem);
+                existing.setQuantity(quantity);
+                existing.setMeasurement(unit.getValue());
+                return existing;
+            }
+            return new Ingredient(foodItem, quantity, unit.getValue());
+        } catch (NumberFormatException e) {
+            Alert wrongNumberInput = new Alert(Alert.AlertType.ERROR);
+            wrongNumberInput.setTitle(LanguageManager.getString("alert.decimal.title"));
+            wrongNumberInput.setContentText(LanguageManager.getString
+                    ("alert.decimal.content"));
+            wrongNumberInput.showAndWait();
+            return null;
+        }
+    }
+
+
+    /**
      * Deletes ingredient from the ShoppingList
      * @param ingredient - Ingredient to be deleted from the shopping list
      */
     public void deleteIngredient(Ingredient ingredient) {
-        s.removeIngredient(ingredient);
-        ingredientsObservableList.remove(ingredient);
-        s.storeFile();
+        shoppingListService.getShoppingList().removeIngredient(ingredient);
+        shoppingListService.getIngredientsObservableList().remove(ingredient);
+        shoppingListService.getShoppingList().storeFile();
     }
 
-    /**
-     * A method for loading all possible measurement types into the choice box
-     * @param choiceBox - the choice box where we load the items
-     */
-    public void loadItemsIntoChoiceBox (ChoiceBox <String> choiceBox) {
-        List <String> availableMeasurementTypes =
-                List.of("g", "kg", "L", "mL", "oz", "lb", "fl oz", "cup", "tbsp", "tsp",
-                        "slice", "clove", "stick", "pinch", "dash", "jar", "-");
-        choiceBox.getItems().addAll(availableMeasurementTypes);
-    }
+
 
     /**
      * If the user wants to add a Food Item which is not in the database,
