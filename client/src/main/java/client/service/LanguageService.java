@@ -63,4 +63,21 @@ public class LanguageService {
         };
     }
 
+    /**
+     * A method for formatting the ingredient inside a Shopping List
+     * @param sourceName - the name of the recipe
+     * @param langCode - the language code for the Locale of the recipe
+     * @return String - a formatted String for display in the Shopping List
+     */
+    public String ingredientFormat (String sourceName, String langCode) {
+        return switch (langCode) {
+            case "nl" -> " (voor het voorbereiden " + sourceName + ")";
+            case "ro" -> " (pentru pregătire " + sourceName + ")";
+            case "bg" -> " (за приготвяне на " + sourceName + ")";
+            case "sk" -> " (na prípravu receptu " + sourceName + ")";
+            case "de" -> " (um " + sourceName + " vorzubereiten)";
+            default -> " (for preparing " + sourceName + ")";
+        };
+    }
+
 }

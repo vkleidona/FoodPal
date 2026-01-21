@@ -51,7 +51,7 @@ public class InformationCtrlTest extends ApplicationTest {
                     mainMenuShown = true;
                 }
             };
-            return new InformationCtrl(mockMainCtrl, null);
+            return new InformationCtrl(mockMainCtrl, null, null);
         });
 
         // load the FXML

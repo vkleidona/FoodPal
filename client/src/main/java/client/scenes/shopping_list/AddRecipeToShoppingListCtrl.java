@@ -126,15 +126,9 @@ public class AddRecipeToShoppingListCtrl {
         if (ingredient.getRecipeName() != null) {
             sourceName = ingredient.getRecipeName();
         }
-        String initial = ingredient.toString();
-        return switch (currentLocale.getLanguage()) {
-            case "nl" -> initial + " (voor het voorbereiden " + sourceName + ")";
-            case "ro" -> initial + " (pentru pregătire " + sourceName + ")";
-            case "bg" -> initial + " (за приготвяне на " + sourceName + ")";
-            case "sk" -> initial + " (na prípravu receptu " + sourceName + ")";
-            case "de" -> initial + " (um " + sourceName + " vorzubereiten)";
-            default -> initial + " (for preparing " + sourceName + ")";
-        };
+        return ingredient + languageService.ingredientFormat(sourceName,
+                currentLocale.getLanguage());
+
     }
 
     /**
