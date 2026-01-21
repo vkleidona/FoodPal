@@ -12,6 +12,7 @@ import javafx.stage.Stage;
 import javafx.util.Pair;
 import client.MyFXML;
 import recipes.FoodItem;
+import client.i18n.LanguageManager;
 import recipes.Recipe;
 
 public class MainCtrl {
@@ -27,6 +28,13 @@ public class MainCtrl {
         SHOPPING_LIST_MAIN,
         ADD_RECIPE_TO_SHOPPING_LIST
     }
+
+    private Recipe selectedRecipeBeforeReload;
+
+    public void setSelectedRecipeForReload(Recipe recipe) {
+        this.selectedRecipeBeforeReload = recipe;
+    }
+
 
     private Screen currentScreen = Screen.MAIN_MENU;
 
@@ -202,6 +210,7 @@ public class MainCtrl {
      */
     public void showEditIngredients(Recipe recipe) {
         editIngredientsCtrl.initialize(recipe);
+        selectedRecipeBeforeReload = recipe;
         currentScreen = Screen.EDIT_INGREDIENTS;
         primaryStage.setTitle("Edit Ingredients");
         primaryStage.setScene(editIngredients);
@@ -220,7 +229,6 @@ public class MainCtrl {
      * A method for switching to the scene for adding a new food item
      */
     public void showAddFoodItem() {
-        currentScreen = Screen.FOOD_ITEM_MAIN;
         currentScreen = Screen.ADD_FOOD_ITEM;
         primaryStage.setTitle("Add Food Item");
         primaryStage.setScene(addFoodItem);
@@ -252,14 +260,17 @@ public class MainCtrl {
      * A method which switches to the scene for displaying all food items
      */
     public void showFoodItemMain() {
+        currentScreen = Screen.FOOD_ITEM_MAIN;
         primaryStage.setTitle("Food Item Main");
         primaryStage.setScene(foodItemMain);
     }
+
 
     /**
      * Switches to the Shopping List scene
      */
     public void showShoppingList() {
+        currentScreen = Screen.SHOPPING_LIST_MAIN;
         primaryStage.setTitle("Shopping List");
         shoppingListMainCtrl.refreshInterface();
         primaryStage.setScene(shoppingListMainScene);
@@ -288,11 +299,13 @@ public class MainCtrl {
      * the recipe to the Shopping List
      */
     public void showAddRecipeToShoppingList () {
+        currentScreen = Screen.ADD_RECIPE_TO_SHOPPING_LIST;
         primaryStage.setTitle("Add Recipe to Shopping List");
         Recipe currentRecipe = mainUICtrl.getSelectedRecipe();
         addRecipeToShoppingListCtrl.setRecipe(currentRecipe);
         primaryStage.setScene(addRecipeToShoppingList);
     }
+
 
     /**
      * Opens the add to shopping list screen populated with the provided
@@ -395,22 +408,28 @@ public class MainCtrl {
         switch (currentScreen) {
             case MAIN_MENU -> showMainMenu();
             case EDIT_INSTRUCTIONS -> {
-                Recipe r = mainUICtrl.getSelectedRecipe();
-                if (r != null) showEditInstructions(r);
-                else showMainMenu();
+                if (selectedRecipeBeforeReload != null) {
+                    showEditInstructions(selectedRecipeBeforeReload);
+                } else {
+                    showMainMenu();
+                }
             }
             case CREATE_RECIPE -> showCreateRecipe();
             case ADD_FOOD_ITEM -> showAddFoodItem();
             case FOOD_ITEM_MAIN -> showFoodItemMain();
             case EDIT_INGREDIENTS -> {
-                Recipe r = mainUICtrl.getSelectedRecipe();
-                if (r != null) showEditIngredients(r);
-                else showMainMenu();
+                if (selectedRecipeBeforeReload != null) {
+                    showEditIngredients(selectedRecipeBeforeReload);
+                } else {
+                    showMainMenu();
+                }
             }
             case INFORMATION -> {
-                Recipe r = mainUICtrl.getSelectedRecipe();
-                if (r != null) showInformation(r);
-                else showMainMenu();
+                if (selectedRecipeBeforeReload != null) {
+                    showInformation(selectedRecipeBeforeReload);
+                } else {
+                    showMainMenu();
+                }
             }
             case SHOPPING_LIST_MAIN -> showShoppingList();
             case ADD_RECIPE_TO_SHOPPING_LIST -> showAddRecipeToShoppingList();

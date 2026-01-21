@@ -441,17 +441,45 @@ public class MainUICtrl {
      * @param newLocale - the new language we want to set the menus to
      */
     public void changeLanguage(Locale newLocale) {
+        // setează limba globală
         LanguageManager.setLocale(newLocale);
+
+        // 1) MEMOREAZĂ rețeta selectată înainte de reload
+        mainCtrl.setSelectedRecipeForReload(getSelectedRecipe());
+
+        // 2) actualizează textul și icon-ul butonului
         switch (newLocale.getLanguage()) {
-            case "nl" -> languageButton.setText("Nederlands");
-            case "ro" -> languageButton.setText("Română");
-            case "bg" -> languageButton.setText("Български");
-            case "sk" -> languageButton.setText("Slovenčina");
-            case "de" -> languageButton.setText("Deutsch");
-            default -> languageButton.setText("English");
+            case "nl" -> {
+                languageButton.setText("Nederlands");
+                updateButtonGraphic("dutch");
+            }
+            case "ro" -> {
+                languageButton.setText("Română");
+                updateButtonGraphic("romanian");
+            }
+            case "bg" -> {
+                languageButton.setText("Български");
+                updateButtonGraphic("bulgarian");
+            }
+            case "sk" -> {
+                languageButton.setText("Slovenčina");
+                updateButtonGraphic("slovak");
+            }
+            case "de" -> {
+                languageButton.setText("Deutsch");
+                updateButtonGraphic("german");
+            }
+            default -> {
+                languageButton.setText("English");
+                updateButtonGraphic("english");
+            }
         }
+
+        // 3) reîncarcă scenele în noua limbă
         mainCtrl.reloadScenesForNewLanguage();
     }
+
+
 
     /**
      * A method for updating the indicator of the recipe language

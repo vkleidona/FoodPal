@@ -372,6 +372,10 @@ public class CreateRecipeCtrl {
      * @param newLocale - the new Locale of the recipe
      */
     public void changeLanguage(Locale newLocale) {
+        // 1) schimbă limba GLOBALĂ a aplicației
+        LanguageManager.setLocale(newLocale);
+
+        // 2) actualizează butonul local și limba rețetei
         switch (newLocale.getLanguage()) {
             case "nl" -> {
                 languageButton.setText("Nederlands");
@@ -404,7 +408,15 @@ public class CreateRecipeCtrl {
                 updateButtonGraphic("english");
             }
         }
+
+        // 3) reîncarcă toate scenele în noua limbă și rămâi în același ecran
+        if (mainCtrl != null) {
+            mainCtrl.reloadScenesForNewLanguage();
+        } else {
+            System.err.println("MainCtrl is null in CreateRecipeCtrl.changeLanguage");
+        }
     }
+
 
 
     /**
