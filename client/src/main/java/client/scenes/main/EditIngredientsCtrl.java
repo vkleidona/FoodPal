@@ -1,6 +1,7 @@
-package client.scenes;
+package client.scenes.main;
 
 
+import client.scenes.MainCtrl;
 import jakarta.inject.Inject;
 import javafx.application.Platform;
 import javafx.scene.control.*;

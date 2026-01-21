@@ -1,5 +1,6 @@
 package client.scenes;
 
+import client.scenes.main.EditInstructionsCtrl;
 import javafx.stage.Stage;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;

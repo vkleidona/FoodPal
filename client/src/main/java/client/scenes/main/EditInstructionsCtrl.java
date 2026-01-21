@@ -1,5 +1,6 @@
-package client.scenes;
+package client.scenes.main;
 
+import client.scenes.MainCtrl;
 import com.google.inject.Inject;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;

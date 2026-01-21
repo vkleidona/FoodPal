@@ -1,5 +1,6 @@
-package client.scenes;
+package client.scenes.main;
 
+import client.scenes.MainCtrl;
 import client.utils.ServerUtils;
 import jakarta.inject.Inject;
 import javafx.fxml.FXML;

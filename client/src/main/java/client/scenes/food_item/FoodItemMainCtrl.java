@@ -1,6 +1,7 @@
-package client.scenes;
+package client.scenes.food_item;
 
 import client.network.WebSocketService;
+import client.scenes.MainCtrl;
 import client.utils.ServerUtils;
 import jakarta.inject.Inject;
 import javafx.application.Platform;

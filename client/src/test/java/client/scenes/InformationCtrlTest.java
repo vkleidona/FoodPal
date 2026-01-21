@@ -1,5 +1,6 @@
 package client.scenes;
 
+import client.scenes.nutrition.InformationCtrl;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;

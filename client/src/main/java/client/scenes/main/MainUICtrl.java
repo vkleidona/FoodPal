@@ -1,6 +1,7 @@
-package client.scenes;
+package client.scenes.main;
 
 import client.network.WebSocketService;
+import client.scenes.MainCtrl;
 import client.utils.ServerUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

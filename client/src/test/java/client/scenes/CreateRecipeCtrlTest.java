@@ -1,5 +1,6 @@
 package client.scenes;
 
+import client.scenes.main.CreateRecipeCtrl;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;

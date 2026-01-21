@@ -1,11 +1,11 @@
 package client.scenes;
 
 import client.network.WebSocketService;
+import client.scenes.food_item.FoodItemMainCtrl;
 import client.utils.ServerUtils;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
 import javafx.stage.Stage;
 import org.junit.jupiter.api.*;
 import org.testfx.framework.junit5.ApplicationTest;

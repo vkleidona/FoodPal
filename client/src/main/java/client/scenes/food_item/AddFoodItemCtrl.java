@@ -1,5 +1,6 @@
-package client.scenes;
+package client.scenes.food_item;
 
+import client.scenes.MainCtrl;
 import client.utils.ServerUtils;
 import jakarta.inject.Inject;
 import client.i18n.LanguageManager;
