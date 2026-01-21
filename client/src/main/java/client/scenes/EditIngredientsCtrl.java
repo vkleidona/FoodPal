@@ -137,10 +137,11 @@ public class EditIngredientsCtrl{
             inputFoodName.getItems().add(item.getName());
         }
 
-        inputFoodName.getItems().add("+ Create New Food Item...");
+        String createItemLabel = resources.getString("combo.createFoodItem");
+        inputFoodName.getItems().add(createItemLabel);
 
-        inputFoodName.setOnAction(_->{
-            if("+ Create New Food Item...".equals(inputFoodName.getValue())){
+        inputFoodName.setOnAction(_ -> {
+            if (createItemLabel.equals(inputFoodName.getValue())) {
                 handleCreateNewFoodItem();
             }
         });
