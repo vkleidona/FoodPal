@@ -60,7 +60,7 @@ public class MainUICtrlTest extends ApplicationTest {
         mockMainCtrl = new MockMainCtrl();
 
         // 2. Initialize Controller
-        controller = new MainUICtrl(mockServer, mockMainCtrl, null, null);
+        controller = new MainUICtrl(mockServer, mockMainCtrl, null, null, null);
 
         // 3. Initialize UI Components
         recipeListView = new ListView<>();

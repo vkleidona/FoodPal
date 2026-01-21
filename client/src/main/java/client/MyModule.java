@@ -10,6 +10,8 @@ import client.scenes.main.MainUICtrl;
 import client.scenes.nutrition.InformationCtrl;
 import client.scenes.shopping_list.AddRecipeToShoppingListCtrl;
 import client.scenes.shopping_list.ShoppingListMainCtrl;
+import client.service.FavoritesService;
+import client.service.FilterService;
 import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.Scopes;
@@ -34,5 +36,7 @@ public class MyModule implements Module {
         binder.bind(ShoppingListMainCtrl.class).in(Scopes.SINGLETON);
         binder.bind(AddRecipeToShoppingListCtrl.class).in(Scopes.SINGLETON);
         binder.bind(ShoppingList.class).in(Scopes.SINGLETON);
+        binder.bind(FavoritesService.class).in(Scopes.SINGLETON);
+        binder.bind(FilterService.class).in(Scopes.SINGLETON);
     }
 }

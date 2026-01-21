@@ -4,12 +4,14 @@ import client.network.WebSocketService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;
+import org.springframework.stereotype.Service;
 import recipes.Recipe;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+@Service
 public class FavoritesService {
 
     // File path for saving favorites
@@ -82,7 +84,7 @@ public class FavoritesService {
             // The TypeReference is required because Set<Long> is a generic type,
             // and Java needs this extra help to understand exactly
             // what type of collection to create.
-            favoriteRecipeIds = mapper.readValue(FAVORITES_FILE, new TypeReference<>() {
+            favoriteRecipeIds = mapper.readValue(FAVORITES_FILE, new TypeReference<Set<Long>>() {
             });
         } catch (IOException e) {
             System.err.println("Error - favorites file not found - aborting load");
