@@ -370,7 +370,14 @@ public class ShoppingListMainCtrl {
         }
 
         // Setting up the three parameters the user has to enter
-        TextField foodItemField = new TextField();
+        ComboBox<String> foodItemField = new ComboBox<>();
+        foodItemField.setEditable(true);  //so that the user can type in a new food item and get a warning if doesnt exist
+        List<FoodItem> items = server.getAllFoodItems();
+
+        for(FoodItem item : items){
+            foodItemField.getItems().add(item.getName());
+        }
+
         TextField quantityField = new TextField();
         ChoiceBox <String> unitChoice = new ChoiceBox<>();
         loadItemsIntoChoiceBox(unitChoice);
@@ -383,7 +390,7 @@ public class ShoppingListMainCtrl {
             quantityField.setPromptText(
                     resources.getString("shopping.dialog.quantity.prompt"));  // !!!
         } else {
-            foodItemField.setText(ingredient.getFoodName());
+            foodItemField.setValue(ingredient.getFoodName());
             quantityField.setText(String.valueOf(ingredient.getQuantity()));
             unitChoice.setValue(String.valueOf(ingredient.getMeasurement()));
         }
@@ -397,7 +404,7 @@ public class ShoppingListMainCtrl {
 
         // Disables the OK Button until all items have been entered
         ChangeListener <String> inputValidator = (_, _, _) -> {
-            String foodText = foodItemField.getText().trim();
+            String foodText = foodItemField.getValue().trim();
             String quantityText = quantityField.getText().trim();
             String measurementType = unitChoice.getValue();
             Double quantity = null;
@@ -420,7 +427,7 @@ public class ShoppingListMainCtrl {
         };
 
         // we listen to the clicking of any buttons
-        foodItemField.textProperty().addListener(inputValidator);
+        foodItemField.valueProperty().addListener(inputValidator);
         quantityField.textProperty().addListener(inputValidator);
         unitChoice.valueProperty().addListener(inputValidator);
 
@@ -428,7 +435,7 @@ public class ShoppingListMainCtrl {
             if (button == ButtonType.OK) {
 
                 // Searches the server for the entered FoodItem
-                String input = foodItemField.getText().trim();
+                String input = foodItemField.getValue().trim();
                 FoodItem foodItem = server.getFoodItemByName(input);
 
                 // If the FoodItem hasn't been found, show an alert

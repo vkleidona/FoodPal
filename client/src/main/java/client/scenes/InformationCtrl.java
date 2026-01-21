@@ -15,9 +15,8 @@ import recipes.Ingredient;
 import recipes.Recipe;
 import client.i18n.LanguageManager;
 import java.text.MessageFormat;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.ResourceBundle;
+import java.util.*;
+
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 
@@ -311,6 +310,10 @@ public class InformationCtrl {
             for (Ingredient ing : currentRecipe.getIngredients()) {
                 optimizeIngredientUnit(ing);
             }
+        }
+
+        if(originalRecipe.getServings() == null || originalRecipe.getServings() == 0 ){
+            originalRecipe.setServings(1);
         }
 
         renderIngredientsList();
@@ -624,6 +627,22 @@ public class InformationCtrl {
             ing.setMeasurement("oz");
             ing.setQuantity(qty * 16.0);
         }
+    }
+
+    /**
+     * Creates a copy of the scaled recipe,
+     * appends the scale factor to the recipe name and opens the
+     * add to shopping list screen, passing this copy.
+     */
+    @FXML
+    public void handleSaveScaledRecipeToShoppingList(){
+        Recipe scaledRecipe = copyRecipe(currentRecipe);
+
+        double factor = (double) currentRecipe.getServings() / originalRecipe.getServings();
+        String label = String.format(" (%.2gx)", factor); // to stop after 2 decimal places and to round
+        scaledRecipe.setName(scaledRecipe.getName() + label);
+
+        mainCtrl.showAddScaledRecipeToShoppingList(scaledRecipe);
     }
 
 }
