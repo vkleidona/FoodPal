@@ -1,10 +1,8 @@
 package client.scenes;
 
 
-import jakarta.annotation.Resource;
 import jakarta.inject.Inject;
 import javafx.application.Platform;
-import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
@@ -402,8 +400,9 @@ public class EditIngredientsCtrl{
 
     @FXML
     public void addIngredient() {
-        if(inputFoodName.getValue() == null || inputFoodName.getValue().trim().isEmpty() ||
-                inputQuantity == null || inputMeasurement==null ){
+        if(inputFoodName.getValue() == null || inputQuantity.getText() == null ||
+                inputQuantity.getText().trim().isEmpty() ||
+                inputMeasurement.getValue() == null ){
             showAlert("editIngredients.alert.missingField.title", "editIngredients.alert.missingField.content");
             return;
         }
@@ -437,7 +436,7 @@ public class EditIngredientsCtrl{
             listOfIngredients.refresh();
         } catch (NumberFormatException e) {
             // If the given quantity cannot be parsed to a double give error.
-            showAlert("editIngredients.alert.invalidNUmber.title", "editIngredients.alert.invalidNumber.content");
+            showAlert("editIngredients.alert.invalidNumber.title", "editIngredients.alert.invalidNumber.content");
         }
 
         resetForm();

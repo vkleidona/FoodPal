@@ -21,17 +21,25 @@
 
       <HBox prefHeight="5.0" prefWidth="560.0" spacing="10.0" />
 
-      <Label alignment="CENTER" maxWidth="1.7976931348623157E308" prefHeight="81.0" prefWidth="560.0" style="-fx-background-color: D3D3D3;" text="%app.title">
-         <font>
-            <Font name="System Bold" size="18.0" />
-         </font>
-      </Label>
-
-      <HBox prefHeight="48.0" prefWidth="560.0">
+      <HBox prefHeight="29.0" prefWidth="800.0">
          <children>
             <Label text="%editInstructions.title">
                <font>
                   <Font name="System Bold" size="24.0" />
+               </font>
+            </Label>
+         </children>
+      </HBox>
+      <HBox spacing="10.0">
+         <children>
+            <Label text="%editIngredients.recipe.label">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </Label>
+            <Label fx:id="recipeName" prefHeight="5.0" prefWidth="258.0" text="%editIngredients.recipeName.placeholder">
+               <font>
+                  <Font size="14.0" />
                </font>
             </Label>
          </children>
@@ -51,8 +59,8 @@
 
       <HBox prefHeight="30.0" prefWidth="560.0" spacing="380.0">
          <children>
-            <Button fx:id="saveChanges" mnemonicParsing="false" onAction="#saveChanges" prefHeight="26.0" prefWidth="236.0" text="%editInstructions.saveChanges" />
             <Button mnemonicParsing="false" onAction="#returnToMainUI" prefHeight="26.0" prefWidth="218.0" text="%editInstructions.backToMain" />
+            <Button fx:id="saveChanges" mnemonicParsing="false" onAction="#saveChanges" prefHeight="26.0" prefWidth="236.0" text="%editInstructions.saveChanges" />
          </children>
       </HBox>
    </children>

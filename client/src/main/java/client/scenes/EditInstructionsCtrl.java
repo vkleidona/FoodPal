@@ -5,9 +5,7 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.shape.Circle;
@@ -16,8 +14,6 @@ import recipes.Recipe;
 import java.util.*;
 
 import client.i18n.LanguageManager;
-import javafx.scene.control.MenuButton;
-import javafx.scene.control.MenuItem;
 
 public class EditInstructionsCtrl {
 
@@ -28,6 +24,8 @@ public class EditInstructionsCtrl {
 
     @FXML
     private MenuButton languageButton;
+    @FXML
+    private Label recipeName;
 
     @FXML
     private ResourceBundle resources;
@@ -43,6 +41,7 @@ public class EditInstructionsCtrl {
     @FXML
     public void initialize(Recipe recipe) {
         currentRecipe = recipe;
+        recipeName.setText(currentRecipe.getName());
 
         // Handle case where instructions list is null in the database
         List<String> existingInstructions = recipe.getInstructions();
