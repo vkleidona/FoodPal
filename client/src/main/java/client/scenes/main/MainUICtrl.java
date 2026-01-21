@@ -2,9 +2,8 @@ package client.scenes.main;
 
 import client.network.WebSocketService;
 import client.scenes.MainCtrl;
+import client.service.FavoritesService;
 import client.utils.ServerUtils;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;
 import javafx.application.Platform;
 import client.i18n.LanguageManager;
@@ -64,8 +63,6 @@ public class MainUICtrl {
     @FXML private ImageView languageIndicator;
     @FXML private MenuButton filterLanguagesButton;
 
-    private final String recipeEndpointUrl = "http://localhost:8080/api/recipes";
-
     private ObservableList<Recipe> currentRecipes;
     private FilteredList<Recipe> filteredRecipesByLanguage;
     private final List <Long> searchedRecipeIds = new ArrayList<>();
@@ -75,18 +72,15 @@ public class MainUICtrl {
     private final MainCtrl mainCtrl;
     private final WebSocketService webSocketService;
 
-    private Set<Long> favoriteRecipeIds = new HashSet<>();
     private List <Locale> filteredLocales = new ArrayList<>();
 
     private Long lastSubscribedID = null;
     private StompSession.Subscription recipeSubscription;
 
+    private final FavoritesService favoritesService;
+
     @FXML
     private MenuButton languageButton;
-
-
-    // File path for saving favorites
-    private static final File FAVORITES_FILE = new File("favorites.json");
 
     /**
      * Cleans up the local favorites list by removing recipe IDs that no longer
@@ -97,73 +91,25 @@ public class MainUICtrl {
      * warning alert to inform the user that some favorite recipes are gone.
      */
     private void cleanupDeletedFavorites() {
-        Set<Long> stillFavoriteIds = new HashSet<>();
-        boolean anyDeleted = false;
 
-        for (Long favId : favoriteRecipeIds) {
-            // Check if this ID still exists in currentRecipes (master list from WebSocket)
-            boolean existsInList = currentRecipes.stream()
-                    .anyMatch(r -> Objects.equals(r.getId(), favId));
+        boolean deleted = favoritesService.cleanupDeletedFavorites();
 
-            if (existsInList) {
-                stillFavoriteIds.add(favId);
-            } else {
-                anyDeleted = true;
-            }
-        }
-
-        if (anyDeleted) {
-            favoriteRecipeIds = stillFavoriteIds;
-            saveFavorites();
-            updatePredicate();  // so favorites tab hides dead ones
+        if (deleted) {
             showFavoriteDeletedWarning();
+            updatePredicate();
         }
     }
 
     private void showFavoriteDeletedWarning() {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle(LanguageManager.getString("main.favoriteDeleted.title"));
-        alert.setHeaderText(LanguageManager.getString("main.favoriteDeleted.header"));
-        alert.setContentText(LanguageManager.getString("main.favoriteDeleted.content"));
-        alert.showAndWait();
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle(LanguageManager.getString("main.favoriteDeleted.title"));
+            alert.setHeaderText(LanguageManager.getString("main.favoriteDeleted.header"));
+            alert.setContentText(LanguageManager.getString("main.favoriteDeleted.content"));
+            alert.showAndWait();
+        });
     }
 
-
-
-    /**
-     * reads a list of favorite recipe IDs from a local file (favorites.json)
-     * and loads them into the application's memory.
-     */
-    private void loadFavorites() {
-        if (!FAVORITES_FILE.exists()) return;
-
-        // Creates a new Jackson ObjectMapper instance, the tool used to
-        // convert between Java objects and JSON text
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            // Reads the file content and converts the JSON data into a Set of Long integers.
-            // The TypeReference is required because Set<Long> is a generic type,
-            // and Java needs this extra help to understand exactly
-            // what type of collection to create.
-            favoriteRecipeIds = mapper.readValue(FAVORITES_FILE, new TypeReference<>() {
-            });
-        } catch (IOException e) {
-            System.err.println("Error - favorites file not found - aborting load");
-        }
-    }
-
-    /**
-     *  takes the current set of favorite recipe IDs from memory and
-     *  writes them into the favorites.json file.
-     */
-    private void saveFavorites() {
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            mapper.writeValue(FAVORITES_FILE, favoriteRecipeIds);
-        } catch (IOException e) {
-            System.err.println("Error - favorites file could not be found - aborting save");
-        }
-    }
 
     @FXML private ToggleButton favoriteButton;
     @FXML private ToggleButton allRecipesTab;
@@ -178,14 +124,14 @@ public class MainUICtrl {
         if (current == null) return;
 
         if (favoriteButton.isSelected()) {
-            favoriteRecipeIds.add(current.getId());
+            favoritesService.getFavoriteRecipeIds().add(current.getId());
             favoriteButton.setText("★");
         } else {
-            favoriteRecipeIds.remove(current.getId());
+            favoritesService.getFavoriteRecipeIds().remove(current.getId());
             favoriteButton.setText("☆");
         }
 
-        saveFavorites();
+        favoritesService.saveFavorites();
         updatePredicate();
 
         if (favoritesTab.isSelected()) {
@@ -218,12 +164,15 @@ public class MainUICtrl {
      * @param server - the injected instance of the ServerUtils
      * @param mainCtrl - the injected instance of the Main Controller
      * @param webSocketService - the injected instance of the WebSocketService
+     * @param favoritesService - the injected instance of the service supporting favorites
      */
     @Inject
-    public MainUICtrl (ServerUtils server, MainCtrl mainCtrl, WebSocketService webSocketService) {
+    public MainUICtrl (ServerUtils server, MainCtrl mainCtrl, WebSocketService webSocketService,
+                       FavoritesService favoritesService) {
         this.server = server;
         this.mainCtrl = mainCtrl;
         this.webSocketService = webSocketService;
+        this.favoritesService = favoritesService;
     }
 
     /**
@@ -240,7 +189,7 @@ public class MainUICtrl {
         recipeListView.setItems(filteredRecipesByLanguage);
         updatePredicate();
 
-        loadFavorites();
+        favoritesService.loadFavorites();
         allRecipesTab.setSelected(true);
 
         // Sidebar selection updates main UI
@@ -249,7 +198,8 @@ public class MainUICtrl {
                     if (newVal != null) {
                         selectedRecipe = newVal;
                         selectRecipe(newVal);
-                        boolean isFav = favoriteRecipeIds.contains(newVal.getId());
+                        boolean isFav = favoritesService.getFavoriteRecipeIds().
+                                contains(newVal.getId());
                         favoriteButton.setSelected(isFav);
                         favoriteButton.setText(isFav ? "★" : "☆");
                         changeRecipeLanguage(selectedRecipe);
@@ -304,7 +254,8 @@ public class MainUICtrl {
                     setText(null);
                 } else {
                     // Check if it's a favorite to add the star prefix
-                    boolean isFavorite = favoriteRecipeIds.contains(item.getId());
+                    boolean isFavorite = favoritesService.getFavoriteRecipeIds().
+                            contains(item.getId());
                     String prefix = isFavorite ? "★ " : "";
 
                     setText(prefix + item.getName());
@@ -330,10 +281,10 @@ public class MainUICtrl {
                     for (Recipe removedRecipe : change.getRemoved()) {
                         Long id = removedRecipe.getId();
 
-                        if (favoriteRecipeIds.contains(id)) {
-                            handleFavoriteBeingDeleted(removedRecipe.getName());
-                            favoriteRecipeIds.remove(id);
-                            saveFavorites();
+                        if (favoritesService.getFavoriteRecipeIds().contains(id)) {
+                            showFavoriteDeletedWarning();
+                            favoritesService.getFavoriteRecipeIds().remove(id);
+                            favoritesService.saveFavorites();
                         }
                     }
                 }
@@ -625,8 +576,8 @@ public class MainUICtrl {
                     long id = selectedRecipe.getId();
                     System.out.println("Deleting recipe with ID: " + id);
 
-                    if (favoriteRecipeIds.contains(id)) {
-                        handleFavoriteBeingDeleted(selectedRecipe.getName());
+                    if (favoritesService.getFavoriteRecipeIds().contains(id)) {
+                        showFavoriteDeletedWarning();
                     }
 
                     mainCtrl.handleRecipeBeingDeleted(id);
@@ -995,27 +946,12 @@ public class MainUICtrl {
                     filteredLocales.contains(recipe.getLocale());
             boolean matchesTab = true;
             if (favoritesTab.isSelected()) {
-                matchesTab = favoriteRecipeIds.contains(recipe.getId());
+                matchesTab = favoritesService.getFavoriteRecipeIds().contains(recipe.getId());
             }
             boolean matchesSearch = searchedRecipeIds.isEmpty() ||
                     searchedRecipeIds.contains(recipe.getId());
 
             return matchesLanguage && matchesTab && matchesSearch;
-        });
-    }
-
-    /**
-     * Should show an alert that one of the favorites has been deleted
-     * @param name - the name of the favorite being deleted
-     */
-    public void handleFavoriteBeingDeleted (String name) {
-        Platform.runLater(() -> {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Favorite recipe removed!");
-            alert.setHeaderText("Favorite recipe removed");
-            alert.setContentText("One of your favorite recipes (" +
-                    name + ") has been removed");
-            alert.showAndWait();
         });
     }
 }

@@ -60,7 +60,7 @@ public class MainUICtrlTest extends ApplicationTest {
         mockMainCtrl = new MockMainCtrl();
 
         // 2. Initialize Controller
-        controller = new MainUICtrl(mockServer, mockMainCtrl, null);
+        controller = new MainUICtrl(mockServer, mockMainCtrl, null, null);
 
         // 3. Initialize UI Components
         recipeListView = new ListView<>();
@@ -320,7 +320,7 @@ public class MainUICtrlTest extends ApplicationTest {
         public boolean infoShown = false;
         public boolean foodItemMainShown = false;
 
-        public MockMainCtrl() { super(null, new WebSocketService(), null); }
+        public MockMainCtrl() { super(); }
 
         @Override public void showCreateRecipe() { createRecipeShown = true; }
         @Override public void showEditIngredients(Recipe r) { editIngredientsShown = true; }
