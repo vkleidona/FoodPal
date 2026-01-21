@@ -120,13 +120,16 @@ public class AddRecipeToShoppingListCtrl {
      */
     public String ingredientFormatter (Ingredient ingredient) {
         Locale currentLocale = LanguageManager.getLocale();
-        String sourceName = ingredient.getRecipeName();
+        String sourceName = "";
+        if (ingredient.getRecipeName() != null) {
+            sourceName = ingredient.getRecipeName();
+        }
         String initial = ingredient.toString();
         return switch (currentLocale.getLanguage()) {
             case "nl" -> initial + " (voor het voorbereiden " + sourceName + ")";
             case "ro" -> initial + " (pentru pregătire " + sourceName + ")";
             case "bg" -> initial + " (за приготвяне на " + sourceName + ")";
-            case "sk" -> initial + " (" + sourceName + ")";
+            case "sk" -> initial + " (na prípravu receptu " + sourceName + ")";
             case "de" -> initial + " (um " + sourceName + " vorzubereiten)";
             default -> initial + " (for preparing " + sourceName + ")";
         };
@@ -337,9 +340,10 @@ public class AddRecipeToShoppingListCtrl {
                     quantity = Double.parseDouble(quantityField.getText());
                 }catch (NumberFormatException e) {
                     Alert wrongNumberInput = new Alert(Alert.AlertType.ERROR);
-                    wrongNumberInput.setTitle("Wrong input");
-                    wrongNumberInput.setContentText("Invalid input of a decimal number.");
+                    wrongNumberInput.setTitle(LanguageManager.getString("alert.decimal.title"));
+                    wrongNumberInput.setContentText(LanguageManager.getString("alert.decimal.content"));
                     wrongNumberInput.showAndWait();
+
                     return null;
                 }
 
@@ -439,12 +443,10 @@ public class AddRecipeToShoppingListCtrl {
      * @param foodItemEntry - what the user has entered for food item
      */
     public void askToAddFoodItem (Ingredient ingredient, String foodItemEntry) {
-        Dialog <ButtonType> dialogBox = new Dialog<>();
-        dialogBox.setTitle("Food Item not found");
-        dialogBox.setContentText("""
-                The ingredient you are adding is not known to us.
-                
-                Do you wish to add it?""");
+        Dialog<ButtonType> dialogBox = new Dialog<>();
+        dialogBox.setTitle(LanguageManager.getString("dialog.foodNotFound.title"));
+        dialogBox.setContentText(LanguageManager.getString("dialog.foodNotFound.content"));
+
 
         dialogBox.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
         Optional<ButtonType> buttonType = dialogBox.showAndWait();

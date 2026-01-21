@@ -94,13 +94,14 @@ public class CreateRecipeCtrl {
      * @param title   title text of the alert window.
      * @param content main message text to display in the alert.
      */
-    private void showAlert(Alert.AlertType type, String title, String content) {
+    private void showAlert(Alert.AlertType type, String titleKey, String contentKey) {
         Alert alert = new Alert(type);
-        alert.setTitle(title);
+        alert.setTitle(LanguageManager.getString(titleKey));
         alert.setHeaderText(null);
-        alert.setContentText(content);
+        alert.setContentText(LanguageManager.getString(contentKey));
         alert.showAndWait();
     }
+
 
     private ServerService serverService;
 
@@ -156,8 +157,9 @@ public class CreateRecipeCtrl {
     public void handleApply() {
         String recipeName = nameTextField.getText().trim();
         if (recipeName.isEmpty()) {
-            showAlert(Alert.AlertType.WARNING, "Missing recipe name",
-                    "Please enter a recipe name before saving.");
+            showAlert(Alert.AlertType.WARNING,
+                    "alert.recipe.missingName.title",
+                    "alert.recipe.missingName.content");
             return;
         }
 
@@ -167,13 +169,15 @@ public class CreateRecipeCtrl {
             try {
                 servings = Integer.parseInt(servingsText);
                 if (servings <= 0) {
-                    showAlert(Alert.AlertType.ERROR, "Invalid servings",
-                            "Number of servings must be a positive integer.");
+                    showAlert(Alert.AlertType.ERROR,
+                            "alert.recipe.invalidServings.title",
+                            "alert.recipe.invalidServings.positive");
                     return;
                 }
             } catch (NumberFormatException e) {
-                showAlert(Alert.AlertType.ERROR, "Invalid servings",
-                        "Number of servings must be a whole number.");
+                showAlert(Alert.AlertType.ERROR,
+                        "alert.recipe.invalidServings.title",
+                        "alert.recipe.invalidServings.whole");
                 return;
             }
         }
@@ -246,9 +250,9 @@ public class CreateRecipeCtrl {
 
         if (!hasIngredients || !hasInstructions) {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Incomplete Recipe");
-            alert.setHeaderText("Missing Ingredients or Instructions");
-            alert.setContentText("Save without ingredients or instructions?");
+            alert.setTitle(LanguageManager.getString("alert.recipe.incomplete.title"));
+            alert.setHeaderText(LanguageManager.getString("alert.recipe.incomplete.header"));
+            alert.setContentText(LanguageManager.getString("alert.recipe.incomplete.content"));
 
             Optional<ButtonType> result = alert.showAndWait();
             return result.isPresent() && result.get() == ButtonType.OK;
@@ -420,9 +424,11 @@ public class CreateRecipeCtrl {
 
         // Collect ingredients and sort alphabetically by name
         List<Ingredient> sortedIngredients = new ArrayList<>(draft.getIngredients());
+        String createItemLabel = LanguageManager.getString("combo.createFoodItem");
+
         sortedIngredients.sort(Comparator.comparing(ing -> {
             String name = ing.getFoodType().getName();
-            return "+ Create New Food Item...".equals(name) ? "" : name.toLowerCase();
+            return createItemLabel.equals(name) ? "" : name.toLowerCase();
         }));
 
         // Recreate rows in sorted order
@@ -437,7 +443,7 @@ public class CreateRecipeCtrl {
             ChoiceBox<String> unitChoice = (ChoiceBox<String>) lastRow.getChildren().get(2);
 
             String savedName = ing.getFoodType().getName();
-            if ("+ Create New Food Item...".equals(savedName)) {
+            if (createItemLabel.equals(savedName)) {
                 nameBox.setValue(null);
                 javafx.application.Platform.runLater(() -> {
                     nameBox.getSelectionModel().clearSelection();
@@ -473,8 +479,9 @@ public class CreateRecipeCtrl {
                 String qtyStr = quantityField.getText().trim();
 
                 if (name.isEmpty() || qtyStr.isEmpty()) {
-                    showAlert(Alert.AlertType.ERROR, "Incomplete Ingredient",
-                            "Name and Quantity are required.");
+                    showAlert(Alert.AlertType.ERROR,
+                            "alert.ingredient.incomplete.title",
+                            "alert.ingredient.incomplete.content");
                     return null;
                 }
 
@@ -482,8 +489,9 @@ public class CreateRecipeCtrl {
                 try {
                     quantity = Integer.parseInt(qtyStr);
                 } catch (NumberFormatException e) {
-                    showAlert(Alert.AlertType.ERROR, "Invalid Quantity",
-                            "Quantity must be a valid number.");
+                    showAlert(Alert.AlertType.ERROR,
+                            "alert.ingredient.invalidQuantity.title",
+                            "alert.ingredient.invalidQuantity.content");
                     return null;
                 }
 
@@ -512,8 +520,9 @@ public class CreateRecipeCtrl {
                 String text = stepField.getText().trim();
 
                 if (text.isEmpty()) {
-                    showAlert(Alert.AlertType.ERROR, "Empty Instruction",
-                            "Please fill out all steps or remove empty rows.");
+                    showAlert(Alert.AlertType.ERROR,
+                            "alert.instruction.empty.title",
+                            "alert.instruction.empty.content");
                     return null;
                 }
                 steps.add(text);
@@ -557,8 +566,7 @@ public class CreateRecipeCtrl {
     public void handleAddPreparation(){
 
         TextField stepField = new TextField();
-        stepField.setPromptText("Step description");
-
+        stepField.setPromptText(LanguageManager.getString("prompt.step.description"));
         Button deleteButton = new Button("x");
         HBox row = new HBox(10, stepField, deleteButton);
         deleteButton.setOnAction(_ ->
@@ -591,8 +599,8 @@ public class CreateRecipeCtrl {
         // creating ComboBox for Food Items
         ComboBox<String> foodItemBox = new ComboBox<>();
         foodItemBox.setEditable(false);
-        foodItemBox.setPromptText("Select Ingredient");
-        foodItemBox.setPrefWidth(150);
+        foodItemBox.setPromptText(LanguageManager.getString("prompt.ingredient.select"));
+
 
         // fetch and Populate Items
         List<FoodItem> items = serverService.getAllFoodItems();
@@ -604,21 +612,21 @@ public class CreateRecipeCtrl {
             foodItemBox.getItems().add(item.getName());
         }
 
-        // adding "Create New" option
-        foodItemBox.getItems().add("+ Create New Food Item...");
+        String createItemLabel = LanguageManager.getString("combo.createFoodItem");
+        foodItemBox.getItems().add(createItemLabel);
 
         // make sure the food item is added
         javafx.application.Platform.runLater(() ->
                 foodItemBox.getSelectionModel().clearSelection());
 
         foodItemBox.setOnAction(_ -> {
-            if ("+ Create New Food Item...".equals(foodItemBox.getValue())) {
+            if (LanguageManager.getString("combo.createFoodItem").equals(foodItemBox.getValue())) {
                 handleCreateNewFoodItem();
             }
         });
 
         TextField quantityField = new TextField();
-        quantityField.setPromptText("Qty");
+        quantityField.setPromptText(LanguageManager.getString("prompt.ingredient.qty"));
         quantityField.setPrefWidth(60);
 
         ChoiceBox<String> unitChoice = configureChoiceBox();
@@ -717,7 +725,8 @@ public class CreateRecipeCtrl {
                 Ingredient ing = new Ingredient(qty, unit, 0);
                 ing.setFoodType(new FoodItem(name));
 
-                if ("+ Create New Food Item...".equals(name)) {
+                String createItemLabel = LanguageManager.getString("combo.createFoodItem");
+                if (createItemLabel.equals(name)) {
                     javafx.application.Platform.runLater(() -> nameBox.setValue(null));
                 }
                 return ing;
@@ -798,7 +807,7 @@ public class CreateRecipeCtrl {
                 for (FoodItem item : freshList) {
                     box.getItems().add(item.getName());
                 }
-                box.getItems().add("+ Create New Food Item...");
+                box.getItems().add(LanguageManager.getString("combo.createFoodItem"));
 
                 if (currentSelection != null &&
                         box.getItems().contains(currentSelection)) {
