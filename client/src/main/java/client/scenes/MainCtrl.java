@@ -178,6 +178,7 @@ public class MainCtrl {
         if (informationCtrl != null) {
             informationCtrl.setRecipe(recipe); // <--- PASS THE DATA
         }
+        selectedRecipeBeforeReload = recipe;
         currentScreen = Screen.INFORMATION;
         primaryStage.setTitle("Nutritional Information: " + recipe.getName());
         primaryStage.setScene(informationScene);
@@ -198,6 +199,7 @@ public class MainCtrl {
      */
     public void showEditInstructions(Recipe recipe) {
         editInstructionsCtrl.initialize(recipe);
+        selectedRecipeBeforeReload = recipe;
         currentScreen = Screen.EDIT_INSTRUCTIONS;
         primaryStage.setTitle("Edit Instructions");
         primaryStage.setScene(editInstructions);

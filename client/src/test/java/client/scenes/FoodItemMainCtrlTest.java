@@ -40,7 +40,7 @@ public class FoodItemMainCtrlTest extends ApplicationTest {
 
         // Load FXML and set controller
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/client/scenes/FoodItemMain.fxml"));
-        ctrl = new FoodItemMainCtrl(mainCtrl, serverUtils, webSocketService);
+        ctrl = new FoodItemMainCtrl(mainCtrl, serverUtils, webSocketService, null);
         loader.setController(ctrl);
         Parent root = loader.load();
 

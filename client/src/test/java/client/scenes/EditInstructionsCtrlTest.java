@@ -39,7 +39,7 @@ public class EditInstructionsCtrlTest extends ApplicationTest{
 
         FXMLLoader loader =  new FXMLLoader(getClass().getResource("/client/scenes/EditInstructions.fxml"));
 
-        loader.setControllerFactory(_ -> new EditInstructionsCtrl(mockServer, mockMainCtrl));
+        loader.setControllerFactory(_ -> new EditInstructionsCtrl(mockServer, mockMainCtrl, null));
 
         Parent root =  loader.load();
         ctrl = loader.getController();

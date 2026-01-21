@@ -4,6 +4,7 @@ import client.network.WebSocketService;
 import client.scenes.MainCtrl;
 import client.service.FavoritesService;
 import client.service.FilterService;
+import client.service.LanguageService;
 import client.utils.ServerUtils;
 import jakarta.inject.Inject;
 import javafx.application.Platform;
@@ -76,6 +77,7 @@ public class MainUICtrl {
 
     private final FavoritesService favoritesService;
     private final FilterService filterService;
+    private final LanguageService languageService;
 
     @FXML
     private MenuButton languageButton;
@@ -166,15 +168,18 @@ public class MainUICtrl {
      * @param webSocketService - the injected instance of the WebSocketService
      * @param favoritesService - the injected instance of the service supporting favorites
      * @param filterService - the injected instance of the service supplying the search
+     * @param languageService - the injected instance of the service providing icons
      */
     @Inject
     public MainUICtrl (ServerUtils server, MainCtrl mainCtrl, WebSocketService webSocketService,
-                       FavoritesService favoritesService, FilterService filterService) {
+                       FavoritesService favoritesService, FilterService filterService,
+                       LanguageService languageService) {
         this.server = server;
         this.mainCtrl = mainCtrl;
         this.webSocketService = webSocketService;
         this.favoritesService = favoritesService;
         this.filterService = filterService;
+        this.languageService = languageService;
     }
 
     /**
@@ -268,6 +273,7 @@ public class MainUICtrl {
 
         setupLanguageMenu();
         setupFilterLanguages();
+        updateLanguageButtonUI(LanguageManager.getLocale());
 
     }
 
@@ -293,156 +299,6 @@ public class MainUICtrl {
         });
     }
 
-
-    /**
-     * A method which sets up the icons for the language menu
-     * @param name - the name of the language we are adding
-     * @param langCode - the locale code of the language
-     * @param iconFileName - the encoding for the name of the icon file
-     * @return MenuItem - returns the ready-made MenuItem with the proper icon
-     */
-    public MenuItem setupMenuItemIcons (String name, String langCode, String iconFileName) {
-        MenuItem menuItem = new MenuItem(name);
-
-        Image flagImage = new Image(Objects.requireNonNull
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
-
-        ImageView icon = new ImageView(flagImage);
-        icon.setFitWidth(16);
-        icon.setFitHeight(16);
-
-        Circle clip = new Circle(8, 8, 8);
-        icon.setClip(clip);
-
-        menuItem.setGraphic(icon);
-
-        menuItem.setOnAction(_ -> changeLanguage(Locale.of(langCode)));
-
-        return menuItem;
-    }
-
-    /**
-     * A method which updates the flag icon of the language button when necessary
-     * @param iconFileName - the encoding for the name of the icon file
-     */
-    public void updateButtonGraphic(String iconFileName) {
-        Image img = new Image (Objects.requireNonNull
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
-        ImageView imageView = new ImageView(img);
-
-        imageView.setFitWidth(16);
-        imageView.setFitHeight(16);
-
-        Circle clip = new Circle(8, 8, 8);
-        imageView.setClip(clip);
-
-        // Set the graphic to the MenuButton itself
-        languageButton.setGraphic(imageView);
-    }
-
-    /**
-     * A setup method for the language menu -
-     * adds the constructed MenuItems using the helper methods with the appropriate icon
-     */
-    public void setupLanguageMenu() {
-        languageButton.getItems().clear();
-
-        MenuItem enItem = setupMenuItemIcons("English", "en", "english");
-        MenuItem nlItem = setupMenuItemIcons("Nederlands", "nl", "dutch");
-        MenuItem bgItem = setupMenuItemIcons("Български", "bg", "bulgarian");
-        MenuItem roItem = setupMenuItemIcons("Română", "ro", "romanian");
-        MenuItem skItem = setupMenuItemIcons("Slovenčina", "sk", "slovak");
-        MenuItem deItem = setupMenuItemIcons("Deutsch", "de", "german");
-
-        languageButton.getItems().addAll(enItem, nlItem, bgItem, roItem, skItem, deItem);
-
-        Locale current = LanguageManager.getLocale();
-
-        switch (current.getLanguage()) {
-            case "nl" -> {
-                languageButton.setText("Nederlands");
-                updateButtonGraphic("dutch");
-            }
-            case "ro" -> {
-                languageButton.setText("Română");
-                updateButtonGraphic("romanian");
-            }
-            case "bg" -> {
-                languageButton.setText("Български");
-                updateButtonGraphic("bulgarian");
-            }
-            case "sk" -> {
-                languageButton.setText("Slovenčina");
-                updateButtonGraphic("slovak");
-            }
-            case "de" -> {
-                languageButton.setText("Deutsch");
-                updateButtonGraphic("german");
-            }
-            default -> {
-                languageButton.setText("English");
-                updateButtonGraphic("english");
-            }
-        }
-    }
-
-    /**
-     * A method for changing the language of the menus to a new Locale
-     * @param newLocale - the new language we want to set the menus to
-     */
-    public void changeLanguage(Locale newLocale) {
-        LanguageManager.setLocale(newLocale);
-
-        mainCtrl.setSelectedRecipeForReload(getSelectedRecipe());
-
-        switch (newLocale.getLanguage()) {
-            case "nl" -> {
-                languageButton.setText("Nederlands");
-                updateButtonGraphic("dutch");
-            }
-            case "ro" -> {
-                languageButton.setText("Română");
-                updateButtonGraphic("romanian");
-            }
-            case "bg" -> {
-                languageButton.setText("Български");
-                updateButtonGraphic("bulgarian");
-            }
-            case "sk" -> {
-                languageButton.setText("Slovenčina");
-                updateButtonGraphic("slovak");
-            }
-            case "de" -> {
-                languageButton.setText("Deutsch");
-                updateButtonGraphic("german");
-            }
-            default -> {
-                languageButton.setText("English");
-                updateButtonGraphic("english");
-            }
-        }
-
-        mainCtrl.reloadScenesForNewLanguage();
-    }
-
-
-
-    /**
-     * A method for updating the indicator of the recipe language
-     * @param iconFileName - the name of the flag icon
-     */
-    public void updateIndicator(String iconFileName) {
-        Image img = new Image (Objects.requireNonNull
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
-
-        languageIndicator.setImage(img);
-
-        languageIndicator.setFitHeight(30);
-        languageIndicator.setFitWidth(30);
-
-        Circle clip = new Circle(15, 15, 15);
-        languageIndicator.setClip(clip);
-    }
 
 
     /**
@@ -820,17 +676,83 @@ public class MainUICtrl {
     }
 
     /**
+     * A method which searches for recipe using the search bar
+     */
+    public void searchForRecipe() {
+        String searchQuery = recipeSearchBar.getText();
+        filterService.searchForRecipe(searchQuery);
+    }
+
+
+    /**
+     * A method which updates the UI of the language button
+     * @param locale - the locale of the language
+     */
+    public void updateLanguageButtonUI (Locale locale) {
+        String langCode = locale.getLanguage();
+
+        languageButton.setText(languageService.getDisplayName(langCode));
+        languageButton.setGraphic(languageService.renderIcon(langCode, 16.0));
+    }
+
+
+    /**
+     * A method which sets up the icons for the language menu
+     * @param name - the name of the language we are adding
+     * @param langCode - the locale code of the language
+     * @return MenuItem - returns the ready-made MenuItem with the proper icon
+     */
+    public MenuItem setupMenuItemIcons (String name, String langCode) {
+        MenuItem menuItem = new MenuItem(name);
+        menuItem.setGraphic(languageService.renderIcon(langCode, 16.0));
+        menuItem.setOnAction(_ -> changeLanguage(Locale.of(langCode)));
+        return menuItem;
+    }
+
+    /**
+     * A setup method for the language menu -
+     * adds the constructed MenuItems using the helper methods with the appropriate icon
+     */
+    public void setupLanguageMenu() {
+        languageButton.getItems().clear();
+
+        List<String> codes = List.of("en", "nl", "bg", "ro", "sk", "de");
+
+        for (String code : codes) {
+            String displayName = languageService.getDisplayName(code);
+            languageButton.getItems().add(setupMenuItemIcons(displayName, code));
+        }
+
+        updateLanguageButtonUI(LanguageManager.getLocale());
+    }
+
+    /**
+     * A method for changing the language of the menus to a new Locale
+     * @param newLocale - the new language we want to set the menus to
+     */
+    public void changeLanguage(Locale newLocale) {
+        LanguageManager.setLocale(newLocale);
+
+        mainCtrl.setSelectedRecipeForReload(getSelectedRecipe());
+        updateLanguageButtonUI(newLocale);
+
+        mainCtrl.reloadScenesForNewLanguage();
+    }
+
+    /**
+     * A method for updating the indicator of the recipe language
+     * @param langCode - the name of the language
+     */
+    public void updateIndicator(String langCode) {
+        languageIndicator.setImage(languageService.renderIcon(langCode, 30.0).getImage());
+    }
+
+    /**
      * Changes the visible indicator of the recipe language
      * @param selectedRecipe - the recipe which updates the language indicator
      */
     public void changeRecipeLanguage (Recipe selectedRecipe) {
-        switch(selectedRecipe.getLocale().getLanguage()) {
-            case "bg" -> updateIndicator("bulgarian");
-            case "nl" -> updateIndicator("dutch");
-            case "ro" -> updateIndicator("romanian");
-            case "sk" -> updateIndicator("slovak");
-            default -> updateIndicator("english");
-        }
+        updateIndicator(selectedRecipe.getLocale().getLanguage());
     }
 
     /**
@@ -842,14 +764,13 @@ public class MainUICtrl {
         Set<Locale> savedFilters = LanguageManager.loadFilterLocales();
         this.filterService.setFilteredLocales(savedFilters.stream().toList());
 
-        CheckMenuItem enItem = setupCheckMenuItemIcons("English", "en", "english");
-        CheckMenuItem nlItem = setupCheckMenuItemIcons("Nederlands", "nl", "dutch");
-        CheckMenuItem roItem = setupCheckMenuItemIcons("Română", "ro", "romanian");
-        CheckMenuItem bgItem = setupCheckMenuItemIcons("Български", "bg", "bulgarian");
-        CheckMenuItem skItem = setupCheckMenuItemIcons("Slovenčina", "sk", "slovak");
-        CheckMenuItem deItem = setupCheckMenuItemIcons("Deutsch", "de", "german");
+        List<String> supportedCodes = List.of("en", "nl", "bg", "ro", "sk", "de");
 
-        filterLanguagesButton.getItems().addAll(enItem, nlItem, bgItem, roItem, skItem, deItem);
+        for (String code : supportedCodes) {
+            String displayName = languageService.getDisplayName(code);
+            filterLanguagesButton.getItems().add(setupCheckMenuItemIcons(displayName, code));
+        }
+
         filterService.updatePredicate();
     }
 
@@ -857,47 +778,25 @@ public class MainUICtrl {
      * Sets up the icons for the filtering languages
      * @param name - the name of the language (to be put on the button)
      * @param langCode - the language code - will result in a locale filter
-     * @param iconFileName - the name of the file containing the country's flag
      * @return CheckMenuItem - a new CheckMenuItem with the language
      */
-    public CheckMenuItem setupCheckMenuItemIcons(String name,
-                                                  String langCode, String iconFileName) {
+    public CheckMenuItem setupCheckMenuItemIcons(String name, String langCode) {
         CheckMenuItem menuItem = new CheckMenuItem(name);
+        Locale locale = Locale.of(langCode);
 
-        menuItem.setSelected(filterService.getFilteredLocales().contains(Locale.of(langCode)));
-
-        Image flagImage = new Image(Objects.requireNonNull
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
-
-        ImageView icon = new ImageView(flagImage);
-        icon.setFitWidth(16);
-        icon.setFitHeight(16);
-
-        Circle clip = new Circle(8, 8, 8);
-        icon.setClip(clip);
-
-        menuItem.setGraphic(icon);
-
-        Locale tempLocale = Locale.of(langCode);
+        menuItem.setSelected(filterService.getFilteredLocales().contains(locale));
+        menuItem.setGraphic(languageService.renderIcon(langCode, 16.0));
 
         menuItem.setOnAction(_ -> {
             if (menuItem.isSelected()) {
-                filterService.filterLocales(tempLocale);
-            }else{
-                filterService.getFilteredLocales().remove(tempLocale);
+                filterService.filterLocales(locale);
+            } else {
+                filterService.getFilteredLocales().remove(locale);
             }
             LanguageManager.saveFilterLocales(filterService.getFilteredLocales());
             filterService.updatePredicate();
         });
 
         return menuItem;
-    }
-
-    /**
-     * A method which searches for recipe using the search bar
-     */
-    public void searchForRecipe() {
-        String searchQuery = recipeSearchBar.getText();
-        filterService.searchForRecipe(searchQuery);
     }
 }

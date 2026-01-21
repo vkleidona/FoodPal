@@ -67,7 +67,7 @@ public class ShoppingListMainCtrlTest extends ApplicationTest {
         serverUtils = mock(ServerUtils.class);
         mainCtrl = mock(MainCtrl.class);
         s = new ShoppingList(file);
-        shoppingListMainCtrl = new ShoppingListMainCtrl(serverUtils, mainCtrl, s);
+        shoppingListMainCtrl = new ShoppingListMainCtrl(serverUtils, mainCtrl, s, null);
         loader.setController(shoppingListMainCtrl);
 
         // We load the scene

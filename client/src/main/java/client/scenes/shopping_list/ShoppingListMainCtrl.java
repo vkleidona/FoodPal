@@ -1,6 +1,7 @@
 package client.scenes.shopping_list;
 
 import client.scenes.MainCtrl;
+import client.service.LanguageService;
 import client.utils.ServerUtils;
 import jakarta.inject.Inject;
 import javafx.beans.value.ChangeListener;
@@ -10,10 +11,7 @@ import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
-import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import recipes.FoodItem;
@@ -62,6 +60,7 @@ public class ShoppingListMainCtrl {
 
     private final ServerUtils server;
     private final MainCtrl mainCtrl;
+    private final LanguageService languageService;
 
     /**
      * A constructor which uses dependency injection
@@ -70,12 +69,15 @@ public class ShoppingListMainCtrl {
      * @param mainCtrl - an instance of the Main controller which allows the user
      *                 to switch scenes
      * @param shoppingList - the instance of the ShoppingList required to operate
+     * @param languageService - the instance of the language service class
      */
     @Inject
-    public ShoppingListMainCtrl (ServerUtils server, MainCtrl mainCtrl, ShoppingList shoppingList) {
+    public ShoppingListMainCtrl (ServerUtils server, MainCtrl mainCtrl, ShoppingList shoppingList,
+                                 LanguageService languageService) {
         this.server = server;
         this.mainCtrl = mainCtrl;
         this.s = shoppingList;
+        this.languageService = languageService;
     }
 
     /**
@@ -158,49 +160,28 @@ public class ShoppingListMainCtrl {
     }
 
     /**
+     * A method which updates the UI of the language button
+     * @param locale - the locale of the language
+     */
+    public void updateLanguageButtonUI (Locale locale) {
+        String langCode = locale.getLanguage();
+
+        languageButton.setText(languageService.getDisplayName(langCode));
+        languageButton.setGraphic(languageService.renderIcon(langCode, 16.0));
+    }
+
+
+    /**
      * A method which sets up the icons for the language menu
      * @param name - the name of the language we are adding
      * @param langCode - the locale code of the language
-     * @param iconFileName - the encoding for the name of the icon file
      * @return MenuItem - returns the ready-made MenuItem with the proper icon
      */
-    public MenuItem setupMenuItemIcons (String name, String langCode, String iconFileName) {
+    public MenuItem setupMenuItemIcons (String name, String langCode) {
         MenuItem menuItem = new MenuItem(name);
-
-        Image flagImage = new Image(Objects.requireNonNull
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
-
-        ImageView icon = new ImageView(flagImage);
-        icon.setFitWidth(16);
-        icon.setFitHeight(16);
-
-        Circle clip = new Circle(8, 8, 8);
-        icon.setClip(clip);
-
-        menuItem.setGraphic(icon);
-
+        menuItem.setGraphic(languageService.renderIcon(langCode, 16.0));
         menuItem.setOnAction(_ -> changeLanguage(Locale.of(langCode)));
-
         return menuItem;
-    }
-
-    /**
-     * A method which updates the flag icon of the language button when necessary
-     * @param iconFileName - the encoding for the name of the icon file
-     */
-    public void updateButtonGraphic(String iconFileName) {
-        Image img = new Image (Objects.requireNonNull
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
-        ImageView imageView = new ImageView(img);
-
-        imageView.setFitWidth(16);
-        imageView.setFitHeight(16);
-
-        Circle clip = new Circle(8, 8, 8);
-        imageView.setClip(clip);
-
-        // Set the graphic to the MenuButton itself
-        languageButton.setGraphic(imageView);
     }
 
     /**
@@ -210,43 +191,14 @@ public class ShoppingListMainCtrl {
     public void setupLanguageMenu() {
         languageButton.getItems().clear();
 
-        MenuItem enItem = setupMenuItemIcons("English", "en", "english");
-        MenuItem nlItem = setupMenuItemIcons("Nederlands", "nl", "dutch");
-        MenuItem bgItem = setupMenuItemIcons("Български", "bg", "bulgarian");
-        MenuItem roItem = setupMenuItemIcons("Română", "ro", "romanian");
-        MenuItem skItem = setupMenuItemIcons("Slovenčina", "sk", "slovak");
-        MenuItem deItem = setupMenuItemIcons("Deutsch", "de", "german");
+        List<String> codes = List.of("en", "nl", "bg", "ro", "sk", "de");
 
-        languageButton.getItems().addAll(enItem, nlItem, bgItem, roItem, skItem, deItem);
-
-        Locale current = LanguageManager.getLocale();
-
-        switch (current.getLanguage()) {
-            case "nl" -> {
-                languageButton.setText("Nederlands");
-                updateButtonGraphic("dutch");
-            }
-            case "ro" -> {
-                languageButton.setText("Română");
-                updateButtonGraphic("romanian");
-            }
-            case "bg" -> {
-                languageButton.setText("Български");
-                updateButtonGraphic("bulgarian");
-            }
-            case "sk" -> {
-                languageButton.setText("Slovenčina");
-                updateButtonGraphic("slovak");
-            }
-            case "de" -> {
-                languageButton.setText("Deutsch");
-                updateButtonGraphic("german");
-            }
-            default -> {
-                languageButton.setText("English");
-                updateButtonGraphic("english");
-            }
+        for (String code : codes) {
+            String displayName = languageService.getDisplayName(code);
+            languageButton.getItems().add(setupMenuItemIcons(displayName, code));
         }
+
+        updateLanguageButtonUI(LanguageManager.getLocale());
     }
 
     /**
@@ -255,17 +207,12 @@ public class ShoppingListMainCtrl {
      */
     public void changeLanguage(Locale newLocale) {
         LanguageManager.setLocale(newLocale);
-        switch (newLocale.getLanguage()) {
-            case "nl" -> languageButton.setText("Nederlands");
-            case "ro" -> languageButton.setText("Română");
-            case "bg" -> languageButton.setText("Български");
-            case "sk" -> languageButton.setText("Slovenčina");
-            case "de" -> languageButton.setText("Deutsch");
-            default -> languageButton.setText("English");
-        }
+        updateLanguageButtonUI(newLocale);
         mainCtrl.reloadScenesForNewLanguage();
+        s.loadFile();
+        ingredientsObservableList.setAll(s.getIngredients());
+        ingredientsListView.setItems(ingredientsObservableList);
     }
-
 
     /**
      * Refreshes the interface to match the current state of the Shopping List
@@ -290,6 +237,7 @@ public class ShoppingListMainCtrl {
         // clears the observable list and then shows all items
         ingredientsObservableList.clear();
         ingredientsObservableList.addAll(s.getIngredients());
+        ingredientsListView.setItems(ingredientsObservableList);
     }
 
     /**
@@ -372,7 +320,8 @@ public class ShoppingListMainCtrl {
 
         // Setting up the three parameters the user has to enter
         ComboBox<String> foodItemField = new ComboBox<>();
-        foodItemField.setEditable(true);  //so that the user can type in a new food item and get a warning if doesnt exist
+        foodItemField.setEditable(true);
+        //so that the user can type in a new food item and get a warning if it doesn't exist
         List<FoodItem> items = server.getAllFoodItems();
 
         for(FoodItem item : items){

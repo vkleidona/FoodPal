@@ -36,8 +36,6 @@ public class FilterService {
         this.webSocketService = webSocketService;
         this.server = serverUtils;
         filteredRecipes = new FilteredList<>(webSocketService.getMasterRecipeList());
-        System.out.println(this.getClass().getSimpleName() + " initialized with FavoritesService @" +
-                Integer.toHexString(System.identityHashCode(favoritesService)));
     }
 
     public FilteredList<Recipe> getFilteredList() {
@@ -70,12 +68,10 @@ public class FilterService {
      * Updates the predicate of the filtered list
      */
     public void updatePredicate () {
-        System.out.println(filteredLocales);
         filteredRecipes.setPredicate(recipe -> {
             boolean matchesLanguage = filteredLocales.isEmpty() ||
                     filteredLocales.contains(recipe.getLocale());
             boolean matchesTab = true;
-            System.out.println(favoritesService.getFavoriteRecipeIds());
             if (favoritesSelected) {
                 matchesTab = favoritesService.getFavoriteRecipeIds().contains(recipe.getId());
             }
