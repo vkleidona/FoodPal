@@ -16,6 +16,20 @@ import recipes.Recipe;
 
 public class MainCtrl {
 
+    private enum Screen {
+        MAIN_MENU,
+        EDIT_INSTRUCTIONS,
+        CREATE_RECIPE,
+        ADD_FOOD_ITEM,
+        FOOD_ITEM_MAIN,
+        EDIT_INGREDIENTS,
+        INFORMATION,
+        SHOPPING_LIST_MAIN,
+        ADD_RECIPE_TO_SHOPPING_LIST
+    }
+
+    private Screen currentScreen = Screen.MAIN_MENU;
+
     private Stage primaryStage;
 
     private final MyFXML fxml;
@@ -157,6 +171,7 @@ public class MainCtrl {
         if (informationCtrl != null) {
             informationCtrl.setRecipe(recipe); // <--- PASS THE DATA
         }
+        currentScreen = Screen.INFORMATION;
         primaryStage.setTitle("Nutritional Information: " + recipe.getName());
         primaryStage.setScene(informationScene);
     }
@@ -165,6 +180,7 @@ public class MainCtrl {
      * A method used to display the main menu
      */
     public void showMainMenu() {
+        currentScreen = Screen.MAIN_MENU;
         primaryStage.setTitle("FoodPal: Main Menu");
         primaryStage.setScene(mainMenu);
     }
@@ -175,6 +191,7 @@ public class MainCtrl {
      */
     public void showEditInstructions(Recipe recipe) {
         editInstructionsCtrl.initialize(recipe);
+        currentScreen = Screen.EDIT_INSTRUCTIONS;
         primaryStage.setTitle("Edit Instructions");
         primaryStage.setScene(editInstructions);
     }
@@ -185,6 +202,7 @@ public class MainCtrl {
      */
     public void showEditIngredients(Recipe recipe) {
         editIngredientsCtrl.initialize(recipe);
+        currentScreen = Screen.EDIT_INGREDIENTS;
         primaryStage.setTitle("Edit Ingredients");
         primaryStage.setScene(editIngredients);
     }
@@ -193,6 +211,7 @@ public class MainCtrl {
      * A method for switching to the scene for creating recipes
      */
     public void showCreateRecipe() {
+        currentScreen = Screen.CREATE_RECIPE;
         primaryStage.setTitle("Create Recipe");
         primaryStage.setScene(createRecipe);
     }
@@ -201,6 +220,8 @@ public class MainCtrl {
      * A method for switching to the scene for adding a new food item
      */
     public void showAddFoodItem() {
+        currentScreen = Screen.FOOD_ITEM_MAIN;
+        currentScreen = Screen.ADD_FOOD_ITEM;
         primaryStage.setTitle("Add Food Item");
         primaryStage.setScene(addFoodItem);
     }
@@ -211,6 +232,7 @@ public class MainCtrl {
      */
     public void showAddFoodItemFromShoppingList(String foodItemEntry) {
         primaryStage.setTitle("Add Food Item");
+        currentScreen = Screen.SHOPPING_LIST_MAIN;
         addFoodItemCtrl.accessFromTheShoppingList(foodItemEntry);
         primaryStage.setScene(addFoodItem);
     }
@@ -221,6 +243,7 @@ public class MainCtrl {
      */
     public void showAddFoodItemFromAddRecipeToShoppingList(String foodItemEntry) {
         primaryStage.setTitle("Add Food Item");
+        currentScreen = Screen.ADD_RECIPE_TO_SHOPPING_LIST;
         addFoodItemCtrl.accessFromAddRecipeToTheShoppingList(foodItemEntry);
         primaryStage.setScene(addFoodItem);
     }
@@ -357,9 +380,32 @@ public class MainCtrl {
     public void reloadScenesForNewLanguage() {
         reloadMainScenes();
         reloadAdditionalScenes();
-        // Finally, show the main menu again
-        showMainMenu();
+
+        switch (currentScreen) {
+            case MAIN_MENU -> showMainMenu();
+            case EDIT_INSTRUCTIONS -> {
+                Recipe r = mainUICtrl.getSelectedRecipe();
+                if (r != null) showEditInstructions(r);
+                else showMainMenu();
+            }
+            case CREATE_RECIPE -> showCreateRecipe();
+            case ADD_FOOD_ITEM -> showAddFoodItem();
+            case FOOD_ITEM_MAIN -> showFoodItemMain();
+            case EDIT_INGREDIENTS -> {
+                Recipe r = mainUICtrl.getSelectedRecipe();
+                if (r != null) showEditIngredients(r);
+                else showMainMenu();
+            }
+            case INFORMATION -> {
+                Recipe r = mainUICtrl.getSelectedRecipe();
+                if (r != null) showInformation(r);
+                else showMainMenu();
+            }
+            case SHOPPING_LIST_MAIN -> showShoppingList();
+            case ADD_RECIPE_TO_SHOPPING_LIST -> showAddRecipeToShoppingList();
+        }
     }
+
 
 
     /**

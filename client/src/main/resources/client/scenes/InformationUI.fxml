@@ -47,12 +47,7 @@
 
                 <TextField fx:id="servingsField" layoutX="686.0" layoutY="55.0" onAction="#handleServingsChange" prefHeight="26.0" prefWidth="30.0" />
 
-                <Label layoutX="518.0" layoutY="90.0" text="%info.caloriesRecipe">
-                    <font><Font size="16.0" /></font>
-                </Label>
-
-                <TextField fx:id="caloriesRecipe" layoutX="686.0" layoutY="89.0" onAction="#handleCaloriesRecipe" prefHeight="26.0" prefWidth="82.0" />
-            <Label layoutX="518.0" layoutY="123.0" text="Scale by: ">
+            <Label layoutX="518.0" layoutY="123.0" text="%info.scaleBy">
                <font>
                   <Font size="16.0" />
                </font>
