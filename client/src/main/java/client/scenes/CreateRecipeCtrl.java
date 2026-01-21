@@ -91,8 +91,8 @@ public class CreateRecipeCtrl {
     /**
      * helper method to display an alert dialog to the user.
      * @param type    type of alert (e.g., ERROR, WARNING, INFORMATION).
-     * @param title   title text of the alert window.
-     * @param content main message text to display in the alert.
+     * @param titleKey   title text of the alert window.
+     * @param contentKey main message text to display in the alert.
      */
     private void showAlert(Alert.AlertType type, String titleKey, String contentKey) {
         Alert alert = new Alert(type);
