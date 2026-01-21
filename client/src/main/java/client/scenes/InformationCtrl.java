@@ -51,7 +51,7 @@ public class InformationCtrl {
      * food items, and instructions, so that any scaling done in
      * InformationCtrl does not modify the original Recipe from MainUI.
      *
-     * @param src the source Recipe to copy (may be null)
+     * @param src the source Recipe to copy (it may be null)
      * @return a new Recipe instance with copied data, or null if src is null
      */
     private Recipe copyRecipe(Recipe src) {
@@ -63,25 +63,7 @@ public class InformationCtrl {
 
         if (src.getIngredients() != null) {
             for (Ingredient ing : src.getIngredients()) {
-                FoodItem f = ing.getFoodType();
-                FoodItem fCopy = null;
-                if (f != null) {
-                    fCopy = new FoodItem(
-                            f.getName(),
-                            f.getKcal(),
-                            f.getProteins(),
-                            f.getCarbs(),
-                            f.getFats()
-                    );
-                }
-
-                Ingredient ingCopy = new Ingredient(
-                        ing.getQuantity(),
-                        ing.getMeasurement(),
-                        ing.getQuantityInGrams()
-                );
-                ingCopy.setFoodType(fCopy);
-                ingCopy.setRecipe(copy);
+                Ingredient ingCopy = getIngredient(ing, copy);
                 copy.getIngredients().add(ingCopy);
             }
         }
@@ -91,6 +73,35 @@ public class InformationCtrl {
         }
 
         return copy;
+    }
+
+    /**
+     * A method which copies the ingredient of a Recipe
+     * @param ing - the ingredient we want to copy
+     * @param copy - the recipe we will copy into
+     * @return Ingredient - the Ingredient to be added into the new recipe
+     */
+    private static Ingredient getIngredient(Ingredient ing, Recipe copy) {
+        FoodItem f = ing.getFoodType();
+        FoodItem fCopy = null;
+        if (f != null) {
+            fCopy = new FoodItem(
+                    f.getName(),
+                    f.getKcal(),
+                    f.getProteins(),
+                    f.getCarbs(),
+                    f.getFats()
+            );
+        }
+
+        Ingredient ingCopy = new Ingredient(
+                ing.getQuantity(),
+                ing.getMeasurement(),
+                ing.getQuantityInGrams()
+        );
+        ingCopy.setFoodType(fCopy);
+        ingCopy.setRecipe(copy);
+        return ingCopy;
     }
 
 
@@ -134,7 +145,7 @@ public class InformationCtrl {
 
         menuItem.setGraphic(icon);
 
-        menuItem.setOnAction(_ -> changeLanguage(new Locale(langCode)));
+        menuItem.setOnAction(_ -> changeLanguage(Locale.of(langCode)));
 
         return menuItem;
     }

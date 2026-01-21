@@ -10,6 +10,28 @@ import java.util.ResourceBundle;
 
 public class Utf8Control extends ResourceBundle.Control {
 
+    /**
+     * A method for creating the correct resource bundle for displaying Romanian
+     * @param baseName
+     *        the base bundle name of the resource bundle, a fully
+     *        qualified class name
+     * @param locale
+     *        the locale for which the resource bundle should be
+     *        instantiated
+     * @param format
+     *        the resource bundle format to be loaded
+     * @param loader
+     *        the {@code ClassLoader} to use to load the bundle
+     * @param reload
+     *        the flag to indicate bundle reloading; {@code true}
+     *        if reloading an expired resource bundle,
+     *        {@code false} otherwise
+     * @return ResourceBundle - returns a new resource bundle with all UTF-8 characters
+     * @throws IllegalAccessException - an Exception which might arise if a non-privileged
+     *        user alters the configuration
+     * @throws InstantiationException - for any Instantiation Exception
+     * @throws IOException - for any IO Exceptions
+     */
     @Override
     public ResourceBundle newBundle(
             String baseName,

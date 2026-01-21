@@ -83,7 +83,7 @@ public class EditInstructionsCtrl {
 
         menuItem.setGraphic(icon);
 
-        menuItem.setOnAction(_ -> changeLanguage(new Locale(langCode)));
+        menuItem.setOnAction(_ -> changeLanguage(Locale.of(langCode)));
 
         return menuItem;
     }
@@ -256,7 +256,8 @@ public class EditInstructionsCtrl {
         } catch (Exception e) {
             showAlert(
                     resources.getString("editInstructions.saveErrorAlert.title"),
-                    resources.getString("editInstructions.saveErrorAlert.message") + " " + e.getMessage()
+                    resources.getString("editInstructions.saveErrorAlert.message")
+                            + " " + e.getMessage()
             );
             System.err.println("Error: Saving instructions failed.");
         }

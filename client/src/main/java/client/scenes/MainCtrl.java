@@ -431,8 +431,10 @@ public class MainCtrl {
     }
 
     /**
-     * A helper method to remember if the user accessed a screen through the edit ingredients screen.
-     * @param cameFromEditIngredients
+     * A helper method to remember if the user accessed a screen
+     * through the edit ingredients screen.
+     * @param cameFromEditIngredients - indicates whether the user came
+     *                               from the Edit Ingredients Menu
      */
     public void setCameFromEditIngredients(boolean cameFromEditIngredients){
         this.cameFromEditIngredients = cameFromEditIngredients;
@@ -440,7 +442,8 @@ public class MainCtrl {
 
     /**
      * Checks whether the previous screen was edit ingredients.
-     * @return - returns true if a screen was accessed through the edit ingredients screen. Otherwise, it returns false.
+     * @return - returns true if a screen was accessed through the edit ingredients screen.
+     * Otherwise, it returns false.
      */
     public boolean isCameFromEditIngredients(){
         return cameFromEditIngredients;

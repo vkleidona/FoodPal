@@ -95,7 +95,7 @@ public class AddFoodItemCtrl {
 
         menuItem.setGraphic(icon);
 
-        menuItem.setOnAction(_ -> changeLanguage(new Locale(langCode)));
+        menuItem.setOnAction(_ -> changeLanguage(Locale.of(langCode)));
 
         return menuItem;
     }
@@ -251,7 +251,8 @@ public class AddFoodItemCtrl {
             if (e.getResponse().getStatus() == HttpStatus.CONFLICT.value()) {
                 Alert invalidInput = new Alert(Alert.AlertType.ERROR);
                 invalidInput.setTitle(LanguageManager.getString("alert.error.title"));
-                invalidInput.setContentText(LanguageManager.getString("alert.error.duplicate.content"));
+                invalidInput.setContentText(LanguageManager.getString
+                        ("alert.error.duplicate.content"));
                 invalidInput.showAndWait();
             }
         }
@@ -268,7 +269,8 @@ public class AddFoodItemCtrl {
             if (e.getResponse().getStatus() == 409) {
                 Alert invalidInput = new Alert(Alert.AlertType.ERROR);
                 invalidInput.setTitle(LanguageManager.getString("alert.error.title"));
-                invalidInput.setContentText(LanguageManager.getString("alert.error.duplicate.edit.content"));
+                invalidInput.setContentText(LanguageManager.getString
+                        ("alert.error.duplicate.edit.content"));
                 invalidInput.showAndWait();
             } else {
                 System.err.println("Edited FoodItem could not be saved.");

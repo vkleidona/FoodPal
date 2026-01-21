@@ -3,7 +3,6 @@ package client.scenes;
 
 import jakarta.inject.Inject;
 import javafx.application.Platform;
-import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
@@ -196,7 +195,7 @@ public class EditIngredientsCtrl{
 
         menuItem.setGraphic(icon);
 
-        menuItem.setOnAction(_ -> changeLanguage(new Locale(langCode)));
+        menuItem.setOnAction(_ -> changeLanguage(Locale.of(langCode)));
 
         return menuItem;
     }
@@ -376,7 +375,8 @@ public class EditIngredientsCtrl{
                     // If the food quantity can't be parsed to a double output an error message.
                     ingredient.setQuantity(Double.parseDouble(inputQuantity.getText()));
                 } catch (NumberFormatException e) {
-                    errorLabel.setText(LanguageManager.getString("editIngredients.quantityNotNumber"));
+                    errorLabel.setText(LanguageManager.getString
+                            ("editIngredients.quantityNotNumber"));
                 }
                 ingredient.setMeasurement(inputMeasurement.getValue());
 

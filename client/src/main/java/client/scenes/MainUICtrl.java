@@ -366,7 +366,7 @@ public class MainUICtrl {
 
         menuItem.setGraphic(icon);
 
-        menuItem.setOnAction(_ -> changeLanguage(new Locale(langCode)));
+        menuItem.setOnAction(_ -> changeLanguage(Locale.of(langCode)));
 
         return menuItem;
     }
@@ -769,7 +769,8 @@ public class MainUICtrl {
         Recipe selectedRecipe = currentRecipes.get(index);
 
         TextInputDialog dialog = new TextInputDialog(
-                LanguageManager.getString("main.clone.defaultPrefix") + " " + selectedRecipe.getName()
+                LanguageManager.getString("main.clone.defaultPrefix")
+                        + " " + selectedRecipe.getName()
         );
         dialog.setTitle(LanguageManager.getString("main.clone.title"));
         dialog.setHeaderText(LanguageManager.getString("main.clone.header"));
@@ -923,7 +924,7 @@ public class MainUICtrl {
                                                   String langCode, String iconFileName) {
         CheckMenuItem menuItem = new CheckMenuItem(name);
 
-        menuItem.setSelected(filteredLocales.contains(new Locale(langCode)));
+        menuItem.setSelected(filteredLocales.contains(Locale.of(langCode)));
 
         Image flagImage = new Image(Objects.requireNonNull
                 (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
@@ -937,7 +938,7 @@ public class MainUICtrl {
 
         menuItem.setGraphic(icon);
 
-        Locale tempLocale = new Locale (langCode);
+        Locale tempLocale = Locale.of(langCode);
 
         menuItem.setOnAction(_ -> {
             if (menuItem.isSelected()) {
