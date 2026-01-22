@@ -115,7 +115,7 @@ public class ShoppingListMainCtrl {
         Button deleteButton = new Button("Delete");
 
         // the edit button shows the dialog box for changing an ingredient
-        editButton.setOnAction(_ -> showDialog(ingredient));
+        editButton.setOnAction(_ -> showDialog(ingredient, false));
 
         // the delete button deletes the ingredient
         deleteButton.setOnAction(_ -> deleteIngredient(ingredient));
@@ -228,7 +228,7 @@ public class ShoppingListMainCtrl {
      */
     @FXML
     public void addIngredient () {
-        showDialog(null);
+        showDialog(null, false);
     }
 
     /**
@@ -273,14 +273,15 @@ public class ShoppingListMainCtrl {
      * Handles the functionality for adding / changing an ingredient
      * depending on the button clicked
      * @param ingredient - Ingredient to be edited
+     * @param addingFoodItem - a flag whether the user is adding a FoodItem
      */
-    public void showDialog(Ingredient ingredient) {
+    public void showDialog(Ingredient ingredient, boolean addingFoodItem) {
         boolean isEditing = (ingredient != null);
 
         Dialog<Ingredient> dialogBox = setupIngredientDialog(ingredient);
 
         dialogBox.showAndWait().ifPresent(result -> {
-            if (isEditing) {
+            if (isEditing && !addingFoodItem) {
                 handleIngredientEdit(result);
             } else {
                 addIngredientToShoppingList(result);
@@ -432,6 +433,6 @@ public class ShoppingListMainCtrl {
         currentIngredient = new Ingredient(0.0, "g");
         currentIngredient.setFoodType(server.getFoodItemByName(ingredientName));
         mainCtrl.showShoppingList();
-        showDialog(currentIngredient);
+        showDialog(currentIngredient, true);
     }
 }
