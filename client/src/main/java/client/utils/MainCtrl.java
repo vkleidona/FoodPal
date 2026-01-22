@@ -565,7 +565,7 @@ public class MainCtrl {
         cameFromEditIngredients = false;
         cameFromFoodItemMain = false;
         cameFromShoppingList = false;
-        setDraftRecipe(null);
+        // setDraftRecipe(null);
     }
 
     /**

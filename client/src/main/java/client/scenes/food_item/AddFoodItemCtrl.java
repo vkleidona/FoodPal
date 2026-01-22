@@ -244,7 +244,7 @@ public class AddFoodItemCtrl {
             mainCtrl.showEditIngredients(mainCtrl.getDraftRecipe());
             mainCtrl.setCameFromEditIngredients(false);
         } else if (mainCtrl.getDraftRecipe() != null) {
-            mainCtrl.showCreateRecipe();
+            mainCtrl.showCreateRecipeFromFoodItem();
         } else if (mainCtrl.isCameFromShoppingList()) {
             mainCtrl.showShoppingList();
         } else if (mainCtrl.isCameFromAddRecipeToShoppingList()) {
