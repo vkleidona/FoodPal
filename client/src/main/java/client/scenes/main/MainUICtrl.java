@@ -211,7 +211,6 @@ public class MainUICtrl {
             Recipe currentlySelected = recipeListView.getSelectionModel().getSelectedItem();
 
             initialRecipeFetch();
-            cleanupDeletedFavorites();          // check after manual refresh
 
             if (currentlySelected != null) {
                 recipeListView.getSelectionModel().select(currentlySelected);
