@@ -1,14 +1,13 @@
-package client.scenes;
+package client.scenes.main;
 
+import client.utils.MainCtrl;
+import client.service.LanguageService;
 import com.google.inject.Inject;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.shape.Circle;
 import recipes.Recipe;
 
 import java.util.*;
@@ -32,6 +31,7 @@ public class EditInstructionsCtrl {
 
     private final client.utils.ServerUtils server;
     private final MainCtrl mainCtrl;
+    private final LanguageService languageService;
 
     /**
      * Initializer method - sets up the language method,
@@ -61,49 +61,28 @@ public class EditInstructionsCtrl {
     }
 
     /**
+     * A method which updates the UI of the language button
+     * @param locale - the locale of the language
+     */
+    public void updateLanguageButtonUI (Locale locale) {
+        String langCode = locale.getLanguage();
+
+        languageButton.setText(languageService.getDisplayName(langCode));
+        languageButton.setGraphic(languageService.renderIcon(langCode, 16.0));
+    }
+
+
+    /**
      * A method which sets up the icons for the language menu
      * @param name - the name of the language we are adding
      * @param langCode - the locale code of the language
-     * @param iconFileName - the encoding for the name of the icon file
      * @return MenuItem - returns the ready-made MenuItem with the proper icon
      */
-    public MenuItem setupMenuItemIcons (String name, String langCode, String iconFileName) {
+    public MenuItem setupMenuItemIcons (String name, String langCode) {
         MenuItem menuItem = new MenuItem(name);
-
-        Image flagImage = new Image(Objects.requireNonNull
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
-
-        ImageView icon = new ImageView(flagImage);
-        icon.setFitWidth(16);
-        icon.setFitHeight(16);
-
-        Circle clip = new Circle(8, 8, 8);
-        icon.setClip(clip);
-
-        menuItem.setGraphic(icon);
-
+        menuItem.setGraphic(languageService.renderIcon(langCode, 16.0));
         menuItem.setOnAction(_ -> changeLanguage(Locale.of(langCode)));
-
         return menuItem;
-    }
-
-    /**
-     * A method which updates the flag icon of the language button when necessary
-     * @param iconFileName - the encoding for the name of the icon file
-     */
-    public void updateButtonGraphic(String iconFileName) {
-        Image img = new Image (Objects.requireNonNull
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
-        ImageView imageView = new ImageView(img);
-
-        imageView.setFitWidth(16);
-        imageView.setFitHeight(16);
-
-        Circle clip = new Circle(8, 8, 8);
-        imageView.setClip(clip);
-
-        // Set the graphic to the MenuButton itself
-        languageButton.setGraphic(imageView);
     }
 
     /**
@@ -113,43 +92,14 @@ public class EditInstructionsCtrl {
     public void setupLanguageMenu() {
         languageButton.getItems().clear();
 
-        MenuItem enItem = setupMenuItemIcons("English", "en", "english");
-        MenuItem nlItem = setupMenuItemIcons("Nederlands", "nl", "dutch");
-        MenuItem bgItem = setupMenuItemIcons("Български", "bg", "bulgarian");
-        MenuItem roItem = setupMenuItemIcons("Română", "ro", "romanian");
-        MenuItem skItem = setupMenuItemIcons("Slovenčina", "sk", "slovak");
-        MenuItem deItem = setupMenuItemIcons("Deutsch", "de", "german");
+        List<String> codes = List.of("en", "nl", "bg", "ro", "sk", "de");
 
-        languageButton.getItems().addAll(enItem, nlItem, bgItem, roItem, skItem, deItem);
-
-        Locale current = LanguageManager.getLocale();
-
-        switch (current.getLanguage()) {
-            case "nl" -> {
-                languageButton.setText("Nederlands");
-                updateButtonGraphic("dutch");
-            }
-            case "ro" -> {
-                languageButton.setText("Română");
-                updateButtonGraphic("romanian");
-            }
-            case "bg" -> {
-                languageButton.setText("Български");
-                updateButtonGraphic("bulgarian");
-            }
-            case "sk" -> {
-                languageButton.setText("Slovenčina");
-                updateButtonGraphic("slovak");
-            }
-            case "de" -> {
-                languageButton.setText("Deutsch");
-                updateButtonGraphic("german");
-            }
-            default -> {
-                languageButton.setText("English");
-                updateButtonGraphic("english");
-            }
+        for (String code : codes) {
+            String displayName = languageService.getDisplayName(code);
+            languageButton.getItems().add(setupMenuItemIcons(displayName, code));
         }
+
+        updateLanguageButtonUI(LanguageManager.getLocale());
     }
 
     /**
@@ -158,14 +108,7 @@ public class EditInstructionsCtrl {
      */
     public void changeLanguage(Locale newLocale) {
         LanguageManager.setLocale(newLocale);
-        switch (newLocale.getLanguage()) {
-            case "nl" -> languageButton.setText("Nederlands");
-            case "ro" -> languageButton.setText("Română");
-            case "bg" -> languageButton.setText("Български");
-            case "sk" -> languageButton.setText("Slovenčina");
-            case "de" -> languageButton.setText("Deutsch");
-            default -> languageButton.setText("English");
-        }
+        updateLanguageButtonUI(newLocale);
         mainCtrl.reloadScenesForNewLanguage();
     }
 
@@ -173,11 +116,14 @@ public class EditInstructionsCtrl {
      * Constructor for the EditInstructions class using Dependency Injection
      * @param server - the injected instance of the ServerUtils class
      * @param mainCtrl - the injected instance of the MainCtrl class
+     * @param languageService - the injected instance of the Language Service
      */
     @Inject
-    public EditInstructionsCtrl(client.utils.ServerUtils server, MainCtrl mainCtrl) {
+    public EditInstructionsCtrl(client.utils.ServerUtils server, MainCtrl mainCtrl,
+                                LanguageService languageService) {
         this.server = server;
         this.mainCtrl = mainCtrl;
+        this.languageService=languageService;
     }
 
     /**

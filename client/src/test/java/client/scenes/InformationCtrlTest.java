@@ -1,5 +1,7 @@
 package client.scenes;
 
+import client.scenes.nutrition.InformationCtrl;
+import client.utils.MainCtrl;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -49,7 +51,7 @@ public class InformationCtrlTest extends ApplicationTest {
                     mainMenuShown = true;
                 }
             };
-            return new InformationCtrl(mockMainCtrl);
+            return new InformationCtrl(mockMainCtrl, null, null);
         });
 
         // load the FXML

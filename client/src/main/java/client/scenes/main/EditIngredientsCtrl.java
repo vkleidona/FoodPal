@@ -1,13 +1,12 @@
-package client.scenes;
+package client.scenes.main;
 
 
+import client.utils.MainCtrl;
+import client.service.LanguageService;
 import jakarta.inject.Inject;
 import javafx.application.Platform;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.shape.Circle;
 import recipes.FoodItem;
 import recipes.Ingredient;
 import recipes.Recipe;
@@ -59,6 +58,7 @@ public class EditIngredientsCtrl{
 
     private final MainCtrl mainCtrl;
     private final client.utils.ServerUtils server;
+    private final LanguageService languageService;
 
     private static final List<String> METRIC_UNITS = List.of("g", "kg", "ml", "l");
     private static final List<String> IMPERIAL_UNITS = List.of
@@ -96,11 +96,14 @@ public class EditIngredientsCtrl{
      * A constructor for the EditIngredients Ctrl class using Dependency Injection
      * @param mainCtrl - the instance of the main controller class
      * @param server - the instance of the server utilities class
+     * @param languageService - the instance of the language service
      */
     @Inject
-    public EditIngredientsCtrl(MainCtrl mainCtrl, client.utils.ServerUtils server) {
+    public EditIngredientsCtrl(MainCtrl mainCtrl, client.utils.ServerUtils server,
+                               LanguageService languageService) {
         this.mainCtrl = mainCtrl;
         this.server = server;
+        this.languageService = languageService;
     }
 
     /**
@@ -177,49 +180,28 @@ public class EditIngredientsCtrl{
     }
 
     /**
+     * A method which updates the UI of the language button
+     * @param locale - the locale of the language
+     */
+    public void updateLanguageButtonUI (Locale locale) {
+        String langCode = locale.getLanguage();
+
+        languageButton.setText(languageService.getDisplayName(langCode));
+        languageButton.setGraphic(languageService.renderIcon(langCode, 16.0));
+    }
+
+
+    /**
      * A method which sets up the icons for the language menu
      * @param name - the name of the language we are adding
      * @param langCode - the locale code of the language
-     * @param iconFileName - the encoding for the name of the icon file
      * @return MenuItem - returns the ready-made MenuItem with the proper icon
      */
-    public MenuItem setupMenuItemIcons (String name, String langCode, String iconFileName) {
+    public MenuItem setupMenuItemIcons (String name, String langCode) {
         MenuItem menuItem = new MenuItem(name);
-
-        Image flagImage = new Image(Objects.requireNonNull
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
-
-        ImageView icon = new ImageView(flagImage);
-        icon.setFitWidth(16);
-        icon.setFitHeight(16);
-
-        Circle clip = new Circle(8, 8, 8);
-        icon.setClip(clip);
-
-        menuItem.setGraphic(icon);
-
+        menuItem.setGraphic(languageService.renderIcon(langCode, 16.0));
         menuItem.setOnAction(_ -> changeLanguage(Locale.of(langCode)));
-
         return menuItem;
-    }
-
-    /**
-     * A method which updates the flag icon of the language button when necessary
-     * @param iconFileName - the encoding for the name of the icon file
-     */
-    public void updateButtonGraphic(String iconFileName) {
-        Image img = new Image (Objects.requireNonNull
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
-        ImageView imageView = new ImageView(img);
-
-        imageView.setFitWidth(16);
-        imageView.setFitHeight(16);
-
-        Circle clip = new Circle(8, 8, 8);
-        imageView.setClip(clip);
-
-        // Set the graphic to the MenuButton itself
-        languageButton.setGraphic(imageView);
     }
 
     /**
@@ -229,43 +211,14 @@ public class EditIngredientsCtrl{
     public void setupLanguageMenu() {
         languageButton.getItems().clear();
 
-        MenuItem enItem = setupMenuItemIcons("English", "en", "english");
-        MenuItem nlItem = setupMenuItemIcons("Nederlands", "nl", "dutch");
-        MenuItem bgItem = setupMenuItemIcons("Български", "bg", "bulgarian");
-        MenuItem roItem = setupMenuItemIcons("Română", "ro", "romanian");
-        MenuItem skItem = setupMenuItemIcons("Slovenčina", "sk", "slovak");
-        MenuItem deItem = setupMenuItemIcons("Deutsch", "de", "german");
+        List<String> codes = List.of("en", "nl", "bg", "ro", "sk", "de");
 
-        languageButton.getItems().addAll(enItem, nlItem, bgItem, roItem, skItem, deItem);
-
-        Locale current = LanguageManager.getLocale();
-
-        switch (current.getLanguage()) {
-            case "nl" -> {
-                languageButton.setText("Nederlands");
-                updateButtonGraphic("dutch");
-            }
-            case "ro" -> {
-                languageButton.setText("Română");
-                updateButtonGraphic("romanian");
-            }
-            case "bg" -> {
-                languageButton.setText("Български");
-                updateButtonGraphic("bulgarian");
-            }
-            case "sk" -> {
-                languageButton.setText("Slovenčina");
-                updateButtonGraphic("slovak");
-            }
-            case "de" -> {
-                languageButton.setText("Deutsch");
-                updateButtonGraphic("german");
-            }
-            default -> {
-                languageButton.setText("English");
-                updateButtonGraphic("english");
-            }
+        for (String code : codes) {
+            String displayName = languageService.getDisplayName(code);
+            languageButton.getItems().add(setupMenuItemIcons(displayName, code));
         }
+
+        updateLanguageButtonUI(LanguageManager.getLocale());
     }
 
     /**
@@ -274,14 +227,7 @@ public class EditIngredientsCtrl{
      */
     public void changeLanguage(Locale newLocale) {
         LanguageManager.setLocale(newLocale);
-        switch (newLocale.getLanguage()) {
-            case "nl" -> languageButton.setText("Nederlands");
-            case "ro" -> languageButton.setText("Română");
-            case "bg" -> languageButton.setText("Български");
-            case "sk" -> languageButton.setText("Slovenčina");
-            case "de" -> languageButton.setText("Deutsch");
-            default -> languageButton.setText("English");
-        }
+        updateLanguageButtonUI(newLocale);
         mainCtrl.reloadScenesForNewLanguage();
     }
 
@@ -361,7 +307,8 @@ public class EditIngredientsCtrl{
     void submitEdit() {
         // Is any ingredient selected?
         if(lastClickedIngredient == null){
-            showAlert("editIngredients.alert.noSelection.title", "editIngredients.alert.noSelection.content");
+            showAlert("editIngredients.alert.noSelection.title",
+                    "editIngredients.alert.noSelection.content");
             return;
         }
 
@@ -374,7 +321,8 @@ public class EditIngredientsCtrl{
                     // If the food quantity can't be parsed to a double output an error message.
                     ingredient.setQuantity(Double.parseDouble(inputQuantity.getText()));
                 } catch (NumberFormatException e) {
-                    showAlert("editIngredients.alert.invalidNumber.title", "editIngredients.alert.invalidNumber.content");
+                    showAlert("editIngredients.alert.invalidNumber.title",
+                            "editIngredients.alert.invalidNumber.content");
                     return;
                 }
                 ingredient.setMeasurement(inputMeasurement.getValue());
@@ -398,19 +346,24 @@ public class EditIngredientsCtrl{
         });
     }
 
+    /**
+     * A method for adding an Ingredient
+     */
     @FXML
     public void addIngredient() {
         if(inputFoodName.getValue() == null || inputQuantity.getText() == null ||
                 inputQuantity.getText().trim().isEmpty() ||
                 inputMeasurement.getValue() == null ){
-            showAlert("editIngredients.alert.missingField.title", "editIngredients.alert.missingField.content");
+            showAlert("editIngredients.alert.missingField.title",
+                    "editIngredients.alert.missingField.content");
             return;
         }
 
         // If the ingredient is already in the list don't add it again.
         for(Ingredient ingredient : listOfIngredients.getItems()){
             if (inputFoodName.getValue().equals(ingredient.getFoodType().getName())) {
-                showAlert("editIngredients.alert.duplicate.title", "editIngredients.alert.duplicate.content");
+                showAlert("editIngredients.alert.duplicate.title",
+                        "editIngredients.alert.duplicate.content");
                 return;
             }
         }
@@ -436,7 +389,8 @@ public class EditIngredientsCtrl{
             listOfIngredients.refresh();
         } catch (NumberFormatException e) {
             // If the given quantity cannot be parsed to a double give error.
-            showAlert("editIngredients.alert.invalidNumber.title", "editIngredients.alert.invalidNumber.content");
+            showAlert("editIngredients.alert.invalidNumber.title",
+                    "editIngredients.alert.invalidNumber.content");
         }
 
         resetForm();
@@ -448,7 +402,8 @@ public class EditIngredientsCtrl{
     @FXML
     void removeIngredient() {
         if(lastClickedIngredient == null){
-            showAlert("editIngredients.alert.noSelection.title", "editIngredients.alert.noSelection.content");
+            showAlert("editIngredients.alert.noSelection.title",
+                    "editIngredients.alert.noSelection.content");
             return;
         }
         listOfIngredients.getItems().remove(lastClickedIngredient);

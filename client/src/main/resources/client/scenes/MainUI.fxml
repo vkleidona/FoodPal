@@ -17,7 +17,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane prefHeight="560.0" prefWidth="841.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.scenes.MainUICtrl">
+<BorderPane prefHeight="560.0" prefWidth="841.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.scenes.main.MainUICtrl">
 
     <!-- Top bar with window controls -->
     <top>

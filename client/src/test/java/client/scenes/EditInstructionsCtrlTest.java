@@ -1,5 +1,7 @@
 package client.scenes;
 
+import client.scenes.main.EditInstructionsCtrl;
+import client.utils.MainCtrl;
 import javafx.stage.Stage;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -38,7 +40,7 @@ public class EditInstructionsCtrlTest extends ApplicationTest{
 
         FXMLLoader loader =  new FXMLLoader(getClass().getResource("/client/scenes/EditInstructions.fxml"));
 
-        loader.setControllerFactory(_ -> new EditInstructionsCtrl(mockServer, mockMainCtrl));
+        loader.setControllerFactory(_ -> new EditInstructionsCtrl(mockServer, mockMainCtrl, null));
 
         Parent root =  loader.load();
         ctrl = loader.getController();

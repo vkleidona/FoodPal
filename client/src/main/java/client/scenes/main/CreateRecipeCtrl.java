@@ -1,13 +1,14 @@
-package client.scenes;
+package client.scenes.main;
 
+import client.utils.MainCtrl;
+import client.service.LanguageService;
+import client.utils.ServerUtils;
+import jakarta.inject.Inject;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.shape.Circle;
 import recipes.Recipe;
 import recipes.Ingredient;
 import recipes.FoodItem;
@@ -25,11 +26,6 @@ public class CreateRecipeCtrl {
      */
     @FXML
     private VBox ingredientsVBox;
-
-    private RecipeActions recipeActions;
-    public void setRecipeActions(RecipeActions recipeActions) {
-        this.recipeActions = recipeActions;
-    }
 
     @FXML
     private MenuButton languageButton;
@@ -103,20 +99,23 @@ public class CreateRecipeCtrl {
     }
 
 
-    private ServerService serverService;
+    private final ServerUtils server;
+    private final MainCtrl mainCtrl;
+    private final LanguageService languageService;
 
     /**
      * A Constructor for the CreateRecipeCtrl class
+     * @param server - the instance of the ServerUtils class
+     * @param mainCtrl - the instance of the MainCtrl class
+     * @param languageService - the instance of the language service class
      */
-    public CreateRecipeCtrl() {
-        this.serverService = new RealServerService();
+    @Inject
+    public CreateRecipeCtrl(ServerUtils server, MainCtrl mainCtrl,
+                            LanguageService languageService) {
+        this.server = server;
+        this.mainCtrl = mainCtrl;
+        this.languageService = languageService;
     }
-
-    public void setServerService(ServerService serverService) {
-        this.serverService = serverService;
-    }
-
-    private final String recipeEndpointUrl = "http://localhost:8080/recipes";
 
     /**
      * Updates ONLY the currently selected row to the chosen system
@@ -213,7 +212,7 @@ public class CreateRecipeCtrl {
             recipe.setLocale(currentLocale);
 
             // save
-            serverService.sendRecipe(recipe);
+            server.sendRecipe(recipe);
             goToMainUI();
             resetUI();
 
@@ -275,49 +274,28 @@ public class CreateRecipeCtrl {
     }
 
     /**
+     * A method which updates the UI of the language button
+     * @param locale - the locale of the language
+     */
+    public void updateLanguageButtonUI (Locale locale) {
+        String langCode = locale.getLanguage();
+
+        languageButton.setText(languageService.getDisplayName(langCode));
+        languageButton.setGraphic(languageService.renderIcon(langCode, 16.0));
+    }
+
+
+    /**
      * A method which sets up the icons for the language menu
      * @param name - the name of the language we are adding
      * @param langCode - the locale code of the language
-     * @param iconFileName - the encoding for the name of the icon file
      * @return MenuItem - returns the ready-made MenuItem with the proper icon
      */
-    public MenuItem setupMenuItemIcons (String name, String langCode, String iconFileName) {
+    public MenuItem setupMenuItemIcons (String name, String langCode) {
         MenuItem menuItem = new MenuItem(name);
-
-        Image flagImage = new Image(Objects.requireNonNull
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
-
-        ImageView icon = new ImageView(flagImage);
-        icon.setFitWidth(16);
-        icon.setFitHeight(16);
-
-        Circle clip = new Circle(8, 8, 8);
-        icon.setClip(clip);
-
-        menuItem.setGraphic(icon);
-
+        menuItem.setGraphic(languageService.renderIcon(langCode, 16.0));
         menuItem.setOnAction(_ -> changeLanguage(Locale.of(langCode)));
-
         return menuItem;
-    }
-
-    /**
-     * A method which updates the flag icon of the language button when necessary
-     * @param iconFileName - the encoding for the name of the icon file
-     */
-    public void updateButtonGraphic(String iconFileName) {
-        Image img = new Image (Objects.requireNonNull
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
-        ImageView imageView = new ImageView(img);
-
-        imageView.setFitWidth(16);
-        imageView.setFitHeight(16);
-
-        Circle clip = new Circle(8, 8, 8);
-        imageView.setClip(clip);
-
-        // Set the graphic to the MenuButton itself
-        languageButton.setGraphic(imageView);
     }
 
     /**
@@ -327,97 +305,25 @@ public class CreateRecipeCtrl {
     public void setupLanguageMenu() {
         languageButton.getItems().clear();
 
-        MenuItem enItem = setupMenuItemIcons("English", "en", "english");
-        MenuItem nlItem = setupMenuItemIcons("Nederlands", "nl", "dutch");
-        MenuItem roItem = setupMenuItemIcons("Română", "ro", "romanian");
-        MenuItem bgItem = setupMenuItemIcons("Български", "bg", "bulgarian");
-        MenuItem skItem = setupMenuItemIcons("Slovenčina", "sk", "slovak");
-        MenuItem deItem = setupMenuItemIcons("Deutsch", "de", "german");
+        List<String> codes = List.of("en", "nl", "bg", "ro", "sk", "de");
 
-        languageButton.getItems().addAll(enItem, nlItem, bgItem, roItem, skItem, deItem);
-
-        Locale current = LanguageManager.getLocale();
-
-        switch (current.getLanguage()) {
-            case "nl" -> {
-                languageButton.setText("Nederlands");
-                updateButtonGraphic("dutch");
-            }
-            case "ro" -> {
-                languageButton.setText("Română");
-                updateButtonGraphic("romanian");
-            }
-            case "bg" -> {
-                languageButton.setText("Български");
-                updateButtonGraphic("bulgarian");
-            }
-            case "sk" -> {
-                languageButton.setText("Slovenčina");
-                updateButtonGraphic("slovak");
-            }
-            case "de" -> {
-                languageButton.setText("Deutsch");
-                updateButtonGraphic("german");
-            }
-            default -> {
-                languageButton.setText("English");
-                updateButtonGraphic("english");
-            }
+        for (String code : codes) {
+            String displayName = languageService.getDisplayName(code);
+            languageButton.getItems().add(setupMenuItemIcons(displayName, code));
         }
+
+        updateLanguageButtonUI(LanguageManager.getLocale());
     }
 
     /**
-     * A method for changing and saving the language of a recipe
-     * from a given Locale
-     * @param newLocale - the new Locale of the recipe
+     * A method for changing the language of the menus to a new Locale
+     * @param newLocale - the new language we want to set the menus to
      */
     public void changeLanguage(Locale newLocale) {
-        // 1) schimbă limba GLOBALĂ a aplicației
         LanguageManager.setLocale(newLocale);
-
-        // 2) actualizează butonul local și limba rețetei
-        switch (newLocale.getLanguage()) {
-            case "nl" -> {
-                languageButton.setText("Nederlands");
-                currentLocale = Locale.of("nl");
-                updateButtonGraphic("dutch");
-            }
-            case "ro" -> {
-                languageButton.setText("Română");
-                currentLocale = Locale.of("ro");
-                updateButtonGraphic("romanian");
-            }
-            case "bg" -> {
-                languageButton.setText("Български");
-                currentLocale = Locale.of("bg");
-                updateButtonGraphic("bulgarian");
-            }
-            case "sk" -> {
-                languageButton.setText("Slovenčina");
-                currentLocale = Locale.of("sk");
-                updateButtonGraphic("slovak");
-            }
-            case "de" -> {
-                languageButton.setText("Deutsch");
-                currentLocale = Locale.GERMAN;
-                updateButtonGraphic("german");
-            }
-            default -> {
-                languageButton.setText("English");
-                currentLocale = Locale.ENGLISH;
-                updateButtonGraphic("english");
-            }
-        }
-
-        // 3) reîncarcă toate scenele în noua limbă și rămâi în același ecran
-        if (mainCtrl != null) {
-            mainCtrl.reloadScenesForNewLanguage();
-        } else {
-            System.err.println("MainCtrl is null in CreateRecipeCtrl.changeLanguage");
-        }
+        updateLanguageButtonUI(newLocale);
+        currentLocale = newLocale;
     }
-
-
 
     /**
      * Restore the UI state from a saved draft
@@ -561,12 +467,7 @@ public class CreateRecipeCtrl {
     }
 
     private void goToMainUI() {
-
-        if (recipeActions != null) {
-            recipeActions.goToMainUI();
-        } else {
-            System.err.println("Could not initialize the Recipe utilities");
-        }
+        mainCtrl.showMainMenu();
     }
 
     /**
@@ -615,7 +516,7 @@ public class CreateRecipeCtrl {
 
 
         // fetch and Populate Items
-        List<FoodItem> items = serverService.getAllFoodItems();
+        List<FoodItem> items = server.getAllFoodItems();
 
         // sorting alphabetically
         items.sort(Comparator.comparing(FoodItem::getName));
@@ -748,11 +649,7 @@ public class CreateRecipeCtrl {
         return null;
     }
 
-    private MainCtrl mainCtrl;
 
-    public void setMainCtrl(MainCtrl mainCtrl) {
-        this.mainCtrl = mainCtrl;
-    }
 
 
 
@@ -801,7 +698,7 @@ public class CreateRecipeCtrl {
     @FXML
     public void handleRefresh() {
         // fetch latest data
-        List<FoodItem> freshList = serverService.getAllFoodItems();
+        List<FoodItem> freshList = server.getAllFoodItems();
         freshList.sort(Comparator.comparing(FoodItem::getName));
 
         for (Node node : ingredientsVBox.getChildren()) {

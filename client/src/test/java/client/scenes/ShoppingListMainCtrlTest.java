@@ -1,5 +1,7 @@
 package client.scenes;
 
+import client.scenes.shopping_list.ShoppingListMainCtrl;
+import client.utils.MainCtrl;
 import client.utils.ServerUtils;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
@@ -66,7 +68,7 @@ public class ShoppingListMainCtrlTest extends ApplicationTest {
         serverUtils = mock(ServerUtils.class);
         mainCtrl = mock(MainCtrl.class);
         s = new ShoppingList(file);
-        shoppingListMainCtrl = new ShoppingListMainCtrl(serverUtils, mainCtrl, s);
+        shoppingListMainCtrl = new ShoppingListMainCtrl(serverUtils, mainCtrl, null, null);
         loader.setController(shoppingListMainCtrl);
 
         // We load the scene

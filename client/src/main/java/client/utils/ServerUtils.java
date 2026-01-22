@@ -4,6 +4,7 @@ import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 
 import java.net.ConnectException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.ws.rs.core.MediaType;
@@ -37,6 +38,17 @@ public class ServerUtils {
             }
         }
         return true;
+    }
+
+    /**
+     * A method which issues a server request for deleting a recipe
+     * @param id - the recipe to be deleted
+     */
+    public void deleteRecipe (Long id) {
+        ClientBuilder.newClient(new ClientConfig())
+                .target(SERVER + "api/recipes/" + id)
+                .request(APPLICATION_JSON)
+                .delete();
     }
 
     /**
@@ -120,11 +132,16 @@ public class ServerUtils {
      * @return List <FoodItem> - a list of all FoodItems in the database
      */
     public List<FoodItem> getAllFoodItems() {
-        return ClientBuilder.newClient(new ClientConfig())
-                .target(SERVER).path("api/fooditems")
-                .request(APPLICATION_JSON)
-                .get(new GenericType<>() {
-                });
+        try {
+            return ClientBuilder.newClient(new ClientConfig())
+                    .target(SERVER).path("api/fooditems")
+                    .request(APPLICATION_JSON)
+                    .get(new GenericType<>() {
+                    });
+        }catch (RuntimeException e) {
+            System.err.println("Failed to fetch food items: " + e.getMessage());
+            return new ArrayList<>();
+        }
     }
 
     /**
@@ -160,5 +177,16 @@ public class ServerUtils {
         return ClientBuilder.newClient(new ClientConfig())
                 .target(SERVER).path("api/ingredients/usage/" + foodItem.getId())
                 .request(APPLICATION_JSON).get(Integer.class);
+    }
+
+    /**
+     * A method for creating a new recipe on the server
+     * @param recipe - the recipe to be sent to the server
+     */
+    public void sendRecipe(Recipe recipe) {
+        String recipeEndpointUrl = "http://localhost:8080/api/recipes";
+        ClientBuilder.newClient(new ClientConfig()).target(recipeEndpointUrl)
+                .request(MediaType.APPLICATION_JSON)
+                .post(Entity.entity(recipe, MediaType.APPLICATION_JSON));
     }
 }

@@ -1,6 +1,15 @@
-package client.scenes;
+package client.utils;
 
 import client.network.WebSocketService;
+import client.scenes.food_item.AddFoodItemCtrl;
+import client.scenes.food_item.FoodItemMainCtrl;
+import client.scenes.main.CreateRecipeCtrl;
+import client.scenes.main.EditIngredientsCtrl;
+import client.scenes.main.EditInstructionsCtrl;
+import client.scenes.main.MainUICtrl;
+import client.scenes.nutrition.InformationCtrl;
+import client.scenes.shopping_list.AddRecipeToShoppingListCtrl;
+import client.scenes.shopping_list.ShoppingListMainCtrl;
 import jakarta.inject.Inject;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -12,7 +21,6 @@ import javafx.stage.Stage;
 import javafx.util.Pair;
 import client.MyFXML;
 import recipes.FoodItem;
-import client.i18n.LanguageManager;
 import recipes.Recipe;
 
 public class MainCtrl {
@@ -46,9 +54,6 @@ public class MainCtrl {
     private ObservableList<Recipe> recipes;
     private ObservableList <FoodItem> foodItems;
 
-    private final RecipeActions recipeActions;
-
-
     //screen 1
     private MainUICtrl mainUICtrl;
     private Scene mainMenu;
@@ -58,7 +63,6 @@ public class MainCtrl {
     private Scene editInstructions;
 
     //screen 3
-    private CreateRecipeCtrl createRecipeCtrl;
     private Scene createRecipe;
 
     //screen 4
@@ -90,13 +94,11 @@ public class MainCtrl {
      * A constructor for the MainCtrl class using Dependency Injection
      * @param fxml - the FXML module which loads the scenes
      * @param webSocketService - the instance of the WebSocket support service
-     * @param recipeActions - the instance of the recipe server utilities
      */
     @Inject
-    public MainCtrl(MyFXML fxml, WebSocketService webSocketService, RecipeActions recipeActions) {
+    public MainCtrl(MyFXML fxml, WebSocketService webSocketService) {
         this.fxml = fxml;
         this.webSocketService = webSocketService;
-        this.recipeActions = recipeActions;
     }
 
     /**
@@ -134,10 +136,7 @@ public class MainCtrl {
         this.editInstructionsCtrl = editInstructions.getKey();
         this.editInstructions = new Scene(editInstructions.getValue());
 
-        this.createRecipeCtrl = createRecipe.getKey();
         this.createRecipe = new Scene(createRecipe.getValue());
-        this.createRecipeCtrl.setRecipeActions(this.recipeActions);
-        this.createRecipeCtrl.setMainCtrl(this);
 
         this.addFoodItemCtrl = addFoodItem.getKey();
         this.addFoodItem = new Scene(addFoodItem.getValue());
@@ -179,6 +178,7 @@ public class MainCtrl {
         if (informationCtrl != null) {
             informationCtrl.setRecipe(recipe); // <--- PASS THE DATA
         }
+        selectedRecipeBeforeReload = recipe;
         currentScreen = Screen.INFORMATION;
         primaryStage.setTitle("Nutritional Information: " + recipe.getName());
         primaryStage.setScene(informationScene);
@@ -199,6 +199,7 @@ public class MainCtrl {
      */
     public void showEditInstructions(Recipe recipe) {
         editInstructionsCtrl.initialize(recipe);
+        selectedRecipeBeforeReload = recipe;
         currentScreen = Screen.EDIT_INSTRUCTIONS;
         primaryStage.setTitle("Edit Instructions");
         primaryStage.setScene(editInstructions);
@@ -451,10 +452,7 @@ public class MainCtrl {
         // Create Recipe
         Pair<CreateRecipeCtrl, Parent> createRecipePair =
                 fxml.load(CreateRecipeCtrl.class, "client", "scenes", "creatingRecipe.fxml");
-        this.createRecipeCtrl = createRecipePair.getKey();
         this.createRecipe = new Scene(createRecipePair.getValue());
-        this.createRecipeCtrl.setRecipeActions(this.recipeActions);
-        this.createRecipeCtrl.setMainCtrl(this);
 
         // Edit Ingredients
         Pair<EditIngredientsCtrl, Parent> editIngredientsPair =
@@ -530,6 +528,6 @@ public class MainCtrl {
      * A testing constructor for the MainCtrl
      */
     public MainCtrl () {
-        this(null, new WebSocketService(), null);
+        this(null, new WebSocketService());
     }
 }

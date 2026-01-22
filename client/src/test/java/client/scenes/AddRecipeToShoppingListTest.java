@@ -1,5 +1,7 @@
 package client.scenes;
 
+import client.scenes.shopping_list.AddRecipeToShoppingListCtrl;
+import client.utils.MainCtrl;
 import client.utils.ServerUtils;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
@@ -65,7 +67,8 @@ public class AddRecipeToShoppingListTest extends ApplicationTest {
         mainCtrl = mock(MainCtrl.class);
         File file = tempDir.resolve("test_list.json").toFile();
         shoppingList = new ShoppingList(file);
-        addRecipeToShoppingListCtrl = new AddRecipeToShoppingListCtrl(serverUtils, mainCtrl, shoppingList);
+        addRecipeToShoppingListCtrl = new AddRecipeToShoppingListCtrl(serverUtils, mainCtrl,
+                null, null);
         loader.setController(addRecipeToShoppingListCtrl);
 
         // We load the scene

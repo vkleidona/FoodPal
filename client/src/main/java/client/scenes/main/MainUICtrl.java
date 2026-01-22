@@ -1,9 +1,11 @@
-package client.scenes;
+package client.scenes.main;
 
 import client.network.WebSocketService;
+import client.utils.MainCtrl;
+import client.service.FavoritesService;
+import client.service.FilterService;
+import client.service.LanguageService;
 import client.utils.ServerUtils;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.inject.Inject;
 import javafx.application.Platform;
 import client.i18n.LanguageManager;
@@ -13,25 +15,18 @@ import java.util.*;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
-import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.springframework.messaging.simp.stomp.StompSession;
 import recipes.Recipe;
 import recipes.Ingredient;
-
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.core.Response;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -63,31 +58,22 @@ public class MainUICtrl {
     @FXML private ImageView languageIndicator;
     @FXML private MenuButton filterLanguagesButton;
 
-    private final Client client = ClientBuilder.newClient();
-    private final String recipeEndpointUrl = "http://localhost:8080/api/recipes";
-
     private ObservableList<Recipe> currentRecipes;
-    private FilteredList<Recipe> filteredRecipesByLanguage;
-    private final List <Long> searchedRecipeIds = new ArrayList<>();
     private Recipe selectedRecipe;
 
     private final ServerUtils server;
     private final MainCtrl mainCtrl;
-    private final ServerService serverService;
     private final WebSocketService webSocketService;
-
-    private Set<Long> favoriteRecipeIds = new HashSet<>();
-    private List <Locale> filteredLocales = new ArrayList<>();
 
     private Long lastSubscribedID = null;
     private StompSession.Subscription recipeSubscription;
 
+    private final FavoritesService favoritesService;
+    private final FilterService filterService;
+    private final LanguageService languageService;
+
     @FXML
     private MenuButton languageButton;
-
-
-    // File path for saving favorites
-    private static final File FAVORITES_FILE = new File("favorites.json");
 
     /**
      * Cleans up the local favorites list by removing recipe IDs that no longer
@@ -98,73 +84,25 @@ public class MainUICtrl {
      * warning alert to inform the user that some favorite recipes are gone.
      */
     private void cleanupDeletedFavorites() {
-        Set<Long> stillFavoriteIds = new HashSet<>();
-        boolean anyDeleted = false;
 
-        for (Long favId : favoriteRecipeIds) {
-            // Check if this ID still exists in currentRecipes (master list from WebSocket)
-            boolean existsInList = currentRecipes.stream()
-                    .anyMatch(r -> Objects.equals(r.getId(), favId));
+        boolean deleted = favoritesService.cleanupDeletedFavorites();
 
-            if (existsInList) {
-                stillFavoriteIds.add(favId);
-            } else {
-                anyDeleted = true;
-            }
-        }
-
-        if (anyDeleted) {
-            favoriteRecipeIds = stillFavoriteIds;
-            saveFavorites();
-            updatePredicate();  // so favorites tab hides dead ones
+        if (deleted) {
             showFavoriteDeletedWarning();
+            filterService.updatePredicate();
         }
     }
 
     private void showFavoriteDeletedWarning() {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle(LanguageManager.getString("main.favoriteDeleted.title"));
-        alert.setHeaderText(LanguageManager.getString("main.favoriteDeleted.header"));
-        alert.setContentText(LanguageManager.getString("main.favoriteDeleted.content"));
-        alert.showAndWait();
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle(LanguageManager.getString("main.favoriteDeleted.title"));
+            alert.setHeaderText(LanguageManager.getString("main.favoriteDeleted.header"));
+            alert.setContentText(LanguageManager.getString("main.favoriteDeleted.content"));
+            alert.showAndWait();
+        });
     }
 
-
-
-    /**
-     * reads a list of favorite recipe IDs from a local file (favorites.json)
-     * and loads them into the application's memory.
-     */
-    private void loadFavorites() {
-        if (!FAVORITES_FILE.exists()) return;
-
-        // Creates a new Jackson ObjectMapper instance, the tool used to
-        // convert between Java objects and JSON text
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            // Reads the file content and converts the JSON data into a Set of Long integers.
-            // The TypeReference is required because Set<Long> is a generic type,
-            // and Java needs this extra help to understand exactly
-            // what type of collection to create.
-            favoriteRecipeIds = mapper.readValue(FAVORITES_FILE, new TypeReference<>() {
-            });
-        } catch (IOException e) {
-            System.err.println("Error - favorites file not found - aborting load");
-        }
-    }
-
-    /**
-     *  takes the current set of favorite recipe IDs from memory and
-     *  writes them into the favorites.json file.
-     */
-    private void saveFavorites() {
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            mapper.writeValue(FAVORITES_FILE, favoriteRecipeIds);
-        } catch (IOException e) {
-            System.err.println("Error - favorites file could not be found - aborting save");
-        }
-    }
 
     @FXML private ToggleButton favoriteButton;
     @FXML private ToggleButton allRecipesTab;
@@ -179,15 +117,15 @@ public class MainUICtrl {
         if (current == null) return;
 
         if (favoriteButton.isSelected()) {
-            favoriteRecipeIds.add(current.getId());
+            favoritesService.getFavoriteRecipeIds().add(current.getId());
             favoriteButton.setText("★");
         } else {
-            favoriteRecipeIds.remove(current.getId());
+            favoritesService.getFavoriteRecipeIds().remove(current.getId());
             favoriteButton.setText("☆");
         }
 
-        saveFavorites();
-        updatePredicate();
+        favoritesService.saveFavorites();
+        recipeListView.refresh();
 
         if (favoritesTab.isSelected()) {
             unsubscribeFromRecipe();
@@ -201,7 +139,8 @@ public class MainUICtrl {
     public void showAllRecipes() {
         allRecipesTab.setSelected(true);
         favoritesTab.setSelected(false);
-        updatePredicate();
+        filterService.setFavoritesSelected(false);
+        filterService.updatePredicate();
     }
 
     /**
@@ -211,7 +150,8 @@ public class MainUICtrl {
     public void showFavoriteRecipes() {
         allRecipesTab.setSelected(false);
         favoritesTab.setSelected(true);
-        updatePredicate();
+        filterService.setFavoritesSelected(true);
+        filterService.updatePredicate();
     }
 
     /**
@@ -219,13 +159,20 @@ public class MainUICtrl {
      * @param server - the injected instance of the ServerUtils
      * @param mainCtrl - the injected instance of the Main Controller
      * @param webSocketService - the injected instance of the WebSocketService
+     * @param favoritesService - the injected instance of the service supporting favorites
+     * @param filterService - the injected instance of the service supplying the search
+     * @param languageService - the injected instance of the service providing icons
      */
     @Inject
-    public MainUICtrl (ServerUtils server, MainCtrl mainCtrl, WebSocketService webSocketService) {
+    public MainUICtrl (ServerUtils server, MainCtrl mainCtrl, WebSocketService webSocketService,
+                       FavoritesService favoritesService, FilterService filterService,
+                       LanguageService languageService) {
         this.server = server;
         this.mainCtrl = mainCtrl;
         this.webSocketService = webSocketService;
-        this.serverService = new RealServerService();
+        this.favoritesService = favoritesService;
+        this.filterService = filterService;
+        this.languageService = languageService;
     }
 
     /**
@@ -238,11 +185,10 @@ public class MainUICtrl {
         currentRecipes.addListener((ListChangeListener<Recipe>) _ ->
                 Platform.runLater(this::updateRecipeListView));
 
-        filteredRecipesByLanguage = new FilteredList<>(currentRecipes);
-        recipeListView.setItems(filteredRecipesByLanguage);
-        updatePredicate();
+        recipeListView.setItems(filterService.getFilteredList());
+        filterService.updatePredicate();
 
-        loadFavorites();
+        favoritesService.loadFavorites();
         allRecipesTab.setSelected(true);
 
         // Sidebar selection updates main UI
@@ -251,7 +197,8 @@ public class MainUICtrl {
                     if (newVal != null) {
                         selectedRecipe = newVal;
                         selectRecipe(newVal);
-                        boolean isFav = favoriteRecipeIds.contains(newVal.getId());
+                        boolean isFav = favoritesService.getFavoriteRecipeIds().
+                                contains(newVal.getId());
                         favoriteButton.setSelected(isFav);
                         favoriteButton.setText(isFav ? "★" : "☆");
                         changeRecipeLanguage(selectedRecipe);
@@ -306,7 +253,8 @@ public class MainUICtrl {
                     setText(null);
                 } else {
                     // Check if it's a favorite to add the star prefix
-                    boolean isFavorite = favoriteRecipeIds.contains(item.getId());
+                    boolean isFavorite = favoritesService.getFavoriteRecipeIds().
+                            contains(item.getId());
                     String prefix = isFavorite ? "★ " : "";
 
                     setText(prefix + item.getName());
@@ -318,6 +266,7 @@ public class MainUICtrl {
 
         setupLanguageMenu();
         setupFilterLanguages();
+        updateLanguageButtonUI(LanguageManager.getLocale());
 
     }
 
@@ -332,10 +281,10 @@ public class MainUICtrl {
                     for (Recipe removedRecipe : change.getRemoved()) {
                         Long id = removedRecipe.getId();
 
-                        if (favoriteRecipeIds.contains(id)) {
-                            handleFavoriteBeingDeleted(removedRecipe.getName());
-                            favoriteRecipeIds.remove(id);
-                            saveFavorites();
+                        if (favoritesService.getFavoriteRecipeIds().contains(id)) {
+                            showFavoriteDeletedWarning();
+                            favoritesService.getFavoriteRecipeIds().remove(id);
+                            favoritesService.saveFavorites();
                         }
                     }
                 }
@@ -343,160 +292,6 @@ public class MainUICtrl {
         });
     }
 
-
-    /**
-     * A method which sets up the icons for the language menu
-     * @param name - the name of the language we are adding
-     * @param langCode - the locale code of the language
-     * @param iconFileName - the encoding for the name of the icon file
-     * @return MenuItem - returns the ready-made MenuItem with the proper icon
-     */
-    public MenuItem setupMenuItemIcons (String name, String langCode, String iconFileName) {
-        MenuItem menuItem = new MenuItem(name);
-
-        Image flagImage = new Image(Objects.requireNonNull
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
-
-        ImageView icon = new ImageView(flagImage);
-        icon.setFitWidth(16);
-        icon.setFitHeight(16);
-
-        Circle clip = new Circle(8, 8, 8);
-        icon.setClip(clip);
-
-        menuItem.setGraphic(icon);
-
-        menuItem.setOnAction(_ -> changeLanguage(Locale.of(langCode)));
-
-        return menuItem;
-    }
-
-    /**
-     * A method which updates the flag icon of the language button when necessary
-     * @param iconFileName - the encoding for the name of the icon file
-     */
-    public void updateButtonGraphic(String iconFileName) {
-        Image img = new Image (Objects.requireNonNull
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
-        ImageView imageView = new ImageView(img);
-
-        imageView.setFitWidth(16);
-        imageView.setFitHeight(16);
-
-        Circle clip = new Circle(8, 8, 8);
-        imageView.setClip(clip);
-
-        // Set the graphic to the MenuButton itself
-        languageButton.setGraphic(imageView);
-    }
-
-    /**
-     * A setup method for the language menu -
-     * adds the constructed MenuItems using the helper methods with the appropriate icon
-     */
-    public void setupLanguageMenu() {
-        languageButton.getItems().clear();
-
-        MenuItem enItem = setupMenuItemIcons("English", "en", "english");
-        MenuItem nlItem = setupMenuItemIcons("Nederlands", "nl", "dutch");
-        MenuItem bgItem = setupMenuItemIcons("Български", "bg", "bulgarian");
-        MenuItem roItem = setupMenuItemIcons("Română", "ro", "romanian");
-        MenuItem skItem = setupMenuItemIcons("Slovenčina", "sk", "slovak");
-        MenuItem deItem = setupMenuItemIcons("Deutsch", "de", "german");
-
-        languageButton.getItems().addAll(enItem, nlItem, bgItem, roItem, skItem, deItem);
-
-        Locale current = LanguageManager.getLocale();
-
-        switch (current.getLanguage()) {
-            case "nl" -> {
-                languageButton.setText("Nederlands");
-                updateButtonGraphic("dutch");
-            }
-            case "ro" -> {
-                languageButton.setText("Română");
-                updateButtonGraphic("romanian");
-            }
-            case "bg" -> {
-                languageButton.setText("Български");
-                updateButtonGraphic("bulgarian");
-            }
-            case "sk" -> {
-                languageButton.setText("Slovenčina");
-                updateButtonGraphic("slovak");
-            }
-            case "de" -> {
-                languageButton.setText("Deutsch");
-                updateButtonGraphic("german");
-            }
-            default -> {
-                languageButton.setText("English");
-                updateButtonGraphic("english");
-            }
-        }
-    }
-
-    /**
-     * A method for changing the language of the menus to a new Locale
-     * @param newLocale - the new language we want to set the menus to
-     */
-    public void changeLanguage(Locale newLocale) {
-        // setează limba globală
-        LanguageManager.setLocale(newLocale);
-
-        // 1) MEMOREAZĂ rețeta selectată înainte de reload
-        mainCtrl.setSelectedRecipeForReload(getSelectedRecipe());
-
-        // 2) actualizează textul și icon-ul butonului
-        switch (newLocale.getLanguage()) {
-            case "nl" -> {
-                languageButton.setText("Nederlands");
-                updateButtonGraphic("dutch");
-            }
-            case "ro" -> {
-                languageButton.setText("Română");
-                updateButtonGraphic("romanian");
-            }
-            case "bg" -> {
-                languageButton.setText("Български");
-                updateButtonGraphic("bulgarian");
-            }
-            case "sk" -> {
-                languageButton.setText("Slovenčina");
-                updateButtonGraphic("slovak");
-            }
-            case "de" -> {
-                languageButton.setText("Deutsch");
-                updateButtonGraphic("german");
-            }
-            default -> {
-                languageButton.setText("English");
-                updateButtonGraphic("english");
-            }
-        }
-
-        // 3) reîncarcă scenele în noua limbă
-        mainCtrl.reloadScenesForNewLanguage();
-    }
-
-
-
-    /**
-     * A method for updating the indicator of the recipe language
-     * @param iconFileName - the name of the flag icon
-     */
-    public void updateIndicator(String iconFileName) {
-        Image img = new Image (Objects.requireNonNull
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
-
-        languageIndicator.setImage(img);
-
-        languageIndicator.setFitHeight(30);
-        languageIndicator.setFitWidth(30);
-
-        Circle clip = new Circle(15, 15, 15);
-        languageIndicator.setClip(clip);
-    }
 
 
     /**
@@ -526,11 +321,12 @@ public class MainUICtrl {
 
         if (favoritesTab.isSelected()) {
             // If we are in Favorites tab, run the filter immediately!
+            filterService.setFavoritesSelected(true);
             showFavoriteRecipes();
         } else {
             // Only show all recipes if we are in "All Recipes" tab
             // Updates the sidebar when it senses changes in the database
-            updatePredicate();
+            filterService.setFavoritesSelected(false);
 
             // Updates the recipe with all of its parameters
             if (selectedRecipe != null) {
@@ -631,18 +427,19 @@ public class MainUICtrl {
                     long id = selectedRecipe.getId();
                     System.out.println("Deleting recipe with ID: " + id);
 
-                    if (favoriteRecipeIds.contains(id)) {
-                        handleFavoriteBeingDeleted(selectedRecipe.getName());
+                    if (favoritesService.getFavoriteRecipeIds().contains(id)) {
+                        showFavoriteDeletedWarning();
                     }
 
                     mainCtrl.handleRecipeBeingDeleted(id);
-                    Response serverResponse = client.target(recipeEndpointUrl + "/" + id)
-                            .request()
-                            .delete();
+                    server.deleteRecipe(id);
+                    //Response serverResponse = client.target(recipeEndpointUrl + "/" + id)
+                            //.request()
+                            //.delete();
 
-                    if (serverResponse.getStatus() == 204) {
-                        unsubscribeFromRecipe();
-                    }
+                    //if (serverResponse.getStatus() == 204) {
+                    unsubscribeFromRecipe();
+                    //}
                 } catch (Exception e) {
                     System.err.println("Error - could not delete recipe");
                 }
@@ -809,7 +606,7 @@ public class MainUICtrl {
             String newName = result.get();
             Recipe cloneRecipe = new Recipe(selectedRecipe);
             cloneRecipe.setName(newName);
-            serverService.sendRecipe(cloneRecipe);
+            server.sendRecipe(cloneRecipe);
         }
     }
 
@@ -862,42 +659,6 @@ public class MainUICtrl {
     }
 
     /**
-     * A method which searches for recipe using the search bar
-     */
-    public void searchForRecipe() {
-        String searchQuery = recipeSearchBar.getText().trim();
-
-        if (searchQuery.isEmpty()) {
-            searchedRecipeIds.clear();
-            updatePredicate();
-            return;
-        }
-
-        String[] recipeTerms = searchQuery.split(",");
-        List<String> trimmedRecipeTerms = new ArrayList<>();
-        for(String term : recipeTerms){
-            String editedTerm = term.trim();
-            if (!editedTerm.isEmpty()){
-                trimmedRecipeTerms.add(editedTerm);
-            }
-        }
-
-        boolean firstItem = true;
-        for (String term : trimmedRecipeTerms) {
-            List<Recipe> termResults = server.searchRecipesByTerm(term);
-            if (firstItem) {
-                searchedRecipeIds.clear();
-                searchedRecipeIds.addAll(termResults.stream().map(Recipe::getId).toList());
-                firstItem = false;
-            }else{
-                searchedRecipeIds.retainAll(termResults.stream().map(Recipe::getId).toList());
-            }
-        }
-
-        updatePredicate();
-    }
-
-    /**
      * A method for unsubscribing from a recipe every time it is clicked
      */
     public void unsubscribeFromRecipe () {
@@ -908,17 +669,83 @@ public class MainUICtrl {
     }
 
     /**
+     * A method which searches for recipe using the search bar
+     */
+    public void searchForRecipe() {
+        String searchQuery = recipeSearchBar.getText();
+        filterService.searchForRecipe(searchQuery);
+    }
+
+
+    /**
+     * A method which updates the UI of the language button
+     * @param locale - the locale of the language
+     */
+    public void updateLanguageButtonUI (Locale locale) {
+        String langCode = locale.getLanguage();
+
+        languageButton.setText(languageService.getDisplayName(langCode));
+        languageButton.setGraphic(languageService.renderIcon(langCode, 16.0));
+    }
+
+
+    /**
+     * A method which sets up the icons for the language menu
+     * @param name - the name of the language we are adding
+     * @param langCode - the locale code of the language
+     * @return MenuItem - returns the ready-made MenuItem with the proper icon
+     */
+    public MenuItem setupMenuItemIcons (String name, String langCode) {
+        MenuItem menuItem = new MenuItem(name);
+        menuItem.setGraphic(languageService.renderIcon(langCode, 16.0));
+        menuItem.setOnAction(_ -> changeLanguage(Locale.of(langCode)));
+        return menuItem;
+    }
+
+    /**
+     * A setup method for the language menu -
+     * adds the constructed MenuItems using the helper methods with the appropriate icon
+     */
+    public void setupLanguageMenu() {
+        languageButton.getItems().clear();
+
+        List<String> codes = List.of("en", "nl", "bg", "ro", "sk", "de");
+
+        for (String code : codes) {
+            String displayName = languageService.getDisplayName(code);
+            languageButton.getItems().add(setupMenuItemIcons(displayName, code));
+        }
+
+        updateLanguageButtonUI(LanguageManager.getLocale());
+    }
+
+    /**
+     * A method for changing the language of the menus to a new Locale
+     * @param newLocale - the new language we want to set the menus to
+     */
+    public void changeLanguage(Locale newLocale) {
+        LanguageManager.setLocale(newLocale);
+
+        mainCtrl.setSelectedRecipeForReload(getSelectedRecipe());
+        updateLanguageButtonUI(newLocale);
+
+        mainCtrl.reloadScenesForNewLanguage();
+    }
+
+    /**
+     * A method for updating the indicator of the recipe language
+     * @param langCode - the name of the language
+     */
+    public void updateIndicator(String langCode) {
+        languageIndicator.setImage(languageService.renderIcon(langCode, 30.0).getImage());
+    }
+
+    /**
      * Changes the visible indicator of the recipe language
      * @param selectedRecipe - the recipe which updates the language indicator
      */
     public void changeRecipeLanguage (Recipe selectedRecipe) {
-        switch(selectedRecipe.getLocale().getLanguage()) {
-            case "bg" -> updateIndicator("bulgarian");
-            case "nl" -> updateIndicator("dutch");
-            case "ro" -> updateIndicator("romanian");
-            case "sk" -> updateIndicator("slovak");
-            default -> updateIndicator("english");
-        }
+        updateIndicator(selectedRecipe.getLocale().getLanguage());
     }
 
     /**
@@ -928,99 +755,41 @@ public class MainUICtrl {
         filterLanguagesButton.getItems().clear();
 
         Set<Locale> savedFilters = LanguageManager.loadFilterLocales();
-        this.filteredLocales = new ArrayList<>(savedFilters);
+        this.filterService.setFilteredLocales(savedFilters.stream().toList());
 
-        CheckMenuItem enItem = setupCheckMenuItemIcons("English", "en", "english");
-        CheckMenuItem nlItem = setupCheckMenuItemIcons("Nederlands", "nl", "dutch");
-        CheckMenuItem roItem = setupCheckMenuItemIcons("Română", "ro", "romanian");
-        CheckMenuItem bgItem = setupCheckMenuItemIcons("Български", "bg", "bulgarian");
-        CheckMenuItem skItem = setupCheckMenuItemIcons("Slovenčina", "sk", "slovak");
-        CheckMenuItem deItem = setupCheckMenuItemIcons("Deutsch", "de", "german");
+        List<String> supportedCodes = List.of("en", "nl", "bg", "ro", "sk", "de");
 
-        filterLanguagesButton.getItems().addAll(enItem, nlItem, bgItem, roItem, skItem, deItem);
-        updatePredicate();
+        for (String code : supportedCodes) {
+            String displayName = languageService.getDisplayName(code);
+            filterLanguagesButton.getItems().add(setupCheckMenuItemIcons(displayName, code));
+        }
+
+        filterService.updatePredicate();
     }
 
     /**
      * Sets up the icons for the filtering languages
      * @param name - the name of the language (to be put on the button)
      * @param langCode - the language code - will result in a locale filter
-     * @param iconFileName - the name of the file containing the country's flag
      * @return CheckMenuItem - a new CheckMenuItem with the language
      */
-    public CheckMenuItem setupCheckMenuItemIcons(String name,
-                                                  String langCode, String iconFileName) {
+    public CheckMenuItem setupCheckMenuItemIcons(String name, String langCode) {
         CheckMenuItem menuItem = new CheckMenuItem(name);
+        Locale locale = Locale.of(langCode);
 
-        menuItem.setSelected(filteredLocales.contains(Locale.of(langCode)));
-
-        Image flagImage = new Image(Objects.requireNonNull
-                (getClass().getResourceAsStream("/flags/" + iconFileName + "-flag.jpg")));
-
-        ImageView icon = new ImageView(flagImage);
-        icon.setFitWidth(16);
-        icon.setFitHeight(16);
-
-        Circle clip = new Circle(8, 8, 8);
-        icon.setClip(clip);
-
-        menuItem.setGraphic(icon);
-
-        Locale tempLocale = Locale.of(langCode);
+        menuItem.setSelected(filterService.getFilteredLocales().contains(locale));
+        menuItem.setGraphic(languageService.renderIcon(langCode, 16.0));
 
         menuItem.setOnAction(_ -> {
             if (menuItem.isSelected()) {
-                filterLocales(tempLocale);
-            }else{
-                filteredLocales.remove(tempLocale);
+                filterService.filterLocales(locale);
+            } else {
+                filterService.getFilteredLocales().remove(locale);
             }
-            LanguageManager.saveFilterLocales(filteredLocales);
-            updatePredicate();
+            LanguageManager.saveFilterLocales(filterService.getFilteredLocales());
+            filterService.updatePredicate();
         });
 
         return menuItem;
-    }
-
-    /**
-     * A method which handles the filtering of languages
-     * @param locale - the locale we want to filter
-     */
-    public void filterLocales (Locale locale) {
-        if (!filteredLocales.contains(locale)) {
-            filteredLocales.add(locale);
-        }
-    }
-
-    /**
-     * Updates the predicate of the filtered list
-     */
-    public void updatePredicate () {
-        filteredRecipesByLanguage.setPredicate(recipe -> {
-            boolean matchesLanguage = filteredLocales.isEmpty() ||
-                    filteredLocales.contains(recipe.getLocale());
-            boolean matchesTab = true;
-            if (favoritesTab.isSelected()) {
-                matchesTab = favoriteRecipeIds.contains(recipe.getId());
-            }
-            boolean matchesSearch = searchedRecipeIds.isEmpty() ||
-                    searchedRecipeIds.contains(recipe.getId());
-
-            return matchesLanguage && matchesTab && matchesSearch;
-        });
-    }
-
-    /**
-     * Should show an alert that one of the favorites has been deleted
-     * @param name - the name of the favorite being deleted
-     */
-    public void handleFavoriteBeingDeleted (String name) {
-        Platform.runLater(() -> {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Favorite recipe removed!");
-            alert.setHeaderText("Favorite recipe removed");
-            alert.setContentText("One of your favorite recipes (" +
-                    name + ") has been removed");
-            alert.showAndWait();
-        });
     }
 }

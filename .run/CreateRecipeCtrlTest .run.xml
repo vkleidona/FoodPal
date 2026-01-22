@@ -20,7 +20,7 @@
     <module name="client" />
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="client.scenes.*" />
+        <option name="PATTERN" value="client.scenes.food_item.*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>
