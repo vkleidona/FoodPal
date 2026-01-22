@@ -90,6 +90,8 @@ public class AddRecipeToShoppingListCtrl {
      * Loads the cell factory for the ingredients
      */
     public void initialize () {
+        recipeIngredientsListView.setItems(recipeIngredientsObservableList);
+
         recipeIngredientsListView.setCellFactory(_ -> new ListCell<>() {
             @Override
             protected void updateItem(Ingredient ingredient, boolean empty) {
@@ -104,7 +106,7 @@ public class AddRecipeToShoppingListCtrl {
                     Button editButton = new Button("Edit");
                     Button deleteButton = new Button("Delete");
 
-                    editButton.setOnAction(_ -> showDialog(ingredient));
+                    editButton.setOnAction(_ -> showDialog(ingredient, false));
                     deleteButton.setOnAction(_ -> deleteIngredient(ingredient));
 
                     HBox container = new HBox(10, nameLabel, editButton, deleteButton);
@@ -196,6 +198,7 @@ public class AddRecipeToShoppingListCtrl {
     public void addIngredientToShoppingList (Ingredient ingredient) {
         shoppingListService.getIngredientsObservableList().add(ingredient);
         shoppingListService.getShoppingList().addIngredient(ingredient);
+        recipeIngredientsObservableList.add(ingredient);
     }
 
     /**
@@ -203,16 +206,15 @@ public class AddRecipeToShoppingListCtrl {
      * @param ingredient - the ingredient to be displayed
      */
     public void handleIngredientEdit (Ingredient ingredient) {
-        ObservableList<Ingredient> list = shoppingListService.getIngredientsObservableList();
 
-        int index = list.indexOf(ingredient);
+        int index = recipeIngredientsObservableList.indexOf(ingredient);
 
         if (index != -1) {
-            list.set(index, ingredient);
+            recipeIngredientsObservableList.set(index, ingredient);
         } else {
             int selected = recipeIngredientsListView.getSelectionModel().getSelectedIndex();
             if (selected >= 0) {
-                list.set(selected, ingredient);
+                recipeIngredientsObservableList.set(selected, ingredient);
             }
         }
         shoppingListService.getShoppingList().storeFile();
@@ -222,14 +224,15 @@ public class AddRecipeToShoppingListCtrl {
      * Handles the functionality for adding / changing an ingredient
      * depending on the button clicked
      * @param ingredient - Ingredient to be edited
+     * @param addedFoodItem - a boolean whether a food item has been added
      */
-    public void showDialog(Ingredient ingredient) {
+    public void showDialog(Ingredient ingredient, boolean addedFoodItem) {
         boolean isEditing = (ingredient != null);
 
         Dialog<Ingredient> dialogBox = setupIngredientDialog(ingredient);
 
         dialogBox.showAndWait().ifPresent(result -> {
-            if (isEditing) {
+            if (isEditing && !addedFoodItem) {
                 handleIngredientEdit(result);
             } else {
                 addIngredientToShoppingList(result);
@@ -337,7 +340,7 @@ public class AddRecipeToShoppingListCtrl {
      * Adds a new Ingredient to the temporary list through the + button
      */
     public void addIngredientThroughPlusButton () {
-        showDialog(null);
+        showDialog(null, false);
     }
 
     /**
@@ -409,6 +412,6 @@ public class AddRecipeToShoppingListCtrl {
         currentIngredient = new Ingredient(0.0, "g");
         currentIngredient.setFoodType(serverUtils.getFoodItemByName(ingredientName));
         mainCtrl.showAddRecipeToShoppingList();
-        showDialog(currentIngredient);
+        showDialog(currentIngredient, false);
     }
 }

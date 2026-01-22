@@ -335,6 +335,8 @@ public class CreateRecipeCtrl {
      */
     public void restoreDraft(Recipe draft) {
         // restore Name & Servings
+        mainCtrl.showCreateRecipe();
+
         nameTextField.setText(draft.getName());
         if (draft.getServings() != null) {
             servingsTextField.setText(String.valueOf(draft.getServings()));

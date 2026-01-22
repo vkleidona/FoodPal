@@ -64,6 +64,7 @@ public class MainCtrl {
 
     //screen 3
     private Scene createRecipe;
+    private CreateRecipeCtrl createRecipeCtrl;
 
     //screen 4
     private AddFoodItemCtrl addFoodItemCtrl;
@@ -140,6 +141,7 @@ public class MainCtrl {
         this.editInstructions = new Scene(editInstructions.getValue());
 
         this.createRecipe = new Scene(createRecipe.getValue());
+        this.createRecipeCtrl = createRecipe.getKey();
 
         this.addFoodItemCtrl = addFoodItem.getKey();
         this.addFoodItem = new Scene(addFoodItem.getValue());
@@ -179,7 +181,7 @@ public class MainCtrl {
      */
     public void showInformation(Recipe recipe) {
         if (informationCtrl != null) {
-            informationCtrl.setRecipe(recipe); // <--- PASS THE DATA
+            informationCtrl.setRecipe(recipe);
         }
         selectedRecipeBeforeReload = recipe;
         currentScreen = Screen.INFORMATION;
@@ -227,6 +229,14 @@ public class MainCtrl {
         currentScreen = Screen.CREATE_RECIPE;
         primaryStage.setTitle("Create Recipe");
         primaryStage.setScene(createRecipe);
+    }
+
+    /**
+     * A method for switching to the scene for creating recipes
+     */
+    public void showCreateRecipeFromFoodItem() {
+        currentScreen = Screen.CREATE_RECIPE;
+        createRecipeCtrl.restoreDraft(draftRecipe);
     }
 
     /**
