@@ -300,6 +300,7 @@ public class FoodItemMainCtrl {
     @FXML
     public void addFoodItem() {
         mainCtrl.showAddFoodItem();
+        mainCtrl.setCameFromFoodItemMain(true);
     }
 
     /**

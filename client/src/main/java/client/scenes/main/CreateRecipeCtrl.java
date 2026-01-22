@@ -4,6 +4,7 @@ import client.utils.MainCtrl;
 import client.service.LanguageService;
 import client.utils.ServerUtils;
 import jakarta.inject.Inject;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -268,6 +269,7 @@ public class CreateRecipeCtrl {
     public void initialize() {
         if (mainCtrl != null && mainCtrl.getDraftRecipe() != null) {
             restoreDraft(mainCtrl.getDraftRecipe());
+            handleRefresh();
         }
         currentLocale = LanguageManager.getLocale();
         setupLanguageMenu();
@@ -602,6 +604,8 @@ public class CreateRecipeCtrl {
         if (mainCtrl != null) {
             mainCtrl.setDraftRecipe(draft);
             mainCtrl.showAddFoodItem();
+
+            Platform.runLater(this::handleRefresh);
         } else {
             System.err.println("MainCtrl is null, cannot redirect!");
         }
