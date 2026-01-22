@@ -7,7 +7,7 @@ import java.util.List;
 public class Config {
     private String language = "en";
     private List <String> filteredLocales = new ArrayList<>();
-    private String serverUrl = "http://localhost:8080";
+    private String serverUrl = "http://localhost:8080/";
     private List<Long> favoriteRecipeIds = new ArrayList<>();
 
     public String getLanguage() {

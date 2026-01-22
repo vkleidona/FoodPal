@@ -70,7 +70,7 @@ public class FilterService {
                     filteredLocales.contains(recipe.getLocale());
             boolean matchesTab = true;
             if (favoritesSelected) {
-                matchesTab = favoritesService.getFavoriteRecipeIds().contains(recipe.getId());
+                matchesTab = favoritesService.getFavorites().contains(recipe.getId());
             }
             boolean matchesSearch = searchedRecipeIds.isEmpty() ||
                     searchedRecipeIds.contains(recipe.getId());
