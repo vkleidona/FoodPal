@@ -1,4 +1,4 @@
-package client.network;
+package client.service;
 
 
 import javafx.application.Platform;

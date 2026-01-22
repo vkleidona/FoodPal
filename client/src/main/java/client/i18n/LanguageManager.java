@@ -1,106 +1,37 @@
 package client.i18n;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import client.configuration.ConfigManager;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public final class LanguageManager {
 
-    private static final String KEY_LANGUAGE = "language";
-    private static final String KEY_LANGUAGE_FILTERS = "filter_locales";
-    private static Path configPath =
-            Path.of(System.getProperty("user.home"), ".foodpal", "config.properties");
-
-    private static Locale currentLocale;
-
-    /**
-     * An initializer method for the configuration path
-     * @param customPath - the path at which the configuration should be located
-     */
-    public static void init(String customPath) {
-        if (customPath != null) {
-            configPath = Path.of(customPath);
-        }
-        currentLocale = loadLocaleFromConfig();
-    }
-
     private LanguageManager() {}
 
-    public static Locale getLocale() {
-        return currentLocale;
+    public static Locale getCurrentLocale() {
+        String lang = ConfigManager.getConfig().getLanguage();
+        return Locale.of(lang);
     }
 
     public static void setLocale(Locale locale) {
-        currentLocale = locale;
-        saveLocaleToConfig(locale);
+        ConfigManager.getConfig().setLanguage(locale.getLanguage());
+        ConfigManager.save();
     }
 
     public static String getString(String key) {
         ResourceBundle bundle = ResourceBundle.getBundle(
                 "client.scenes.i18n.messages",
-                currentLocale,
+                getCurrentLocale(),
                 new Utf8Control()
         );
         return bundle.getString(key);
     }
 
-
-
-    private static Locale loadLocaleFromConfig() {
-        Properties props = new Properties();
-
-        if (Files.exists(configPath)) {
-            try (InputStream in = Files.newInputStream(configPath)) {
-                props.load(in);
-            } catch (IOException ignored) {
-                // fall back to default
-            }
-        }
-
-        String lang = props.getProperty(KEY_LANGUAGE, "en"); // default EN
-        return Locale.of(lang);
-    }
-
-    private static void saveLocaleToConfig(Locale locale) {
-        try {
-            Files.createDirectories(configPath.getParent());
-
-            Properties props = new Properties();
-            props.setProperty(KEY_LANGUAGE, locale.getLanguage());
-
-            try (OutputStream out = Files.newOutputStream(configPath)) {
-                props.store(out, "FoodPal user settings");
-            }
-        } catch (IOException e) {
-            System.err.println("Preferred language could not be saved to recipe; " +
-                    "Config file not found");
-        }
-    }
-
     /**
      * Loads filters for the languages
-     * @return Set <Locale> - returns a set of all Locales
+     * @return List <Locale> - returns a set of all Locales
      */
-    public static Set<Locale> loadFilterLocales () {
-        Properties properties = new Properties();
-        if (Files.exists(configPath)) {
-            try (InputStream inputStream = Files.newInputStream(configPath)) {
-                properties.load(inputStream);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        String filters = properties.getProperty(KEY_LANGUAGE_FILTERS, "");
-        if (filters.isEmpty()) {
-            return new HashSet<>();
-        }
-
-        return Arrays.stream(filters.split(",")).
-                map(Locale::of).collect(Collectors.toSet());
+    public static List<Locale> loadFilterLocales () {
+        return ConfigManager.getConfig().getFilteredLocales().stream().map(Locale::of).toList();
     }
 
     /**
@@ -108,23 +39,11 @@ public final class LanguageManager {
      * @param locales - the list of locales to be saved
      */
     public static void saveFilterLocales (List <Locale> locales) {
-        Properties properties = new Properties();
-        if (Files.exists(configPath)) {
-            try (InputStream inputStream = Files.newInputStream(configPath)) {
-                properties.load(inputStream);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        String filterStr = locales.stream().map(Locale::getLanguage).
-                collect(Collectors.joining(","));
+        List<String> localeStrings = locales.stream()
+                .map(Locale::getLanguage)
+                .toList();
 
-        properties.setProperty(KEY_LANGUAGE_FILTERS, filterStr);
-        try (OutputStream out = Files.newOutputStream(configPath)) {
-            Files.createDirectories(configPath.getParent());
-            properties.store(out, "FoodPal user settings");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        ConfigManager.getConfig().setFilteredLocales(localeStrings);
+        ConfigManager.save();
     }
 }

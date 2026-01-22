@@ -1,6 +1,6 @@
 package client.scenes.food_item;
 
-import client.network.WebSocketService;
+import client.service.WebSocketService;
 import client.utils.MainCtrl;
 import client.service.LanguageService;
 import client.utils.ServerUtils;
@@ -194,7 +194,7 @@ public class FoodItemMainCtrl {
             languageButton.getItems().add(setupMenuItemIcons(displayName, code));
         }
 
-        updateLanguageButtonUI(LanguageManager.getLocale());
+        updateLanguageButtonUI(LanguageManager.getCurrentLocale());
     }
 
     /**

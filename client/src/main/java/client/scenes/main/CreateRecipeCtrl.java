@@ -269,7 +269,7 @@ public class CreateRecipeCtrl {
         if (mainCtrl != null && mainCtrl.getDraftRecipe() != null) {
             restoreDraft(mainCtrl.getDraftRecipe());
         }
-        currentLocale = LanguageManager.getLocale();
+        currentLocale = LanguageManager.getCurrentLocale();
         setupLanguageMenu();
     }
 
@@ -312,7 +312,7 @@ public class CreateRecipeCtrl {
             languageButton.getItems().add(setupMenuItemIcons(displayName, code));
         }
 
-        updateLanguageButtonUI(LanguageManager.getLocale());
+        updateLanguageButtonUI(LanguageManager.getCurrentLocale());
     }
 
     /**

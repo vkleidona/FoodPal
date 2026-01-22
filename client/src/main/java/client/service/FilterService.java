@@ -1,6 +1,5 @@
 package client.service;
 
-import client.network.WebSocketService;
 import client.utils.ServerUtils;
 import jakarta.inject.Inject;
 import javafx.collections.transformation.FilteredList;

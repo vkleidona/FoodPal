@@ -1,6 +1,6 @@
 package client.scenes.main;
 
-import client.network.WebSocketService;
+import client.service.WebSocketService;
 import client.utils.MainCtrl;
 import client.service.FavoritesService;
 import client.service.FilterService;
@@ -267,7 +267,7 @@ public class MainUICtrl {
 
         setupLanguageMenu();
         setupFilterLanguages();
-        updateLanguageButtonUI(LanguageManager.getLocale());
+        updateLanguageButtonUI(LanguageManager.getCurrentLocale());
 
     }
 
@@ -717,7 +717,7 @@ public class MainUICtrl {
             languageButton.getItems().add(setupMenuItemIcons(displayName, code));
         }
 
-        updateLanguageButtonUI(LanguageManager.getLocale());
+        updateLanguageButtonUI(LanguageManager.getCurrentLocale());
     }
 
     /**
@@ -755,7 +755,7 @@ public class MainUICtrl {
     public void setupFilterLanguages () {
         filterLanguagesButton.getItems().clear();
 
-        Set<Locale> savedFilters = LanguageManager.loadFilterLocales();
+        List<Locale> savedFilters = LanguageManager.loadFilterLocales();
         this.filterService.setFilteredLocales(savedFilters.stream().toList());
 
         List<String> supportedCodes = List.of("en", "nl", "bg", "ro", "sk", "de");

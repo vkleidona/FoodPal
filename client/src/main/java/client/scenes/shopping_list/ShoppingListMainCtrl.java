@@ -131,7 +131,7 @@ public class ShoppingListMainCtrl {
      * @return String - the correct addition to the ShoppingList
      */
     public String ingredientFormatter (Ingredient ingredient) {
-        Locale currentLocale = LanguageManager.getLocale();
+        Locale currentLocale = LanguageManager.getCurrentLocale();
         String sourceName = "";
         if (ingredient.getRecipeName() != null) {
             sourceName = ingredient.getRecipeName();
@@ -180,7 +180,7 @@ public class ShoppingListMainCtrl {
             languageButton.getItems().add(setupMenuItemIcons(displayName, code));
         }
 
-        updateLanguageButtonUI(LanguageManager.getLocale());
+        updateLanguageButtonUI(LanguageManager.getCurrentLocale());
     }
 
     /**

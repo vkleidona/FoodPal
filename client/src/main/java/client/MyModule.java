@@ -1,6 +1,6 @@
 package client;
 
-import client.network.WebSocketService;
+import client.service.WebSocketService;
 import client.scenes.food_item.FoodItemMainCtrl;
 import client.scenes.main.CreateRecipeCtrl;
 import client.scenes.main.EditIngredientsCtrl;

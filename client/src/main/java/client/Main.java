@@ -5,8 +5,8 @@ import static com.google.inject.Guice.createInjector;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import client.i18n.LanguageManager;
-import client.network.WebSocketService;
+import client.configuration.ConfigManager;
+import client.service.WebSocketService;
 import client.scenes.food_item.AddFoodItemCtrl;
 import client.scenes.food_item.FoodItemMainCtrl;
 import client.scenes.main.CreateRecipeCtrl;
@@ -48,7 +48,7 @@ public class Main extends Application {
             }
         }
 
-        LanguageManager.init(customConfig);
+        ConfigManager.init(customConfig);
 
         launch();
     }
@@ -92,7 +92,7 @@ public class Main extends Application {
         var addRecipeToShoppingList = FXML.load(AddRecipeToShoppingListCtrl.class,
                 "client", "scenes", "AddRecipeToShoppingList.fxml");
 
-        WebSocketService wss = INJECTOR.getInstance(client.network.WebSocketService.class);
+        WebSocketService wss = INJECTOR.getInstance(WebSocketService.class);
         wss.connect(() -> {
             System.out.println("Session established! Starting UI...");
             mainCtrl.initialize(primaryStage, mainUI, editInstructions,

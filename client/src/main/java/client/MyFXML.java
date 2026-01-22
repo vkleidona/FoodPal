@@ -57,7 +57,7 @@ public record MyFXML(Injector injector) {
     public <T> Pair<T, Parent> load(Class<T> c, String... parts) {
         try {
 
-            Locale locale = LanguageManager.getLocale();
+            Locale locale = LanguageManager.getCurrentLocale();
             ResourceBundle bundle = ResourceBundle.getBundle("client.scenes.i18n.messages", locale);
 
             var loader = new FXMLLoader(
