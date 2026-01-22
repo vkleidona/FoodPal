@@ -93,6 +93,22 @@ public class EditIngredientsCtrl{
     }
 
     /**
+     * A method that calcules quantity in grams
+     * @param quantity ingredient quanity
+     * @param unit new unit
+     * @return quantity in grams
+     */
+    private double computeGrams(double quantity, String unit) {
+        Double gramsPerUnit = UNIT_TO_GRAMS.get(unit);
+        if (gramsPerUnit == null) {
+            // e.g. "other" → treat as 0 g
+            return 0.0;
+        }
+        return quantity * gramsPerUnit;
+    }
+
+
+    /**
      * A constructor for the EditIngredients Ctrl class using Dependency Injection
      * @param mainCtrl - the instance of the main controller class
      * @param server - the instance of the server utilities class
@@ -300,13 +316,15 @@ public class EditIngredientsCtrl{
         inputFoodName.setDisable(true);
     }
 
+
+
     /**
      * Submit the changes made to the ingredient values to the table.
      */
     @FXML
     void submitEdit() {
         // Is any ingredient selected?
-        if(lastClickedIngredient == null){
+        if (lastClickedIngredient == null) {
             showAlert("editIngredients.alert.noSelection.title",
                     "editIngredients.alert.noSelection.content");
             return;
@@ -318,16 +336,26 @@ public class EditIngredientsCtrl{
         for (Ingredient ingredient : currentTable) {
             if (ingredient.equals(lastClickedIngredient)) {
                 try {
-                    // If the food quantity can't be parsed to a double output an error message.
-                    ingredient.setQuantity(Double.parseDouble(inputQuantity.getText()));
+                    // Parse the new quantity from the input field.
+                    double newQty = Double.parseDouble(inputQuantity.getText());
+                    String newUnit = inputMeasurement.getValue();
+
+                    // Update visible fields.
+                    ingredient.setQuantity(newQty);
+                    ingredient.setMeasurement(newUnit);
+
+                    // Also update grams, which are used for nutrition calculations.
+                    Double gramsPerUnit = UNIT_TO_GRAMS.get(newUnit);
+                    double grams = (gramsPerUnit == null) ? 0.0 : newQty * gramsPerUnit;
+                    ingredient.setQuantityInGrams(grams);
+
                 } catch (NumberFormatException e) {
                     showAlert("editIngredients.alert.invalidNumber.title",
                             "editIngredients.alert.invalidNumber.content");
                     return;
                 }
-                ingredient.setMeasurement(inputMeasurement.getValue());
 
-                // Refresh the table with the updates values.
+                // Refresh the table with the updated values.
                 listOfIngredients.refresh();
                 break;
             }
@@ -375,20 +403,23 @@ public class EditIngredientsCtrl{
 
             String foodName = inputFoodName.getValue();
             FoodItem foodItem = server.getFoodItemByName(foodName);
-            if (foodItem==null) {
+            if (foodItem == null) {
                 foodItem = new FoodItem(foodName);
             }
             String measurement = inputMeasurement.getValue();
 
             Ingredient ingredient = new Ingredient(foodItem, quantity, measurement);
+
+            Double gramsPerUnit = UNIT_TO_GRAMS.get(measurement);
+            double grams = (gramsPerUnit == null) ? 0.0 : quantity * gramsPerUnit;
+            ingredient.setQuantityInGrams(grams);
+
             recipe.addIngredient(ingredient);
             ingredient.setRecipe(recipe);
-            // to be removed
             listOfIngredients.getItems().add(ingredient);
 
             listOfIngredients.refresh();
         } catch (NumberFormatException e) {
-            // If the given quantity cannot be parsed to a double give error.
             showAlert("editIngredients.alert.invalidNumber.title",
                     "editIngredients.alert.invalidNumber.content");
         }
