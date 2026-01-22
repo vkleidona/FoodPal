@@ -24,7 +24,6 @@ import javafx.application.Application;
 
 
 import javafx.stage.Stage;
-import shopping.ShoppingList;
 
 public class Main extends Application {
 
@@ -110,7 +109,7 @@ public class Main extends Application {
      */
     @Override
     public void stop() throws Exception {
-        INJECTOR.getInstance(ShoppingList.class).storeFile();
+        ConfigManager.save();
         super.stop();
     }
 }

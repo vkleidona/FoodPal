@@ -1,5 +1,6 @@
 package client.service;
 
+import client.configuration.ConfigManager;
 import jakarta.inject.Inject;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -21,19 +22,18 @@ import java.util.List;
 public class ShoppingListService {
 
     private final ObservableList<Ingredient> ingredientsObservableList;
-    private final ShoppingList shoppingList;
+    private ShoppingList shoppingList;
 
     private double quantity;
     private String measurement;
 
     /**
      * A dependency-injection using constructor for the ShoppingList service class
-     * @param shoppingList - the instance of the Shopping List
      */
     @Inject
-    public ShoppingListService (ShoppingList shoppingList) {
-        this.shoppingList = shoppingList;
+    public ShoppingListService () {
         this.ingredientsObservableList = FXCollections.observableArrayList();
+        this.shoppingList = loadShoppingList();
         reloadList();
     }
 
@@ -54,7 +54,7 @@ public class ShoppingListService {
      * Refreshes the interface to match the current state of the Shopping List
      */
     public void reloadList() {
-        shoppingList.loadFile();
+        this.shoppingList = loadShoppingList();
         List<Ingredient> loaded = shoppingList.getIngredients();
 
         if (loaded == null) {
@@ -121,4 +121,26 @@ public class ShoppingListService {
     public void setMeasurement(String measurement) {
         this.measurement = measurement;
     }
+
+    /**
+     * A middleman method triggered when we wish to save the
+     * Shopping list
+     */
+    public void saveShoppingList() {
+        ConfigManager.save();
+    }
+
+    /**
+     * Loads the Shopping list from the configuration
+     * @return Shopping List - loads a Shopping List from the config
+     */
+    public ShoppingList loadShoppingList() {
+        ShoppingList list = ConfigManager.getConfig().getShoppingList();
+        if (list == null) {
+            list = new ShoppingList();
+            ConfigManager.getConfig().setShoppingList(list);
+        }
+        return list;
+    }
+
 }

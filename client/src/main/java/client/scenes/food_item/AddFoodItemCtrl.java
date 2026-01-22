@@ -4,7 +4,7 @@ import client.utils.MainCtrl;
 import client.service.LanguageService;
 import client.utils.ServerUtils;
 import jakarta.inject.Inject;
-import client.i18n.LanguageManager;
+import client.configuration.LanguageManager;
 
 import java.util.List;
 import java.util.Locale;

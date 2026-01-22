@@ -25,14 +25,8 @@ class ShoppingListTest {
     FoodItem f;
     ShoppingList s;
 
-    @TempDir
-    Path tempDir;
-
-    File file;
-
     @BeforeEach
     void setup () {
-        file = tempDir.resolve("test_shopping_list.json").toFile();
         f = new FoodItem("slanina", 10, 20, 30, 40);
         i = new Ingredient(20, "g");
         i2 = new Ingredient(30, "g");
@@ -41,15 +35,9 @@ class ShoppingListTest {
         i.setFoodType(f);
         i2.setRecipe(r);
         i2.setFoodType(f);
-        s = new ShoppingList(file);
+        s = new ShoppingList();
         s.addIngredient(i);
         testList = List.of(i);
-    }
-
-    @AfterEach
-    void cleanup() {
-        File testFile = this.file;
-        if (testFile.exists()) testFile.delete();
     }
 
     @Test
@@ -78,7 +66,7 @@ class ShoppingListTest {
 
     @Test
     void testEqualsHash() {
-        ShoppingList s2 = new ShoppingList(file);
+        ShoppingList s2 = new ShoppingList();
         // I also test the removeIngredient method, that is why this looks redundant
         s2.addIngredient(i2);
         s.removeIngredient(i);
@@ -89,7 +77,7 @@ class ShoppingListTest {
 
     @Test
     void testNotEqualsHash() {
-        ShoppingList s2 = new ShoppingList(file);
+        ShoppingList s2 = new ShoppingList();
         s2.addIngredient(i2);
         assertNotEquals(s, s2);
         assertNotEquals(s.hashCode(), s2.hashCode());
@@ -105,26 +93,8 @@ class ShoppingListTest {
 
     @Test
     void testGetShoppingListNonNull() {
-        ShoppingList s2 = new ShoppingList(file);
+        ShoppingList s2 = new ShoppingList();
         s2.addIngredient(i);
         assertEquals(s2, s);
-    }
-
-    @Test
-    void testStoreAndLoad () {
-        ArrayList <Ingredient> arrayList = new ArrayList<>();
-        arrayList.add(i);
-        s.setIngredients(arrayList);
-
-        s.storeFile();
-
-        File file = new File(this.file.getAbsolutePath());
-        assertTrue(file.exists());
-
-        s.loadFile();
-
-        assertEquals(1, s.getIngredients().size());
-        assertTrue(s.getIngredients().stream().anyMatch(ingredient -> ingredient.getFoodName().equals("slanina")));
-        file.deleteOnExit();
     }
 }

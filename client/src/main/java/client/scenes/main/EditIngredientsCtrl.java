@@ -10,7 +10,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import recipes.FoodItem;
 import recipes.Ingredient;
 import recipes.Recipe;
-import client.i18n.LanguageManager;
+import client.configuration.LanguageManager;
 
 import java.util.*;
 

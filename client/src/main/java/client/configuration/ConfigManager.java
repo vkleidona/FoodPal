@@ -13,13 +13,21 @@ public class ConfigManager {
 
     /**
      * An initializer for the configuration
-     * @param path - the path on which to initialize the configiuration
+     * @param path - the path on which to initialize the configuration
      */
     public static void init(String path) {
         if (path == null) {
             path = System.getProperty("user.home") + "/.foodpal/config.json";
         }
         configFile = new File(path);
+
+        File dir = configFile.getParentFile();
+        if (dir != null && !dir.exists()) {
+            if (dir.mkdirs()) {
+                System.out.println("Directory was successfully created");
+            }
+        }
+
         load();
     }
 

@@ -1,6 +1,7 @@
-package client.i18n;
+package client.configuration;
 
-import client.configuration.ConfigManager;
+import client.i18n.Utf8Control;
+
 import java.util.*;
 
 public final class LanguageManager {

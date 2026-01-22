@@ -12,7 +12,7 @@ import recipes.Recipe;
 
 import java.util.*;
 
-import client.i18n.LanguageManager;
+import client.configuration.LanguageManager;
 
 public class EditInstructionsCtrl {
 

@@ -14,17 +14,14 @@ import javafx.stage.Stage;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 import org.testfx.framework.junit5.ApplicationTest;
 import org.testfx.matcher.base.NodeMatchers;
 import org.testfx.matcher.control.LabeledMatchers;
 import recipes.FoodItem;
 import recipes.Ingredient;
-import shopping.ShoppingList;
 
-import java.io.File;
+
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -43,9 +40,6 @@ public class AddRecipeToShoppingListTest extends ApplicationTest {
                 "Skipping JavaFX UI tests because DISPLAY is not available (CI)");
     }
 
-    @TempDir
-    Path tempDir;
-
     /**
      * A start method which initializes the tested controller class
      * @param stage - the current stage of the JavaFX application
@@ -57,7 +51,6 @@ public class AddRecipeToShoppingListTest extends ApplicationTest {
         AddRecipeToShoppingListCtrl addRecipeToShoppingListCtrl;
         ServerUtils serverUtils;
         MainCtrl mainCtrl;
-        ShoppingList shoppingList;
 
         // We try to find the controller class at the specified path
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/client/scenes/AddRecipeToShoppingList.fxml"));
@@ -65,8 +58,6 @@ public class AddRecipeToShoppingListTest extends ApplicationTest {
         // We use DI to load the ServerUtils and MainCtrl into the controller class and link it to the UI
         serverUtils = mock(ServerUtils.class);
         mainCtrl = mock(MainCtrl.class);
-        File file = tempDir.resolve("test_list.json").toFile();
-        shoppingList = new ShoppingList(file);
         addRecipeToShoppingListCtrl = new AddRecipeToShoppingListCtrl(serverUtils, mainCtrl,
                 null, null);
         loader.setController(addRecipeToShoppingListCtrl);

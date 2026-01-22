@@ -15,46 +15,14 @@ import java.util.Objects;
 public class ShoppingList implements Serializable {
 
     private List<Ingredient> ingredients = new ArrayList<>();
-    private final File fileLocation;
+
 
     /**
-     * A constructor for the ShoppingList class for default production
-     */
-    public ShoppingList() {
-        this(new File("./shopping_list.json"));
-    }
-
-    /**
-     * A constructor for the ShoppingList class for testing
-     * @param customFile - File - where should the ShoppingList be
+     * A constructor for the ShoppingList class
      * stored / saved at
      */
-    public ShoppingList (File customFile) {
-        this.fileLocation = customFile;
+    public ShoppingList () {
 
-        File folder = fileLocation.getParentFile();
-        if (folder != null && !folder.exists()) {
-            if (folder.mkdirs()) {
-                System.out.println("Configuration folder successfully initialized");
-            }else{
-                System.err.println("Could not initialize directory");
-            }
-        }
-
-        if (!fileLocation.exists()) {
-            try {
-                if (fileLocation.createNewFile()) {
-                    System.out.println("Shopping list file initialized successfully");
-                }else{
-                    System.err.println("Error: Shopping list file failed to initialize");
-                }
-                java.nio.file.Files.writeString(fileLocation.toPath(), "[]");
-            } catch (IOException e) {
-                System.err.println("Error: Could not create shopping list file: " + e.getMessage());
-            }
-        }
-
-        loadFile();
     }
 
 
@@ -93,44 +61,6 @@ public class ShoppingList implements Serializable {
      */
     public void removeIngredient (Ingredient i) {
         this.ingredients.remove(i);
-    }
-
-    /**
-     * Creates a local file which stores the ShoppingList
-     */
-    public void storeFile () {
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            if (fileLocation.getParentFile().mkdirs()) {
-                System.out.println("Directory for saving initialized successfully");
-            }else{
-                System.err.println("Error - could not initialize directory for saving");
-            }
-            objectMapper.writeValue(fileLocation, ingredients);
-        } catch (IOException e) {
-            System.err.println("Error - Shopping List file could not be stored" + e.getMessage());
-        }
-    }
-
-    /**
-     * Loads the local file into the Shopping list
-     */
-    public void loadFile () {
-        if (!fileLocation.exists()) {
-            ingredients.clear();
-            return;
-        }
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            List<Ingredient> loaded = objectMapper.readValue(fileLocation,
-                    new TypeReference<>() {
-                    });
-            this.ingredients.clear();
-            this.ingredients.addAll(loaded);
-        }catch (IOException e) {
-            System.err.println("Error - Shopping List could not be loaded" + e.getMessage());
-            ingredients = new ArrayList<>();
-        }
     }
 
     /**

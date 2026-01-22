@@ -22,7 +22,7 @@ import java.nio.file.Path;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import client.i18n.LanguageManager;
+import client.configuration.LanguageManager;
 import com.google.inject.Injector;
 
 import jakarta.inject.Inject;

@@ -13,7 +13,7 @@ import recipes.Recipe;
 import recipes.Ingredient;
 import recipes.FoodItem;
 import java.util.*;
-import client.i18n.LanguageManager;
+import client.configuration.LanguageManager;
 import java.util.Locale;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;

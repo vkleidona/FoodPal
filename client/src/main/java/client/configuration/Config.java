@@ -1,5 +1,7 @@
 package client.configuration;
 
+import shopping.ShoppingList;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,6 +11,7 @@ public class Config {
     private List <String> filteredLocales = new ArrayList<>();
     private String serverUrl = "http://localhost:8080/";
     private List<Long> favoriteRecipeIds = new ArrayList<>();
+    private ShoppingList shoppingList = new ShoppingList();
 
     public String getLanguage() {
         return language;
@@ -20,6 +23,10 @@ public class Config {
 
     public String getServerUrl() {
         return serverUrl;
+    }
+
+    public ShoppingList getShoppingList() {
+        return shoppingList;
     }
 
     public void setServerUrl(String serverUrl) {
@@ -40,5 +47,9 @@ public class Config {
 
     public void setFilteredLocales(List<String> filteredLocales) {
         this.filteredLocales = filteredLocales;
+    }
+
+    public void setShoppingList(ShoppingList shoppingList) {
+        this.shoppingList = shoppingList;
     }
 }

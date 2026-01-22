@@ -16,7 +16,7 @@ import javafx.scene.layout.HBox;
 import recipes.FoodItem;
 import recipes.Ingredient;
 import recipes.Recipe;
-import client.i18n.LanguageManager;
+import client.configuration.LanguageManager;
 
 import java.util.*;
 
@@ -215,7 +215,7 @@ public class AddRecipeToShoppingListCtrl {
                 addIngredientToShoppingList(ingredient);
             }
         }
-        shoppingListService.getShoppingList().storeFile();
+        shoppingListService.saveShoppingList();
     }
 
     /**
@@ -359,7 +359,7 @@ public class AddRecipeToShoppingListCtrl {
             ingredient.setRecipeName(recipeToAdd.getName());
             shoppingListService.getShoppingList().addIngredient(ingredient);
         }
-        shoppingListService.getShoppingList().storeFile();
+        shoppingListService.saveShoppingList();
         mainCtrl.showShoppingList();
     }
 

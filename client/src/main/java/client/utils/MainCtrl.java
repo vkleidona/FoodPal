@@ -16,7 +16,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import client.i18n.LanguageManager;
+import client.configuration.LanguageManager;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 import client.MyFXML;

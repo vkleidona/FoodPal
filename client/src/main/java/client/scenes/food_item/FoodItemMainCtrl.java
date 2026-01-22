@@ -13,7 +13,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import org.springframework.messaging.simp.stomp.StompSession;
 import recipes.FoodItem;
-import client.i18n.LanguageManager;
+import client.configuration.LanguageManager;
 import java.text.MessageFormat;
 import java.util.*;
 
