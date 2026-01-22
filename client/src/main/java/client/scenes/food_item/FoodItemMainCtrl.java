@@ -9,6 +9,7 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import org.springframework.messaging.simp.stomp.StompSession;
@@ -108,6 +109,8 @@ public class FoodItemMainCtrl {
         return fatsLabel;
     }
 
+    private SortedList<FoodItem> sortedFoodItems;
+
     /**
      * An initializer method - tries to load all food items
      */
@@ -116,8 +119,12 @@ public class FoodItemMainCtrl {
 
         allFoodItems = webSocketService.getMasterFoodItemsList();
 
-        allFoodItems.addListener((ListChangeListener <FoodItem>) _ ->
-                Platform.runLater(this::updateListView));
+        sortedFoodItems = new SortedList<>(
+                allFoodItems,
+                Comparator.comparing(FoodItem::getName, String.CASE_INSENSITIVE_ORDER)
+        );
+
+        foodItemListView.setItems(sortedFoodItems);
 
         try {
             loadFoodItems();
@@ -300,6 +307,7 @@ public class FoodItemMainCtrl {
     @FXML
     public void addFoodItem() {
         mainCtrl.showAddFoodItem();
+        mainCtrl.setCameFromFoodItemMain(true);
     }
 
     /**
@@ -395,9 +403,8 @@ public class FoodItemMainCtrl {
      */
     @FXML
     public void refreshFoodItems(){
-        List<FoodItem> allFoodItems = serverUtils.getAllFoodItems();
-        ObservableList<FoodItem> items = FXCollections.observableArrayList(allFoodItems);
-        foodItemListView.setItems(items);
+        List<FoodItem> items = serverUtils.getAllFoodItems();
+        allFoodItems.setAll(items);
     }
 
     /**
