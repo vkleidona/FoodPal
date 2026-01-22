@@ -89,6 +89,9 @@ public class MainCtrl {
     private final WebSocketService webSocketService;
 
     private boolean cameFromEditIngredients;
+    private boolean cameFromFoodItemMain;
+    private boolean cameFromShoppingList;
+    private boolean cameFromAddRecipeToShoppingList;
 
     /**
      * A constructor for the MainCtrl class using Dependency Injection
@@ -523,6 +526,37 @@ public class MainCtrl {
         return cameFromEditIngredients;
     }
 
+    public void setCameFromFoodItemMain(boolean cameFromFoodItemMain) {
+        this.cameFromFoodItemMain = cameFromFoodItemMain;
+    }
+
+    public boolean isCameFromFoodItemMain() {
+        return cameFromFoodItemMain;
+    }
+
+    public boolean isCameFromShoppingList() {
+        return cameFromShoppingList;
+    }
+
+    public void setCameFromShoppingList(boolean cameFromShoppingList) {
+        this.cameFromShoppingList = cameFromShoppingList;
+    }
+
+    public void setCameFromAddRecipeToShoppingList(boolean cameFromAddRecipeToShoppingList) {
+        this.cameFromAddRecipeToShoppingList = cameFromAddRecipeToShoppingList;
+    }
+
+    public boolean isCameFromAddRecipeToShoppingList() {
+        return cameFromAddRecipeToShoppingList;
+    }
+
+    public void resetOriginFlags(){
+        cameFromAddRecipeToShoppingList = false;
+        cameFromEditIngredients = false;
+        cameFromFoodItemMain = false;
+        cameFromShoppingList = false;
+        setDraftRecipe(null);
+    }
 
     /**
      * A testing constructor for the MainCtrl

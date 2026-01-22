@@ -210,8 +210,14 @@ public class MainUICtrl {
                 });
 
         refreshButton.setOnAction(_ -> {
+            Recipe currentlySelected = recipeListView.getSelectionModel().getSelectedItem();
+
             initialRecipeFetch();
-            cleanupDeletedFavorites();          // check after manual refresh
+
+            if (currentlySelected != null) {
+                recipeListView.getSelectionModel().select(currentlySelected);
+                selectRecipe(currentlySelected);
+            }
         });
 
         // Bottom sidebar buttons
@@ -477,10 +483,8 @@ public class MainUICtrl {
             return null;
         });
 
-        int indexClicked = currentRecipes.indexOf(selectedRecipe);
-
         dialogBox.showAndWait().ifPresent(result -> {
-            if (indexClicked >= 0) {
+            if (selectedRecipe != null && !result.isBlank()) {
                 selectedRecipe.setName(result);
                 server.updateRecipe(selectedRecipe);
             }
@@ -652,10 +656,9 @@ public class MainUICtrl {
      * A method for refreshing the selected recipe, so the parameter can be safely used
      */
     public void refreshSelectedRecipe() {
-        int selectedIndex = recipeListView.getSelectionModel().getSelectedIndex();
-        if (selectedIndex >= 0 && selectedIndex < currentRecipes.size()) {
-            selectedRecipe = currentRecipes.get(selectedIndex);
-        }
+        selectedRecipe = recipeListView
+                .getSelectionModel()
+                .getSelectedItem();
     }
 
     /**

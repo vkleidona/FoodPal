@@ -402,11 +402,12 @@ public class ShoppingListMainCtrl {
         if (buttonType.isPresent() && buttonType.get() == ButtonType.OK) {
             if (ingredient == null) {
                 mainCtrl.showAddFoodItemFromShoppingList(foodItemEntry);
+                mainCtrl.setCameFromShoppingList(true);
             }else{
                 saveCurrentIngredient(ingredient, foodItemEntry);
             }
         }else{
-            mainCtrl.showAddFoodItem();
+            mainCtrl.showShoppingList();
         }
     }
 
