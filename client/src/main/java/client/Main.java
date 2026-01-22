@@ -5,6 +5,7 @@ import static com.google.inject.Guice.createInjector;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
+import client.i18n.LanguageManager;
 import client.network.WebSocketService;
 import client.scenes.food_item.AddFoodItemCtrl;
 import client.scenes.food_item.FoodItemMainCtrl;
@@ -38,6 +39,17 @@ public class Main extends Application {
      * @throws IOException - a possible Exception with the file
      */
     public static void main(String[] args) throws URISyntaxException, IOException {
+        String customConfig = null;
+
+        for (int i = 0; i < args.length; i++) {
+            if ("-cfg".equals(args[i]) && i + 1 < args.length) {
+                customConfig = args[i + 1];
+                break;
+            }
+        }
+
+        LanguageManager.init(customConfig);
+
         launch();
     }
 

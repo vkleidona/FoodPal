@@ -12,10 +12,21 @@ public final class LanguageManager {
 
     private static final String KEY_LANGUAGE = "language";
     private static final String KEY_LANGUAGE_FILTERS = "filter_locales";
-    private static final Path CONFIG_PATH =
+    private static Path configPath =
             Path.of(System.getProperty("user.home"), ".foodpal", "config.properties");
 
-    private static Locale currentLocale = loadLocaleFromConfig();
+    private static Locale currentLocale;
+
+    /**
+     * An initializer method for the configuration path
+     * @param customPath - the path at which the configuration should be located
+     */
+    public static void init(String customPath) {
+        if (customPath != null) {
+            configPath = Path.of(customPath);
+        }
+        currentLocale = loadLocaleFromConfig();
+    }
 
     private LanguageManager() {}
 
@@ -42,8 +53,8 @@ public final class LanguageManager {
     private static Locale loadLocaleFromConfig() {
         Properties props = new Properties();
 
-        if (Files.exists(CONFIG_PATH)) {
-            try (InputStream in = Files.newInputStream(CONFIG_PATH)) {
+        if (Files.exists(configPath)) {
+            try (InputStream in = Files.newInputStream(configPath)) {
                 props.load(in);
             } catch (IOException ignored) {
                 // fall back to default
@@ -56,12 +67,12 @@ public final class LanguageManager {
 
     private static void saveLocaleToConfig(Locale locale) {
         try {
-            Files.createDirectories(CONFIG_PATH.getParent());
+            Files.createDirectories(configPath.getParent());
 
             Properties props = new Properties();
             props.setProperty(KEY_LANGUAGE, locale.getLanguage());
 
-            try (OutputStream out = Files.newOutputStream(CONFIG_PATH)) {
+            try (OutputStream out = Files.newOutputStream(configPath)) {
                 props.store(out, "FoodPal user settings");
             }
         } catch (IOException e) {
@@ -76,8 +87,8 @@ public final class LanguageManager {
      */
     public static Set<Locale> loadFilterLocales () {
         Properties properties = new Properties();
-        if (Files.exists(CONFIG_PATH)) {
-            try (InputStream inputStream = Files.newInputStream(CONFIG_PATH)) {
+        if (Files.exists(configPath)) {
+            try (InputStream inputStream = Files.newInputStream(configPath)) {
                 properties.load(inputStream);
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -98,8 +109,8 @@ public final class LanguageManager {
      */
     public static void saveFilterLocales (List <Locale> locales) {
         Properties properties = new Properties();
-        if (Files.exists(CONFIG_PATH)) {
-            try (InputStream inputStream = Files.newInputStream(CONFIG_PATH)) {
+        if (Files.exists(configPath)) {
+            try (InputStream inputStream = Files.newInputStream(configPath)) {
                 properties.load(inputStream);
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -109,8 +120,8 @@ public final class LanguageManager {
                 collect(Collectors.joining(","));
 
         properties.setProperty(KEY_LANGUAGE_FILTERS, filterStr);
-        try (OutputStream out = Files.newOutputStream(CONFIG_PATH)) {
-            Files.createDirectories(CONFIG_PATH.getParent());
+        try (OutputStream out = Files.newOutputStream(configPath)) {
+            Files.createDirectories(configPath.getParent());
             properties.store(out, "FoodPal user settings");
         } catch (IOException e) {
             throw new RuntimeException(e);
