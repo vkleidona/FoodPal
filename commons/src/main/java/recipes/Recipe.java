@@ -1,6 +1,7 @@
 package recipes;
 
 import jakarta.persistence.*;
+import recipes.IngredientDraft;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -214,4 +215,28 @@ public class Recipe implements Serializable {
     public String toString () {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
     }
+
+
+    @Transient
+    private List<IngredientDraft> ingredientDrafts;
+    @Transient
+    private List<String> preparationDrafts;
+
+    public List<IngredientDraft> getIngredientDrafts() {
+        return ingredientDrafts;
+    }
+
+    public void setIngredientDrafts(List<IngredientDraft> ingredientDrafts) {
+        this.ingredientDrafts = ingredientDrafts;
+    }
+
+    public List<String> getPreparationDrafts() {
+        return preparationDrafts;
+    }
+
+    public void setPreparationDrafts(List<String> preparationDrafts) {
+        this.preparationDrafts = preparationDrafts;
+    }
+
+
 }
