@@ -68,6 +68,8 @@ public class MainUICtrl {
     private Long lastSubscribedID = null;
     private StompSession.Subscription recipeSubscription;
 
+    private boolean deletedRecipe;
+
     private final FavoritesService favoritesService;
     private final FilterService filterService;
     private final LanguageService languageService;
