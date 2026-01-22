@@ -323,6 +323,7 @@ public class CreateRecipeCtrl {
         LanguageManager.setLocale(newLocale);
         updateLanguageButtonUI(newLocale);
         currentLocale = newLocale;
+        mainCtrl.reloadScenesForNewLanguage();
     }
 
     /**
