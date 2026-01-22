@@ -163,20 +163,7 @@ public class AddFoodItemCtrl {
                 mainCtrl.getFoodItemMainCtrl().refreshFoodItems();
             }
 
-            if(mainCtrl.isCameFromEditIngredients()){
-                mainCtrl.showEditIngredients(mainCtrl.getDraftRecipe());
-                mainCtrl.setCameFromEditIngredients(false);
-            } else if (mainCtrl.getDraftRecipe() != null) {
-                mainCtrl.showCreateRecipeFromFoodItem();
-            } else if (cameFromShoppingList) {
-                mainCtrl.showShoppingListDialogBox(ingredientName);
-            }else if (cameFromAddRecipeToShoppingList) {
-                mainCtrl.showAddRecipeToShoppingListDialogBox(ingredientName);
-            }
-            else{
-                // otherwise, go to the Food Item Management screen
-                mainCtrl.showFoodItemMain();
-            }
+            handleReturnToScene();
 
         } catch(NumberFormatException e){
             Alert invalidInput = new Alert(Alert.AlertType.WARNING);
@@ -186,6 +173,27 @@ public class AddFoodItemCtrl {
             invalidInput.showAndWait();
         }
     }
+
+    /**
+     * A helper method which distributes the client to the correct scene
+     */
+    public void handleReturnToScene () {
+        if(mainCtrl.isCameFromEditIngredients()){
+            mainCtrl.showEditIngredients(mainCtrl.getDraftRecipe());
+            mainCtrl.setCameFromEditIngredients(false);
+        } else if (mainCtrl.getDraftRecipe() != null) {
+            mainCtrl.showCreateRecipeFromFoodItem();
+        } else if (cameFromShoppingList) {
+            mainCtrl.showShoppingListDialogBox(ingredientName);
+        }else if (cameFromAddRecipeToShoppingList) {
+            mainCtrl.showAddRecipeToShoppingListDialogBox(ingredientName);
+        }
+        else{
+            // otherwise, go to the Food Item Management screen
+            mainCtrl.showFoodItemMain();
+        }
+    }
+
 
     /**
      * A helper method which adds a new FoodItem to the database

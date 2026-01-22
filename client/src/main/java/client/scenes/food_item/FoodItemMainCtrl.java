@@ -9,6 +9,7 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import org.springframework.messaging.simp.stomp.StompSession;
@@ -115,6 +116,11 @@ public class FoodItemMainCtrl {
     public void initialize() {
 
         allFoodItems = webSocketService.getMasterFoodItemsList();
+
+        SortedList<FoodItem> sortedFoodItems = new SortedList<>(allFoodItems);
+        sortedFoodItems.setComparator(Comparator.comparing(FoodItem::getName));
+
+        foodItemListView.setItems(sortedFoodItems);
 
         allFoodItems.addListener((ListChangeListener <FoodItem>) _ ->
                 Platform.runLater(this::updateListView));
@@ -276,9 +282,6 @@ public class FoodItemMainCtrl {
      * Updates the List of FoodItems, listening to the server pushing any changes
      */
     public void updateListView () {
-        // Only show all recipes if we are in "All Recipes" tab
-        // Updates the sidebar when it senses changes in the database
-        foodItemListView.getItems().setAll(allFoodItems);
 
         // Updates the recipe with all of its parameters
         if (currentlySelected != null) {
