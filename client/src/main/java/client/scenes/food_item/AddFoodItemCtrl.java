@@ -159,10 +159,6 @@ public class AddFoodItemCtrl {
             confirmButton.setText("Confirm");
             sceneTitle.setText("Adding Food Item");
 
-            if (mainCtrl.getFoodItemMainCtrl() != null) {
-                mainCtrl.getFoodItemMainCtrl().refreshFoodItems();
-            }
-
             if(mainCtrl.isCameFromEditIngredients()){
                 mainCtrl.showEditIngredients(mainCtrl.getDraftRecipe());
                 mainCtrl.setCameFromEditIngredients(false);
