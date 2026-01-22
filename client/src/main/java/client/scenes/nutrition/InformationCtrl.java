@@ -270,6 +270,7 @@ public class InformationCtrl {
 
         renderIngredientsList();
         calculateAndShowNutrition();
+
     }
 
     /**

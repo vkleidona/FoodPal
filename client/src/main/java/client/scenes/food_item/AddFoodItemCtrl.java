@@ -167,7 +167,7 @@ public class AddFoodItemCtrl {
                 mainCtrl.showEditIngredients(mainCtrl.getDraftRecipe());
                 mainCtrl.setCameFromEditIngredients(false);
             } else if (mainCtrl.getDraftRecipe() != null) {
-                mainCtrl.showCreateRecipe();
+                mainCtrl.showCreateRecipeFromFoodItem();
             } else if (cameFromShoppingList) {
                 mainCtrl.showShoppingListDialogBox(ingredientName);
             }else if (cameFromAddRecipeToShoppingList) {
