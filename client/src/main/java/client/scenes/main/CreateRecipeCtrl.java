@@ -405,7 +405,7 @@ public class CreateRecipeCtrl {
 
                 double quantity;
                 try {
-                    quantity = Integer.parseInt(qtyStr);
+                    quantity = Double.parseDouble(qtyStr);
                 } catch (NumberFormatException e) {
                     showAlert(Alert.AlertType.ERROR,
                             "alert.ingredient.invalidQuantity.title",
