@@ -208,8 +208,15 @@ public class MainUICtrl {
                 });
 
         refreshButton.setOnAction(_ -> {
+            Recipe currentlySelected = recipeListView.getSelectionModel().getSelectedItem();
+
             initialRecipeFetch();
             cleanupDeletedFavorites();          // check after manual refresh
+
+            if (currentlySelected != null) {
+                recipeListView.getSelectionModel().select(currentlySelected);
+                selectRecipe(currentlySelected);
+            }
         });
 
         // Bottom sidebar buttons
