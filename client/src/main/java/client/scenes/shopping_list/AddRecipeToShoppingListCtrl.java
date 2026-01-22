@@ -381,6 +381,7 @@ public class AddRecipeToShoppingListCtrl {
         if (buttonType.isPresent() && buttonType.get() == ButtonType.OK) {
             if (ingredient == null) {
                 mainCtrl.showAddFoodItemFromAddRecipeToShoppingList(foodItemEntry);
+                mainCtrl.setCameFromAddRecipeToShoppingList(true);
             }else{
                 saveCurrentIngredient(ingredient, foodItemEntry);
             }

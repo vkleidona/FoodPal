@@ -159,10 +159,6 @@ public class AddFoodItemCtrl {
             confirmButton.setText("Confirm");
             sceneTitle.setText("Adding Food Item");
 
-            if (mainCtrl.getFoodItemMainCtrl() != null) {
-                mainCtrl.getFoodItemMainCtrl().refreshFoodItems();
-            }
-
             if(mainCtrl.isCameFromEditIngredients()){
                 mainCtrl.showEditIngredients(mainCtrl.getDraftRecipe());
                 mainCtrl.setCameFromEditIngredients(false);
@@ -170,13 +166,16 @@ public class AddFoodItemCtrl {
                 mainCtrl.showCreateRecipeFromFoodItem();
             } else if (cameFromShoppingList) {
                 mainCtrl.showShoppingListDialogBox(ingredientName);
-            }else if (cameFromAddRecipeToShoppingList) {
+            } else if (mainCtrl.isCameFromAddRecipeToShoppingList()) {
                 mainCtrl.showAddRecipeToShoppingListDialogBox(ingredientName);
-            }
-            else{
+            } else if (mainCtrl.isCameFromFoodItemMain()){
+                mainCtrl.showFoodItemMain();
+            } else {
                 // otherwise, go to the Food Item Management screen
                 mainCtrl.showFoodItemMain();
             }
+
+            mainCtrl.resetOriginFlags();
 
         } catch(NumberFormatException e){
             Alert invalidInput = new Alert(Alert.AlertType.WARNING);
@@ -241,16 +240,23 @@ public class AddFoodItemCtrl {
         confirmButton.setText("Confirm");
         sceneTitle.setText("Adding Food Item");
 
-        // if a draft exists, we go back to the Create Recipe screen.
-        // if not, we go back to the Food Item list.
         if(mainCtrl.isCameFromEditIngredients()){
             mainCtrl.showEditIngredients(mainCtrl.getDraftRecipe());
             mainCtrl.setCameFromEditIngredients(false);
         } else if (mainCtrl.getDraftRecipe() != null) {
             mainCtrl.showCreateRecipe();
+        } else if (mainCtrl.isCameFromShoppingList()) {
+            mainCtrl.showShoppingList();
+        } else if (mainCtrl.isCameFromAddRecipeToShoppingList()) {
+            mainCtrl.showAddRecipeToShoppingList();
+        } else if (mainCtrl.isCameFromFoodItemMain()){
+            mainCtrl.showFoodItemMain();
         } else {
+            // otherwise, go to the Food Item Management screen
             mainCtrl.showFoodItemMain();
         }
+
+        mainCtrl.resetOriginFlags();
     }
 
     /**
