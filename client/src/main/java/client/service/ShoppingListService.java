@@ -23,6 +23,9 @@ public class ShoppingListService {
     private final ObservableList<Ingredient> ingredientsObservableList;
     private final ShoppingList shoppingList;
 
+    private double quantity;
+    private String measurement;
+
     /**
      * A dependency-injection using constructor for the ShoppingList service class
      * @param shoppingList - the instance of the Shopping List
@@ -103,4 +106,19 @@ public class ShoppingListService {
     }
 
 
+    public double getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(double quantity) {
+        this.quantity = quantity;
+    }
+
+    public String getMeasurement() {
+        return measurement;
+    }
+
+    public void setMeasurement(String measurement) {
+        this.measurement = measurement;
+    }
 }
