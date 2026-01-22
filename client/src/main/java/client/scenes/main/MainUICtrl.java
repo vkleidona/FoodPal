@@ -128,6 +128,7 @@ public class MainUICtrl {
 
         favoritesService.saveFavorites();
         updateRecipeListView();
+        recipeListView.refresh();
 
         if (favoritesTab.isSelected()) {
             unsubscribeFromRecipe();
