@@ -68,7 +68,7 @@ public class MainUICtrl {
     private Long lastSubscribedID = null;
     private StompSession.Subscription recipeSubscription;
 
-    private boolean deletedRecipe;
+    private boolean deletedRecipe = false;
 
     private final FavoritesService favoritesService;
     private final FilterService filterService;
@@ -127,7 +127,7 @@ public class MainUICtrl {
         }
 
         favoritesService.saveFavorites();
-        recipeListView.refresh();
+        updateRecipeListView();
 
         if (favoritesTab.isSelected()) {
             unsubscribeFromRecipe();
@@ -264,8 +264,6 @@ public class MainUICtrl {
             }
         });
 
-        addDeleteListener();
-
         setupLanguageMenu();
         setupFilterLanguages();
         updateLanguageButtonUI(LanguageManager.getLocale());
@@ -276,22 +274,17 @@ public class MainUICtrl {
      * When a recipe is deleted, the app detects it and warns the user about the favorite
      * being deleted, and also saves all changes
      */
-    public void addDeleteListener () {
-        currentRecipes.addListener((ListChangeListener<Recipe>) change -> {
-            while (change.next()) {
-                if (change.wasRemoved()) {
-                    for (Recipe removedRecipe : change.getRemoved()) {
-                        Long id = removedRecipe.getId();
+    public void alterDeletes () {
+        for (Recipe removedRecipe : currentRecipes) {
+            Long id = removedRecipe.getId();
 
-                        if (favoritesService.getFavoriteRecipeIds().contains(id)) {
-                            showFavoriteDeletedWarning();
-                            favoritesService.getFavoriteRecipeIds().remove(id);
-                            favoritesService.saveFavorites();
-                        }
-                    }
-                }
+            if (favoritesService.getFavoriteRecipeIds().contains(id)) {
+                showFavoriteDeletedWarning();
+                favoritesService.getFavoriteRecipeIds().remove(id);
+                favoritesService.saveFavorites();
+                deletedRecipe = false;
             }
-        });
+        }
     }
 
 
@@ -320,6 +313,10 @@ public class MainUICtrl {
      * Refreshes the List View
      */
     public void updateRecipeListView () {
+
+        if (deletedRecipe) {
+            alterDeletes();
+        }
 
         if (favoritesTab.isSelected()) {
             // If we are in Favorites tab, run the filter immediately!
@@ -441,6 +438,7 @@ public class MainUICtrl {
 
                     //if (serverResponse.getStatus() == 204) {
                     unsubscribeFromRecipe();
+                    deletedRecipe = true;
                     //}
                 } catch (Exception e) {
                     System.err.println("Error - could not delete recipe");
