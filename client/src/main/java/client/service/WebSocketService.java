@@ -71,6 +71,13 @@ public class WebSocketService {
         });
     }
 
+    public void disconnect() {
+        if (session != null && session.isConnected()) {
+            session.disconnect();
+            System.out.println("WebSocket disconnected successfully.");
+        }
+    }
+
     /**
      * Subscribes the client to listen to the global channels - for the recipes and FoodItems
      */

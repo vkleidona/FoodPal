@@ -29,6 +29,7 @@ public class Main extends Application {
 
     private static final Injector INJECTOR = createInjector(new MyModule());
     private static final MyFXML FXML = new MyFXML(INJECTOR);
+    private WebSocketService webSocketService;
 
     /**
      * The Main method of the Application - it starts the client
@@ -91,8 +92,8 @@ public class Main extends Application {
         var addRecipeToShoppingList = FXML.load(AddRecipeToShoppingListCtrl.class,
                 "client", "scenes", "AddRecipeToShoppingList.fxml");
 
-        WebSocketService wss = INJECTOR.getInstance(WebSocketService.class);
-        wss.connect(() -> {
+        webSocketService = INJECTOR.getInstance(WebSocketService.class);
+        webSocketService.connect(() -> {
             System.out.println("Session established! Starting UI...");
             mainCtrl.initialize(primaryStage, mainUI, editInstructions,
                     createRecipe, addFoodItem, foodItemMain, editIngredients,
@@ -110,6 +111,11 @@ public class Main extends Application {
     @Override
     public void stop() throws Exception {
         ConfigManager.save();
+
+        if (webSocketService != null) {
+            webSocketService.disconnect();
+        }
         super.stop();
+        System.exit(0);
     }
 }
