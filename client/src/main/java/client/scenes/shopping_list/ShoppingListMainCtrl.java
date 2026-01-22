@@ -350,6 +350,9 @@ public class ShoppingListMainCtrl {
         String inputName = food.getValue().trim();
         FoodItem foodItem = server.getFoodItemByName(inputName);
 
+        shoppingListService.setQuantity(Double.parseDouble(qty.getText()));
+        shoppingListService.setMeasurement(unit.getValue());
+
         if (foodItem == null) {
             askToAddFoodItem(existing, inputName);
             return null;
@@ -403,26 +406,10 @@ public class ShoppingListMainCtrl {
         if (buttonType.isPresent() && buttonType.get() == ButtonType.OK) {
             if (ingredient == null) {
                 mainCtrl.showAddFoodItemFromShoppingList(foodItemEntry);
-                mainCtrl.setCameFromShoppingList(true);
-            }else{
-                saveCurrentIngredient(ingredient, foodItemEntry);
             }
         }else{
             mainCtrl.showShoppingList();
         }
-    }
-
-    /**
-     * Saves the current ingredient before jumping to AddFoodItemUI
-     * @param ingredient - the ingredient to be saved
-     * @param foodItemEntry - the FoodItem to be added
-     */
-    public void saveCurrentIngredient (Ingredient ingredient, String foodItemEntry) {
-        if (ingredient.getMeasurement() == null) {
-            ingredient.setMeasurement("");
-        }
-        currentIngredient = new Ingredient(ingredient.getQuantity(), ingredient.getMeasurement());
-        mainCtrl.showAddFoodItemFromShoppingList(foodItemEntry);
     }
 
     /**
@@ -431,7 +418,8 @@ public class ShoppingListMainCtrl {
      * @param ingredientName - the new Food Item added to the database
      */
     public void restoreIngredient(String ingredientName) {
-        currentIngredient = new Ingredient(0.0, "g");
+        currentIngredient = new Ingredient(shoppingListService.getQuantity(),
+                shoppingListService.getMeasurement());
         currentIngredient.setFoodType(server.getFoodItemByName(ingredientName));
         mainCtrl.showShoppingList();
         showDialog(currentIngredient, true);

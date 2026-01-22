@@ -21,6 +21,7 @@ import javafx.stage.Stage;
 import javafx.util.Pair;
 import client.MyFXML;
 import recipes.FoodItem;
+import recipes.Ingredient;
 import recipes.Recipe;
 
 public class MainCtrl {
@@ -49,7 +50,6 @@ public class MainCtrl {
     private Stage primaryStage;
 
     private final MyFXML fxml;
-
 
     private ObservableList<Recipe> recipes;
     private ObservableList <FoodItem> foodItems;

@@ -52,8 +52,6 @@ public class AddRecipeToShoppingListCtrl {
 
     private final ShoppingListService shoppingListService;
 
-    private Ingredient currentIngredient;
-
     /**
      * Constructor for the AddRecipeToShoppingList controller class
      * @param serverUtils - the single instance of server utilities
@@ -196,8 +194,6 @@ public class AddRecipeToShoppingListCtrl {
      * @param ingredient - Ingredient to be added
      */
     public void addIngredientToShoppingList (Ingredient ingredient) {
-        shoppingListService.getIngredientsObservableList().add(ingredient);
-        shoppingListService.getShoppingList().addIngredient(ingredient);
         recipeIngredientsObservableList.add(ingredient);
     }
 
@@ -215,6 +211,8 @@ public class AddRecipeToShoppingListCtrl {
             int selected = recipeIngredientsListView.getSelectionModel().getSelectedIndex();
             if (selected >= 0) {
                 recipeIngredientsObservableList.set(selected, ingredient);
+            }else{
+                addIngredientToShoppingList(ingredient);
             }
         }
         shoppingListService.getShoppingList().storeFile();
@@ -301,6 +299,9 @@ public class AddRecipeToShoppingListCtrl {
         String inputName = food.getValue().trim();
         FoodItem foodItem = serverUtils.getFoodItemByName(inputName);
 
+        shoppingListService.setQuantity(Double.parseDouble(qty.getText()));
+        shoppingListService.setMeasurement(unit.getValue());
+
         if (foodItem == null) {
             askToAddFoodItem(existing, inputName);
             return null;
@@ -331,9 +332,7 @@ public class AddRecipeToShoppingListCtrl {
      * @param ingredient - Ingredient to be deleted from the shopping list
      */
     public void deleteIngredient(Ingredient ingredient) {
-        shoppingListService.getShoppingList().removeIngredient(ingredient);
-        shoppingListService.getIngredientsObservableList().remove(ingredient);
-        shoppingListService.getShoppingList().storeFile();
+        recipeIngredientsObservableList.remove(ingredient);
     }
 
     /**
@@ -381,26 +380,10 @@ public class AddRecipeToShoppingListCtrl {
         if (buttonType.isPresent() && buttonType.get() == ButtonType.OK) {
             if (ingredient == null) {
                 mainCtrl.showAddFoodItemFromAddRecipeToShoppingList(foodItemEntry);
-                mainCtrl.setCameFromAddRecipeToShoppingList(true);
-            }else{
-                saveCurrentIngredient(ingredient, foodItemEntry);
             }
         }else{
-            mainCtrl.showAddFoodItem();
+            mainCtrl.showAddRecipeToShoppingList();
         }
-    }
-
-    /**
-     * Saves the current ingredient before jumping to AddFoodItemUI
-     * @param ingredient - the ingredient to be saved
-     * @param foodItemEntry - the FoodItem to be added
-     */
-    public void saveCurrentIngredient (Ingredient ingredient, String foodItemEntry) {
-        if (ingredient.getMeasurement() == null) {
-            ingredient.setMeasurement("");
-        }
-        currentIngredient = new Ingredient(ingredient.getQuantity(), ingredient.getMeasurement());
-        mainCtrl.showAddFoodItemFromAddRecipeToShoppingList(foodItemEntry);
     }
 
     /**
@@ -409,9 +392,10 @@ public class AddRecipeToShoppingListCtrl {
      * @param ingredientName - the new Food Item added to the database
      */
     public void restoreIngredient(String ingredientName) {
-        currentIngredient = new Ingredient(0.0, "g");
+        Ingredient currentIngredient = new Ingredient(shoppingListService.getQuantity(),
+                shoppingListService.getMeasurement());
         currentIngredient.setFoodType(serverUtils.getFoodItemByName(ingredientName));
         mainCtrl.showAddRecipeToShoppingList();
-        showDialog(currentIngredient, false);
+        showDialog(currentIngredient, true);
     }
 }
