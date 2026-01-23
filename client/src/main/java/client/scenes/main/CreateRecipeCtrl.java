@@ -623,7 +623,9 @@ public class CreateRecipeCtrl {
 
         if (mainCtrl != null) {
             mainCtrl.setDraftRecipe(draft);
+            mainCtrl.setCameFromCreateRecipe(true);
             mainCtrl.showAddFoodItem();
+
             Platform.runLater(this::handleRefresh);
         } else {
             System.err.println("MainCtrl is null, cannot redirect!");

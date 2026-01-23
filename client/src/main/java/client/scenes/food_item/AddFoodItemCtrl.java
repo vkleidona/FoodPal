@@ -176,18 +176,20 @@ public class AddFoodItemCtrl {
     public void handleReturnToScene () {
         if(mainCtrl.isCameFromEditIngredients()){
             mainCtrl.showEditIngredients(mainCtrl.getDraftRecipe());
-            mainCtrl.setCameFromEditIngredients(false);
-        } else if (mainCtrl.getDraftRecipe() != null) {
+        } else if (mainCtrl.isCameFromCreateRecipe()) {
             mainCtrl.showCreateRecipeFromFoodItem();
-        } else if (cameFromShoppingList) {
+        } else if (mainCtrl.isCameFromShoppingList()) {
             mainCtrl.showShoppingListDialogBox(ingredientName);
-        }else if (cameFromAddRecipeToShoppingList) {
+        } else if (mainCtrl.isCameFromAddRecipeToShoppingList()) {
             mainCtrl.showAddRecipeToShoppingListDialogBox(ingredientName);
-        }
-        else{
+        } else if (mainCtrl.isCameFromFoodItemMain()) {
+            mainCtrl.showFoodItemMain();
+        } else {
             // otherwise, go to the Food Item Management screen
             mainCtrl.showFoodItemMain();
         }
+
+        mainCtrl.resetOriginFlags();
     }
 
 
