@@ -22,7 +22,7 @@ import java.nio.file.Path;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import client.i18n.LanguageManager;
+import client.configuration.LanguageManager;
 import com.google.inject.Injector;
 
 import jakarta.inject.Inject;
@@ -57,7 +57,7 @@ public record MyFXML(Injector injector) {
     public <T> Pair<T, Parent> load(Class<T> c, String... parts) {
         try {
 
-            Locale locale = LanguageManager.getLocale();
+            Locale locale = LanguageManager.getCurrentLocale();
             ResourceBundle bundle = ResourceBundle.getBundle("client.scenes.i18n.messages", locale);
 
             var loader = new FXMLLoader(

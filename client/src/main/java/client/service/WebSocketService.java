@@ -1,4 +1,4 @@
-package client.network;
+package client.service;
 
 
 import javafx.application.Platform;
@@ -69,6 +69,13 @@ public class WebSocketService {
                 }
             }
         });
+    }
+
+    public void disconnect() {
+        if (session != null && session.isConnected()) {
+            session.disconnect();
+            System.out.println("WebSocket disconnected successfully.");
+        }
     }
 
     /**

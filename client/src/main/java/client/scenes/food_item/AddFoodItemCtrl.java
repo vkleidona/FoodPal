@@ -4,7 +4,7 @@ import client.utils.MainCtrl;
 import client.service.LanguageService;
 import client.utils.ServerUtils;
 import jakarta.inject.Inject;
-import client.i18n.LanguageManager;
+import client.configuration.LanguageManager;
 
 import java.util.List;
 import java.util.Locale;
@@ -116,7 +116,7 @@ public class AddFoodItemCtrl {
             languageButton.getItems().add(setupMenuItemIcons(displayName, code));
         }
 
-        updateLanguageButtonUI(LanguageManager.getLocale());
+        updateLanguageButtonUI(LanguageManager.getCurrentLocale());
     }
 
     /**
@@ -159,23 +159,11 @@ public class AddFoodItemCtrl {
             confirmButton.setText("Confirm");
             sceneTitle.setText("Adding Food Item");
 
-            if(mainCtrl.isCameFromEditIngredients()){
-                mainCtrl.showEditIngredients(mainCtrl.getDraftRecipe());
-                mainCtrl.setCameFromEditIngredients(false);
-            } else if (mainCtrl.getDraftRecipe() != null) {
-                mainCtrl.showCreateRecipeFromFoodItem();
-            } else if (cameFromShoppingList) {
-                mainCtrl.showShoppingListDialogBox(ingredientName);
-            } else if (mainCtrl.isCameFromAddRecipeToShoppingList()) {
-                mainCtrl.showAddRecipeToShoppingListDialogBox(ingredientName);
-            } else if (mainCtrl.isCameFromFoodItemMain()){
-                mainCtrl.showFoodItemMain();
-            } else {
-                // otherwise, go to the Food Item Management screen
-                mainCtrl.showFoodItemMain();
+            if (mainCtrl.getFoodItemMainCtrl() != null) {
+                mainCtrl.getFoodItemMainCtrl().refreshFoodItems();
             }
 
-            mainCtrl.resetOriginFlags();
+            handleReturnToScene();
 
         } catch(NumberFormatException e){
             Alert invalidInput = new Alert(Alert.AlertType.WARNING);
@@ -185,6 +173,27 @@ public class AddFoodItemCtrl {
             invalidInput.showAndWait();
         }
     }
+
+    /**
+     * A helper method which distributes the client to the correct scene
+     */
+    public void handleReturnToScene () {
+        if(mainCtrl.isCameFromEditIngredients()){
+            mainCtrl.showEditIngredients(mainCtrl.getDraftRecipe());
+            mainCtrl.setCameFromEditIngredients(false);
+        } else if (mainCtrl.getDraftRecipe() != null) {
+            mainCtrl.showCreateRecipeFromFoodItem();
+        } else if (cameFromShoppingList) {
+            mainCtrl.showShoppingListDialogBox(ingredientName);
+        }else if (cameFromAddRecipeToShoppingList) {
+            mainCtrl.showAddRecipeToShoppingListDialogBox(ingredientName);
+        }
+        else{
+            // otherwise, go to the Food Item Management screen
+            mainCtrl.showFoodItemMain();
+        }
+    }
+
 
     /**
      * A helper method which adds a new FoodItem to the database
@@ -240,23 +249,16 @@ public class AddFoodItemCtrl {
         confirmButton.setText("Confirm");
         sceneTitle.setText("Adding Food Item");
 
+        // if a draft exists, we go back to the Create Recipe screen.
+        // if not, we go back to the Food Item list.
         if(mainCtrl.isCameFromEditIngredients()){
             mainCtrl.showEditIngredients(mainCtrl.getDraftRecipe());
             mainCtrl.setCameFromEditIngredients(false);
         } else if (mainCtrl.getDraftRecipe() != null) {
-            mainCtrl.showCreateRecipeFromFoodItem();
-        } else if (mainCtrl.isCameFromShoppingList()) {
-            mainCtrl.showShoppingList();
-        } else if (mainCtrl.isCameFromAddRecipeToShoppingList()) {
-            mainCtrl.showAddRecipeToShoppingList();
-        } else if (mainCtrl.isCameFromFoodItemMain()){
-            mainCtrl.showFoodItemMain();
+            mainCtrl.showCreateRecipe();
         } else {
-            // otherwise, go to the Food Item Management screen
             mainCtrl.showFoodItemMain();
         }
-
-        mainCtrl.resetOriginFlags();
     }
 
     /**

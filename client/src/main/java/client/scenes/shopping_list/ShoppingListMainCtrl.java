@@ -17,7 +17,7 @@ import javafx.stage.Stage;
 import recipes.FoodItem;
 import recipes.Ingredient;
 
-import client.i18n.LanguageManager;
+import client.configuration.LanguageManager;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import javafx.scene.control.MenuButton;
@@ -48,8 +48,6 @@ public class ShoppingListMainCtrl {
 
     @FXML
     private ListView <Ingredient> ingredientsListView;
-
-    private Ingredient currentIngredient;
 
     private final ServerUtils server;
     private final MainCtrl mainCtrl;
@@ -131,7 +129,7 @@ public class ShoppingListMainCtrl {
      * @return String - the correct addition to the ShoppingList
      */
     public String ingredientFormatter (Ingredient ingredient) {
-        Locale currentLocale = LanguageManager.getLocale();
+        Locale currentLocale = LanguageManager.getCurrentLocale();
         String sourceName = "";
         if (ingredient.getRecipeName() != null) {
             sourceName = ingredient.getRecipeName();
@@ -180,7 +178,7 @@ public class ShoppingListMainCtrl {
             languageButton.getItems().add(setupMenuItemIcons(displayName, code));
         }
 
-        updateLanguageButtonUI(LanguageManager.getLocale());
+        updateLanguageButtonUI(LanguageManager.getCurrentLocale());
     }
 
     /**
@@ -191,7 +189,7 @@ public class ShoppingListMainCtrl {
         LanguageManager.setLocale(newLocale);
         updateLanguageButtonUI(newLocale);
         mainCtrl.reloadScenesForNewLanguage();
-        shoppingListService.getShoppingList().loadFile();
+        shoppingListService.reloadList();
         shoppingListService.getIngredientsObservableList().setAll(shoppingListService.
                 getShoppingList().getIngredients());
         ingredientsListView.setItems(shoppingListService.getIngredientsObservableList());
@@ -236,7 +234,7 @@ public class ShoppingListMainCtrl {
      */
     @FXML
     public void returnToMain () {
-        shoppingListService.getShoppingList().storeFile();
+        shoppingListService.saveShoppingList();
         mainCtrl.showMainMenu();
     }
 
@@ -266,7 +264,7 @@ public class ShoppingListMainCtrl {
                 list.set(selected, ingredient);
             }
         }
-        shoppingListService.getShoppingList().storeFile();
+        shoppingListService.saveShoppingList();
     }
 
     /**
@@ -385,7 +383,7 @@ public class ShoppingListMainCtrl {
     public void deleteIngredient(Ingredient ingredient) {
         shoppingListService.getShoppingList().removeIngredient(ingredient);
         shoppingListService.getIngredientsObservableList().remove(ingredient);
-        shoppingListService.getShoppingList().storeFile();
+        shoppingListService.saveShoppingList();
     }
 
 
@@ -418,7 +416,7 @@ public class ShoppingListMainCtrl {
      * @param ingredientName - the new Food Item added to the database
      */
     public void restoreIngredient(String ingredientName) {
-        currentIngredient = new Ingredient(shoppingListService.getQuantity(),
+        Ingredient currentIngredient = new Ingredient(shoppingListService.getQuantity(),
                 shoppingListService.getMeasurement());
         currentIngredient.setFoodType(server.getFoodItemByName(ingredientName));
         mainCtrl.showShoppingList();

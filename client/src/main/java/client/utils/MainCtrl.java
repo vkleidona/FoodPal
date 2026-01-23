@@ -1,6 +1,6 @@
 package client.utils;
 
-import client.network.WebSocketService;
+import client.service.WebSocketService;
 import client.scenes.food_item.AddFoodItemCtrl;
 import client.scenes.food_item.FoodItemMainCtrl;
 import client.scenes.main.CreateRecipeCtrl;
@@ -16,12 +16,11 @@ import javafx.collections.ObservableList;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import client.i18n.LanguageManager;
+import client.configuration.LanguageManager;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 import client.MyFXML;
 import recipes.FoodItem;
-import recipes.Ingredient;
 import recipes.Recipe;
 
 public class MainCtrl {

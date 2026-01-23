@@ -1,6 +1,6 @@
 package client.scenes.food_item;
 
-import client.network.WebSocketService;
+import client.service.WebSocketService;
 import client.utils.MainCtrl;
 import client.service.LanguageService;
 import client.utils.ServerUtils;
@@ -14,7 +14,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import org.springframework.messaging.simp.stomp.StompSession;
 import recipes.FoodItem;
-import client.i18n.LanguageManager;
+import client.configuration.LanguageManager;
 import java.text.MessageFormat;
 import java.util.*;
 
@@ -109,8 +109,6 @@ public class FoodItemMainCtrl {
         return fatsLabel;
     }
 
-    private SortedList<FoodItem> sortedFoodItems;
-
     /**
      * An initializer method - tries to load all food items
      */
@@ -119,12 +117,13 @@ public class FoodItemMainCtrl {
 
         allFoodItems = webSocketService.getMasterFoodItemsList();
 
-        sortedFoodItems = new SortedList<>(
-                allFoodItems,
-                Comparator.comparing(FoodItem::getName, String.CASE_INSENSITIVE_ORDER)
-        );
+        SortedList<FoodItem> sortedFoodItems = new SortedList<>(allFoodItems);
+        sortedFoodItems.setComparator(Comparator.comparing(FoodItem::getName));
 
         foodItemListView.setItems(sortedFoodItems);
+
+        allFoodItems.addListener((ListChangeListener <FoodItem>) _ ->
+                Platform.runLater(this::updateListView));
 
         try {
             loadFoodItems();
@@ -201,7 +200,7 @@ public class FoodItemMainCtrl {
             languageButton.getItems().add(setupMenuItemIcons(displayName, code));
         }
 
-        updateLanguageButtonUI(LanguageManager.getLocale());
+        updateLanguageButtonUI(LanguageManager.getCurrentLocale());
     }
 
     /**
@@ -283,9 +282,6 @@ public class FoodItemMainCtrl {
      * Updates the List of FoodItems, listening to the server pushing any changes
      */
     public void updateListView () {
-        // Only show all recipes if we are in "All Recipes" tab
-        // Updates the sidebar when it senses changes in the database
-        foodItemListView.getItems().setAll(allFoodItems);
 
         // Updates the recipe with all of its parameters
         if (currentlySelected != null) {
@@ -307,7 +303,6 @@ public class FoodItemMainCtrl {
     @FXML
     public void addFoodItem() {
         mainCtrl.showAddFoodItem();
-        mainCtrl.setCameFromFoodItemMain(true);
     }
 
     /**
@@ -403,8 +398,9 @@ public class FoodItemMainCtrl {
      */
     @FXML
     public void refreshFoodItems(){
-        List<FoodItem> items = serverUtils.getAllFoodItems();
-        allFoodItems.setAll(items);
+        List<FoodItem> allFoodItems = serverUtils.getAllFoodItems();
+        ObservableList<FoodItem> items = FXCollections.observableArrayList(allFoodItems);
+        foodItemListView.setItems(items);
     }
 
     /**

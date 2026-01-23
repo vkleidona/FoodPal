@@ -12,7 +12,7 @@ import recipes.Recipe;
 
 import java.util.*;
 
-import client.i18n.LanguageManager;
+import client.configuration.LanguageManager;
 
 public class EditInstructionsCtrl {
 
@@ -99,7 +99,7 @@ public class EditInstructionsCtrl {
             languageButton.getItems().add(setupMenuItemIcons(displayName, code));
         }
 
-        updateLanguageButtonUI(LanguageManager.getLocale());
+        updateLanguageButtonUI(LanguageManager.getCurrentLocale());
     }
 
     /**

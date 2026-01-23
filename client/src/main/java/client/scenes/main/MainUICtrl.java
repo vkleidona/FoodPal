@@ -1,6 +1,6 @@
 package client.scenes.main;
 
-import client.network.WebSocketService;
+import client.service.WebSocketService;
 import client.utils.MainCtrl;
 import client.service.FavoritesService;
 import client.service.FilterService;
@@ -8,7 +8,7 @@ import client.service.LanguageService;
 import client.utils.ServerUtils;
 import jakarta.inject.Inject;
 import javafx.application.Platform;
-import client.i18n.LanguageManager;
+import client.configuration.LanguageManager;
 
 import java.util.*;
 
@@ -59,7 +59,6 @@ public class MainUICtrl {
     @FXML private MenuButton filterLanguagesButton;
 
     private ObservableList<Recipe> currentRecipes;
-    private Recipe selectedRecipe;
 
     private final ServerUtils server;
     private final MainCtrl mainCtrl;
@@ -119,14 +118,13 @@ public class MainUICtrl {
         if (current == null) return;
 
         if (favoriteButton.isSelected()) {
-            favoritesService.getFavoriteRecipeIds().add(current.getId());
+            favoritesService.addFavorite(current.getId());
             favoriteButton.setText("★");
         } else {
-            favoritesService.getFavoriteRecipeIds().remove(current.getId());
+            favoritesService.removeFavorite(current.getId());
             favoriteButton.setText("☆");
         }
 
-        favoritesService.saveFavorites();
         updateRecipeListView();
         recipeListView.refresh();
 
@@ -191,34 +189,26 @@ public class MainUICtrl {
         recipeListView.setItems(filterService.getFilteredList());
         filterService.updatePredicate();
 
-        favoritesService.loadFavorites();
         allRecipesTab.setSelected(true);
 
         // Sidebar selection updates main UI
         recipeListView.getSelectionModel().selectedItemProperty().
                 addListener((_, _, newVal) -> {
                     if (newVal != null) {
-                        selectedRecipe = newVal;
                         selectRecipe(newVal);
-                        boolean isFav = favoritesService.getFavoriteRecipeIds().
+                        boolean isFav = favoritesService.getFavorites().
                                 contains(newVal.getId());
                         favoriteButton.setSelected(isFav);
                         favoriteButton.setText(isFav ? "★" : "☆");
-                        changeRecipeLanguage(selectedRecipe);
+                        changeRecipeLanguage(newVal);
                     }else{
                         languageIndicator.setImage(null);
                     }
                 });
 
         refreshButton.setOnAction(_ -> {
-            Recipe currentlySelected = recipeListView.getSelectionModel().getSelectedItem();
-
             initialRecipeFetch();
-
-            if (currentlySelected != null) {
-                recipeListView.getSelectionModel().select(currentlySelected);
-                selectRecipe(currentlySelected);
-            }
+            cleanupDeletedFavorites();          // check after manual refresh
         });
 
         // Bottom sidebar buttons
@@ -228,16 +218,18 @@ public class MainUICtrl {
         // Placeholders for edit buttons
         editNameButton.setOnAction(_ -> handleEditName());
         editIngredientsButton.setOnAction(_ -> {
-            if (selectedRecipe != null) {
-                handleEditIngredients(selectedRecipe);
+            Recipe selected = recipeListView.getSelectionModel().getSelectedItem();
+            if (selected != null) {
+                handleEditIngredients(selected);
             } else {
                 System.out.println("Please select a recipe to edit");
             }
         });
 
         editInstructionsButton.setOnAction(_ -> {
-            if (selectedRecipe != null) {
-                handleEditInstructions(selectedRecipe);
+            Recipe selected = recipeListView.getSelectionModel().getSelectedItem();
+            if (selected != null) {
+                handleEditInstructions(selected);
             } else {
                 System.out.println("Please select a recipe to edit");
             }
@@ -262,7 +254,7 @@ public class MainUICtrl {
                     setText(null);
                 } else {
                     // Check if it's a favorite to add the star prefix
-                    boolean isFavorite = favoritesService.getFavoriteRecipeIds().
+                    boolean isFavorite = favoritesService.getFavorites().
                             contains(item.getId());
                     String prefix = isFavorite ? "★ " : "";
 
@@ -273,7 +265,7 @@ public class MainUICtrl {
 
         setupLanguageMenu();
         setupFilterLanguages();
-        updateLanguageButtonUI(LanguageManager.getLocale());
+        updateLanguageButtonUI(LanguageManager.getCurrentLocale());
 
     }
 
@@ -282,15 +274,13 @@ public class MainUICtrl {
      * being deleted, and also saves all changes
      */
     public void alterDeletes () {
-        for (Recipe removedRecipe : currentRecipes) {
-            Long id = removedRecipe.getId();
+        boolean changesMade = favoritesService.cleanupDeletedFavorites();
 
-            if (favoritesService.getFavoriteRecipeIds().contains(id)) {
-                showFavoriteDeletedWarning();
-                favoritesService.getFavoriteRecipeIds().remove(id);
-                favoritesService.saveFavorites();
-                deletedRecipe = false;
-            }
+        if (changesMade) {
+            deletedRecipe = false;
+            showFavoriteDeletedWarning();
+            filterService.updatePredicate();
+            recipeListView.refresh();
         }
     }
 
@@ -308,7 +298,6 @@ public class MainUICtrl {
         Platform.runLater(() -> webSocketService.
                 getMasterRecipeList().setAll(fetched));
         if (!currentRecipes.isEmpty()) {
-            selectedRecipe = currentRecipes.getFirst();
             recipeListView.getSelectionModel().select(0);
             selectRecipe(currentRecipes.getFirst());
         } else {
@@ -334,15 +323,13 @@ public class MainUICtrl {
             // Updates the sidebar when it senses changes in the database
             filterService.setFavoritesSelected(false);
 
+            Recipe selected = recipeListView.getSelectionModel().getSelectedItem();
             // Updates the recipe with all of its parameters
-            if (selectedRecipe != null) {
+            if (selected != null) {
                 currentRecipes.stream()
-                        .filter(r -> r.getId().equals(selectedRecipe.getId()))
+                        .filter(r -> r.getId().equals(selected.getId()))
                         .findFirst()
-                        .ifPresent(updated -> {
-                            this.selectedRecipe = updated;
-                            recipeNameLabel.setText(updated.getName());
-                        });
+                        .ifPresent(updated -> recipeNameLabel.setText(updated.getName()));
             }
         }
     }
@@ -414,41 +401,47 @@ public class MainUICtrl {
 
     // delete button
     private void handleDeleteRecipe() {
-        int selectedIndex = recipeListView.getSelectionModel().getSelectedIndex();
-        if (selectedIndex < 0 || selectedIndex >= currentRecipes.size()) return;
 
-        Recipe selectedRecipe = currentRecipes.get(selectedIndex);
+        Recipe selected = recipeListView.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            System.out.println("No recipe selected for deletion.");
+            return;
+        }
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle(LanguageManager.getString("main.delete.title"));
         alert.setHeaderText(
                 java.text.MessageFormat.format(
                         LanguageManager.getString("main.delete.header"),
-                        selectedRecipe.getName()
+                        selected.getName()
                 )
         );
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
                 try {
-                    long id = selectedRecipe.getId();
+                    long id = selected.getId();
                     System.out.println("Deleting recipe with ID: " + id);
 
-                    if (favoritesService.getFavoriteRecipeIds().contains(id)) {
+                    if (favoritesService.getFavorites().contains(id)) {
+                        favoritesService.removeFavorite(id);
                         showFavoriteDeletedWarning();
                     }
 
                     mainCtrl.handleRecipeBeingDeleted(id);
                     server.deleteRecipe(id);
+
                     //Response serverResponse = client.target(recipeEndpointUrl + "/" + id)
                             //.request()
                             //.delete();
 
                     //if (serverResponse.getStatus() == 204) {
                     unsubscribeFromRecipe();
-                    deletedRecipe = true;
                     //}
+
+                    deletedRecipe = true;
                 } catch (Exception e) {
-                    System.err.println("Error - could not delete recipe");
+
+                    System.err.println("Error - could not delete recipe" + e.getMessage());
                 }
             }
         });
@@ -460,14 +453,14 @@ public class MainUICtrl {
      */
     public void handleEditName() {
 
-        refreshSelectedRecipe();
+        Recipe selected = recipeListView.getSelectionModel().getSelectedItem();
 
         Dialog <String> dialogBox = new Dialog<>();
         dialogBox.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
         Button okButton = (Button) dialogBox.getDialogPane().lookupButton(ButtonType.OK);
         okButton.setDisable(false);
 
-        TextField editNameNameField = new TextField(selectedRecipe.getName());
+        TextField editNameNameField = new TextField(selected.getName());
         Label nameLabel = new Label(LanguageManager.getString("main.editName.label"));
 
 
@@ -484,10 +477,12 @@ public class MainUICtrl {
             return null;
         });
 
+        int indexClicked = currentRecipes.indexOf(selected);
+
         dialogBox.showAndWait().ifPresent(result -> {
-            if (selectedRecipe != null && !result.isBlank()) {
-                selectedRecipe.setName(result);
-                server.updateRecipe(selectedRecipe);
+            if (indexClicked >= 0) {
+                selected.setName(result);
+                server.updateRecipe(selected);
             }
         });
     }
@@ -529,22 +524,11 @@ public class MainUICtrl {
     }
 
     /**
-     * A getter for the selected recipe
-     * @return - Recipe - returns the currently selected recipe -
-     * useful for displaying ingredients, instructions, etc.
-     */
-    public Recipe getSelectedRecipe () {
-        return selectedRecipe;
-    }
-
-    /**
      * Downloads a recipe in a user-chosen directory
      */
     @FXML
     public void downloadRecipe() {
-        int index = recipeListView.getSelectionModel().getSelectedIndex();
-        if (index < 0 || index >= currentRecipes.size()) return;
-        Recipe selectedRecipe = currentRecipes.get(index);
+        Recipe selectedRecipe = recipeListView.getSelectionModel().getSelectedItem();
 
         StringBuilder content = new StringBuilder("Recipe: " + selectedRecipe.getName() + "\n\n");
 
@@ -594,13 +578,15 @@ public class MainUICtrl {
      */
     @FXML
     public void cloneRecipe(){
-        int index = recipeListView.getSelectionModel().getSelectedIndex();
-        if (index < 0 || index >= currentRecipes.size()) return;
-        Recipe selectedRecipe = currentRecipes.get(index);
+        Recipe selected = recipeListView.getSelectionModel().getSelectedItem();
+
+        if (selected == null) {
+            return;
+        }
 
         TextInputDialog dialog = new TextInputDialog(
                 LanguageManager.getString("main.clone.defaultPrefix")
-                        + " " + selectedRecipe.getName()
+                        + " " + selected.getName()
         );
         dialog.setTitle(LanguageManager.getString("main.clone.title"));
         dialog.setHeaderText(LanguageManager.getString("main.clone.header"));
@@ -609,7 +595,7 @@ public class MainUICtrl {
         Optional<String> result = dialog.showAndWait();
         if (result.isPresent()) {
             String newName = result.get();
-            Recipe cloneRecipe = new Recipe(selectedRecipe);
+            Recipe cloneRecipe = new Recipe(selected);
             cloneRecipe.setName(newName);
             server.sendRecipe(cloneRecipe);
         }
@@ -630,13 +616,7 @@ public class MainUICtrl {
             return;
         }
 
-        int selectedIndex = recipeListView.getSelectionModel().getSelectedIndex();
-
-        if (selectedIndex < 0 || selectedIndex >= currentRecipes.size()) {
-            return;
-        }
-
-        Recipe selectedRecipe = currentRecipes.get(selectedIndex);
+        Recipe selectedRecipe = recipeListView.getSelectionModel().getSelectedItem();
 
         if (selectedRecipe == null ||
                 selectedRecipe.getName() == null ||
@@ -651,15 +631,6 @@ public class MainUICtrl {
         }
 
         mainCtrl.showInformation(selectedRecipe);
-    }
-
-    /**
-     * A method for refreshing the selected recipe, so the parameter can be safely used
-     */
-    public void refreshSelectedRecipe() {
-        selectedRecipe = recipeListView
-                .getSelectionModel()
-                .getSelectedItem();
     }
 
     /**
@@ -680,6 +651,10 @@ public class MainUICtrl {
         filterService.searchForRecipe(searchQuery);
     }
 
+
+    public Recipe getSelectedRecipe () {
+        return recipeListView.getSelectionModel().getSelectedItem();
+    }
 
     /**
      * A method which updates the UI of the language button
@@ -720,7 +695,7 @@ public class MainUICtrl {
             languageButton.getItems().add(setupMenuItemIcons(displayName, code));
         }
 
-        updateLanguageButtonUI(LanguageManager.getLocale());
+        updateLanguageButtonUI(LanguageManager.getCurrentLocale());
     }
 
     /**
@@ -730,7 +705,7 @@ public class MainUICtrl {
     public void changeLanguage(Locale newLocale) {
         LanguageManager.setLocale(newLocale);
 
-        mainCtrl.setSelectedRecipeForReload(getSelectedRecipe());
+        mainCtrl.setSelectedRecipeForReload(recipeListView.getSelectionModel().getSelectedItem());
         updateLanguageButtonUI(newLocale);
 
         mainCtrl.reloadScenesForNewLanguage();
@@ -758,7 +733,7 @@ public class MainUICtrl {
     public void setupFilterLanguages () {
         filterLanguagesButton.getItems().clear();
 
-        Set<Locale> savedFilters = LanguageManager.loadFilterLocales();
+        List<Locale> savedFilters = LanguageManager.loadFilterLocales();
         this.filterService.setFilteredLocales(savedFilters.stream().toList());
 
         List<String> supportedCodes = List.of("en", "nl", "bg", "ro", "sk", "de");

@@ -1,23 +1,15 @@
 package client.service;
 
-import client.network.WebSocketService;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import client.configuration.ConfigManager;
 import jakarta.inject.Inject;
 import org.springframework.stereotype.Service;
 import recipes.Recipe;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 @Service
 public class FavoritesService {
 
-    // File path for saving favorites
-    private static final File FAVORITES_FILE = new File("favorites.json");
-
-    private Set<Long> favoriteRecipeIds = new HashSet<>();
     private final WebSocketService webSocketService;
 
     /**
@@ -29,9 +21,10 @@ public class FavoritesService {
         this.webSocketService = webSocketService;
     }
 
-    public Set<Long> getFavoriteRecipeIds() {
-        return favoriteRecipeIds;
+    public List <Long> getFavorites() {
+        return ConfigManager.getConfig().getFavoriteRecipeIds();
     }
+
 
     /**
      * Cleans up the local favorites list by removing recipe IDs that no longer
@@ -45,10 +38,10 @@ public class FavoritesService {
     public boolean cleanupDeletedFavorites() {
         List<Recipe> recipesFromMaster = webSocketService.getMasterRecipeList();
 
-        Set<Long> stillFavoriteIds = new HashSet<>();
+        List<Long> stillFavoriteIds = new ArrayList<>();
         boolean anyDeleted = false;
 
-        for (Long favId : favoriteRecipeIds) {
+        for (Long favId : getFavorites()) {
             // Check if this ID still exists in currentRecipes (master list from WebSocket)
             boolean existsInList = recipesFromMaster.stream()
                     .anyMatch(r -> Objects.equals(r.getId(), favId));
@@ -61,46 +54,33 @@ public class FavoritesService {
         }
 
         if (anyDeleted) {
-            favoriteRecipeIds = stillFavoriteIds;
-            saveFavorites();
+            ConfigManager.getConfig().setFavoriteRecipeIds(stillFavoriteIds);
+            ConfigManager.save();
             return true;  // so favorites tab hides dead ones
         }
         return false;
     }
 
-
     /**
-     * reads a list of favorite recipe IDs from a local file (favorites.json)
-     * and loads them into the application's memory.
+     * A method which adds the recipe to the list of favorites
+     * @param id - the favorite recipe to be added
      */
-    public void loadFavorites() {
-        if (!FAVORITES_FILE.exists()) return;
-
-        // Creates a new Jackson ObjectMapper instance, the tool used to
-        // convert between Java objects and JSON text
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            // Reads the file content and converts the JSON data into a Set of Long integers.
-            // The TypeReference is required because Set<Long> is a generic type,
-            // and Java needs this extra help to understand exactly
-            // what type of collection to create.
-            favoriteRecipeIds = mapper.readValue(FAVORITES_FILE, new TypeReference<>() {
-            });
-        } catch (IOException e) {
-            System.err.println("Error - favorites file not found - aborting load");
+    public void addFavorite (Long id) {
+        List <Long> favorites = ConfigManager.getConfig().getFavoriteRecipeIds();
+        if (!favorites.contains(id)) {
+            favorites.add(id);
+            ConfigManager.save();
         }
     }
 
     /**
-     *  takes the current set of favorite recipe IDs from memory and
-     *  writes them into the favorites.json file.
+     * A method which removes a given recipe from the favorites list
+     * @param id - the recipe to be removed from the favorites
      */
-    public void saveFavorites() {
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            mapper.writeValue(FAVORITES_FILE, favoriteRecipeIds);
-        } catch (IOException e) {
-            System.err.println("Error - favorites file could not be found - aborting save");
+    public void removeFavorite (Long id) {
+        List<Long> favorites = ConfigManager.getConfig().getFavoriteRecipeIds();
+        if (favorites.remove(id)) {
+            ConfigManager.save();
         }
     }
 }

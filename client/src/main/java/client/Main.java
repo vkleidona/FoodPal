@@ -5,7 +5,8 @@ import static com.google.inject.Guice.createInjector;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import client.network.WebSocketService;
+import client.configuration.ConfigManager;
+import client.service.WebSocketService;
 import client.scenes.food_item.AddFoodItemCtrl;
 import client.scenes.food_item.FoodItemMainCtrl;
 import client.scenes.main.CreateRecipeCtrl;
@@ -23,12 +24,12 @@ import javafx.application.Application;
 
 
 import javafx.stage.Stage;
-import shopping.ShoppingList;
 
 public class Main extends Application {
 
     private static final Injector INJECTOR = createInjector(new MyModule());
     private static final MyFXML FXML = new MyFXML(INJECTOR);
+    private WebSocketService webSocketService;
 
     /**
      * The Main method of the Application - it starts the client
@@ -38,6 +39,17 @@ public class Main extends Application {
      * @throws IOException - a possible Exception with the file
      */
     public static void main(String[] args) throws URISyntaxException, IOException {
+        String customConfig = null;
+
+        for (int i = 0; i < args.length; i++) {
+            if ("-cfg".equals(args[i]) && i + 1 < args.length) {
+                customConfig = args[i + 1];
+                break;
+            }
+        }
+
+        ConfigManager.init(customConfig);
+
         launch();
     }
 
@@ -80,8 +92,8 @@ public class Main extends Application {
         var addRecipeToShoppingList = FXML.load(AddRecipeToShoppingListCtrl.class,
                 "client", "scenes", "AddRecipeToShoppingList.fxml");
 
-        WebSocketService wss = INJECTOR.getInstance(client.network.WebSocketService.class);
-        wss.connect(() -> {
+        webSocketService = INJECTOR.getInstance(WebSocketService.class);
+        webSocketService.connect(() -> {
             System.out.println("Session established! Starting UI...");
             mainCtrl.initialize(primaryStage, mainUI, editInstructions,
                     createRecipe, addFoodItem, foodItemMain, editIngredients,
@@ -98,7 +110,12 @@ public class Main extends Application {
      */
     @Override
     public void stop() throws Exception {
-        INJECTOR.getInstance(ShoppingList.class).storeFile();
+        ConfigManager.save();
+
+        if (webSocketService != null) {
+            webSocketService.disconnect();
+        }
         super.stop();
+        System.exit(0);
     }
 }

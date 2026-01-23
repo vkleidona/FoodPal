@@ -13,7 +13,7 @@ import javafx.scene.layout.VBox;
 import recipes.FoodItem;
 import recipes.Ingredient;
 import recipes.Recipe;
-import client.i18n.LanguageManager;
+import client.configuration.LanguageManager;
 import java.text.MessageFormat;
 import java.util.*;
 
@@ -207,7 +207,7 @@ public class InformationCtrl {
             languageButton.getItems().add(setupMenuItemIcons(displayName, code));
         }
 
-        updateLanguageButtonUI(LanguageManager.getLocale());
+        updateLanguageButtonUI(LanguageManager.getCurrentLocale());
     }
 
     /**
