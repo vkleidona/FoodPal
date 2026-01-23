@@ -96,4 +96,60 @@ public class FoodItemMainCtrlTest extends ApplicationTest {
         assertEquals(2, ctrl.getFoodItemListView().getItems().size());
         assertEquals("Banana", ctrl.getFoodItemListView().getItems().getFirst().getName());
     }
+
+    @Test
+    public void testRefreshFoodItemsAddsItemsToList() {
+        FoodItem item = new FoodItem();
+        item.setName("Milk");
+
+        when(serverUtils.getAllFoodItems()).thenReturn(List.of(item));
+
+        ctrl.refreshFoodItems();
+
+        assertEquals(1, ctrl.getFoodItemListView().getItems().size());
+        assertEquals("Milk",
+                ctrl.getFoodItemListView().getItems().getFirst().getName());
+    }
+
+    @Test
+    public void testUpdateFoodDetailsWithNullClearsLabels() {
+        ctrl.updateFoodDetails(null);
+
+        assertFalse(ctrl.getFoodNameLabel().getText().isEmpty());
+        assertEquals("", ctrl.getRecipeUsages().getText());
+        assertEquals("", ctrl.getKcalLabel().getText());
+    }
+
+    @Test
+    public void testUpdateFoodDetailsWithItemSetsName() {
+        FoodItem item = new FoodItem();
+        item.setName("Cheese");
+        item.setKcal(300);
+
+        when(serverUtils.getFoodItemRecipeUsage(item)).thenReturn(0);
+
+        ctrl.updateFoodDetails(item);
+
+        assertTrue(ctrl.getFoodNameLabel().getText().contains("Cheese"));
+        assertTrue(ctrl.getKcalLabel().getText().contains("300"));
+    }
+
+    @Test
+    public void testFoodItemListInitiallyEmpty() {
+        assertNotNull(ctrl.getFoodItemListView());
+        assertTrue(ctrl.getFoodItemListView().getItems().isEmpty());
+    }
+
+    @Test
+    public void testSelectingItemUpdatesCurrentSelection() {
+        FoodItem item = new FoodItem();
+        item.setId(10L);
+        item.setName("Butter");
+
+        ctrl.getFoodItemListView().getItems().add(item);
+        ctrl.getFoodItemListView().getSelectionModel().select(item);
+
+        assertEquals(item,
+                ctrl.getFoodItemListView().getSelectionModel().getSelectedItem());
+    }
 }

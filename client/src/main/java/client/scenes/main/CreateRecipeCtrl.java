@@ -1,9 +1,11 @@
 package client.scenes.main;
 
 import client.utils.MainCtrl;
+import recipes.IngredientDraft;
 import client.service.LanguageService;
 import client.utils.ServerUtils;
 import jakarta.inject.Inject;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -268,6 +270,7 @@ public class CreateRecipeCtrl {
     public void initialize() {
         if (mainCtrl != null && mainCtrl.getDraftRecipe() != null) {
             restoreDraft(mainCtrl.getDraftRecipe());
+            handleRefresh();
         }
         currentLocale = LanguageManager.getCurrentLocale();
         setupLanguageMenu();
@@ -332,7 +335,6 @@ public class CreateRecipeCtrl {
      * the current version of the draft
      */
     public void restoreDraft(Recipe draft) {
-        // restore Name & Servings
         mainCtrl.showCreateRecipe();
 
         nameTextField.setText(draft.getName());
@@ -340,47 +342,43 @@ public class CreateRecipeCtrl {
             servingsTextField.setText(String.valueOf(draft.getServings()));
         }
 
-        // Clear existing rows
         ingredientsVBox.getChildren().clear();
+        preparationVBox.getChildren().clear();
 
-        // Collect ingredients and sort alphabetically by name
-        List<Ingredient> sortedIngredients = new ArrayList<>(draft.getIngredients());
-        String createItemLabel = LanguageManager.getString("combo.createFoodItem");
+        isRestoringDraft = true;  // <--- start guard
 
-        sortedIngredients.sort(Comparator.comparing(ing -> {
-            String name = ing.getFoodType().getName();
-            return createItemLabel.equals(name) ? "" : name.toLowerCase();
-        }));
+        if (draft.getIngredientDrafts() != null) {
+            for (IngredientDraft ing : draft.getIngredientDrafts()) {
+                handleAddIngredient();
 
-        // Recreate rows in sorted order
-        for (Ingredient ing : sortedIngredients) {
-            handleAddIngredient();
+                HBox lastRow = (HBox) ingredientsVBox.getChildren().getLast();
+                ComboBox<String> nameBox = (ComboBox<String>) lastRow.getChildren().get(0);
+                TextField qtyField = (TextField) lastRow.getChildren().get(1);
+                ChoiceBox<String> unitChoice = (ChoiceBox<String>) lastRow.getChildren().get(2);
 
-            // get the last added row
-            HBox lastRow = (HBox) ingredientsVBox.getChildren().getLast();
-
-            ComboBox<String> nameBox = (ComboBox<String>) lastRow.getChildren().get(0);
-            TextField qtyField = (TextField) lastRow.getChildren().get(1);
-            ChoiceBox<String> unitChoice = (ChoiceBox<String>) lastRow.getChildren().get(2);
-
-            String savedName = ing.getFoodType().getName();
-            if (createItemLabel.equals(savedName)) {
-                nameBox.setValue(null);
-                javafx.application.Platform.runLater(() -> {
-                    nameBox.getSelectionModel().clearSelection();
-                    nameBox.getEditor().clear();
-                });
-            } else {
-                nameBox.setValue(savedName);
+                nameBox.setValue(ing.name);
+                qtyField.setText(ing.quantityText);
+                unitChoice.setValue(ing.unit);
             }
+        }
 
-            qtyField.setText(String.valueOf(ing.getQuantity()));
-            unitChoice.setValue(ing.getMeasurement());
+        isRestoringDraft = false; // <--- end guard
+
+        if (draft.getPreparationDrafts() != null) {
+            for (String step : draft.getPreparationDrafts()) {
+                TextField stepField = new TextField(step);
+                Button deleteButton = new Button("x");
+                HBox row = new HBox(10, stepField, deleteButton);
+                deleteButton.setOnAction(_ -> preparationVBox.getChildren().remove(row));
+                preparationVBox.getChildren().add(row);
+            }
         }
 
         mainCtrl.setDraftRecipe(null);
         handleRefresh();
     }
+
+
 
     /**
      * helper: iterates through UI rows to build the Ingredient list
@@ -408,7 +406,7 @@ public class CreateRecipeCtrl {
 
                 double quantity;
                 try {
-                    quantity = Integer.parseInt(qtyStr);
+                    quantity = Double.parseDouble(qtyStr);
                 } catch (NumberFormatException e) {
                     showAlert(Alert.AlertType.ERROR,
                             "alert.ingredient.invalidQuantity.title",
@@ -531,15 +529,15 @@ public class CreateRecipeCtrl {
         String createItemLabel = LanguageManager.getString("combo.createFoodItem");
         foodItemBox.getItems().add(createItemLabel);
 
-        // make sure the food item is added
-        javafx.application.Platform.runLater(() ->
-                foodItemBox.getSelectionModel().clearSelection());
-
         foodItemBox.setOnAction(_ -> {
+            if (isRestoringDraft) {
+                return; // ignore events while restoring
+            }
             if (LanguageManager.getString("combo.createFoodItem").equals(foodItemBox.getValue())) {
                 handleCreateNewFoodItem();
             }
         });
+
 
         TextField quantityField = new TextField();
         quantityField.setPromptText(LanguageManager.getString("prompt.ingredient.qty"));
@@ -582,7 +580,6 @@ public class CreateRecipeCtrl {
      * Saves current progress and redirects to Add Food Item screen
      */
     public void handleCreateNewFoodItem() {
-        // create a temporary recipe object to hold the draft data
         Recipe draft = new Recipe(nameTextField.getText(), currentLocale);
 
         try {
@@ -590,25 +587,49 @@ public class CreateRecipeCtrl {
                 draft.setServings(Integer.parseInt(servingsTextField.getText()));
             }
         } catch (NumberFormatException ignored) {
-            System.err.println("Incorrect number entered; Servings can only be an integer");
+            // keep invalid text only in the TextField
         }
 
-        List<Ingredient> partialIngredients = new ArrayList<>();
-
-        // loop through existing UI rows to save them
+        List<IngredientDraft> ingredientDrafts = new ArrayList<>();
         for (Node node : ingredientsVBox.getChildren()) {
-            partialIngredients.add(updateUIRow(node));
-        }
-        draft.setIngredients(partialIngredients);
+            if (node instanceof HBox row) {
+                ComboBox<String> nameBox = (ComboBox<String>) row.getChildren().get(0);
+                TextField qtyField = (TextField) row.getChildren().get(1);
+                ChoiceBox<String> unitChoice = (ChoiceBox<String>) row.getChildren().get(2);
 
-        // save to MainCtrl and Switch Scene
+                String name = nameBox.getValue();
+                String qty = qtyField.getText();
+                String unit = unitChoice.getValue();
+
+                String createItemLabel = LanguageManager.getString("combo.createFoodItem");
+                if (createItemLabel.equals(name)) {
+                    name = null;              // treat that one as blank in the draft
+                }
+
+                ingredientDrafts.add(new IngredientDraft(name, qty, unit));
+            }
+        }
+
+        draft.setIngredientDrafts(ingredientDrafts);
+
+        List<String> stepDrafts = new ArrayList<>();
+        for (Node node : preparationVBox.getChildren()) {
+            if (node instanceof HBox row) {
+                TextField stepField = (TextField) row.getChildren().getFirst();
+                stepDrafts.add(stepField.getText());
+            }
+        }
+        draft.setPreparationDrafts(stepDrafts);
+
         if (mainCtrl != null) {
             mainCtrl.setDraftRecipe(draft);
             mainCtrl.showAddFoodItem();
+            Platform.runLater(this::handleRefresh);
         } else {
             System.err.println("MainCtrl is null, cannot redirect!");
         }
     }
+
 
     /**
      * A helper method for updating each UI row
@@ -694,6 +715,9 @@ public class CreateRecipeCtrl {
         return recipe;
     }
 
+    private boolean isRestoringDraft = false;
+
+
     /**
      * A method which handles the refreshing of the list of FoodItems
      * inside the dropdown menu after a new FoodItem has been added
@@ -709,11 +733,6 @@ public class CreateRecipeCtrl {
                 ComboBox<String> box = (ComboBox<String>) row.getChildren().getFirst();
 
                 String currentSelection = box.getValue();
-
-                if (box.getValue() != null) {
-                    box.getSelectionModel().clearSelection();
-                    box.setValue(null);
-                }
 
                 box.getItems().clear();
 
