@@ -97,7 +97,8 @@ public class ShoppingListMainCtrl {
                     setGraphic(null);
                 } else {
                     // set up a label (containing each Ingredient), and Edit and Delete buttons
-                    Label nameLabel = new Label(ingredientFormatter(ingredient));
+                    Label nameLabel = new Label((getIndex() + 1) + ". " +
+                            ingredientFormatter(ingredient));
 
                     HBox container = getHBox(ingredient, nameLabel);
 

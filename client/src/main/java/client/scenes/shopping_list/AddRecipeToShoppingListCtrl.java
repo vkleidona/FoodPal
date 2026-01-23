@@ -99,7 +99,8 @@ public class AddRecipeToShoppingListCtrl {
                     setText(null);
                     setGraphic(null);
                 } else {
-                    Label nameLabel = new Label(ingredientFormatter(ingredient));
+                    Label nameLabel = new Label((getIndex() + 1) + ". " +
+                            ingredientFormatter(ingredient));
 
                     Button editButton = new Button("Edit");
                     Button deleteButton = new Button("Delete");
@@ -258,7 +259,9 @@ public class AddRecipeToShoppingListCtrl {
         shoppingListService.loadItemsIntoChoiceBox(unitChoice);
 
         if (editing) {
-            foodItemField.setValue(ingredient.getFoodName());
+            if (ingredient.getFoodName() != null) {
+                foodItemField.setValue(ingredient.getFoodName());
+            }
             quantityField.setText(String.valueOf(ingredient.getQuantity()));
             unitChoice.setValue(ingredient.getMeasurement());
         }
