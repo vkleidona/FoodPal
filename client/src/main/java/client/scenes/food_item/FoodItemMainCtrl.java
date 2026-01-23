@@ -219,24 +219,29 @@ public class FoodItemMainCtrl {
      * @param foodItem - the FoodItem to be selected
      */
     public void selectFoodItem (FoodItem foodItem) {
+        currentlySelected = foodItem;
         updateFoodDetails(foodItem);
 
-        // If we are currently viewing another foodItem, unsubscribe from it
-        if (lastSubscribedID == null || !lastSubscribedID.equals(currentlySelected.getId())) {
-            unsubscribeFromFoodItem();
-        }
+        unsubscribeFromFoodItem();
+        lastSubscribedID = currentlySelected.getId();
 
-        foodItemSubscription = webSocketService.
-                subscribeToFoodItem(currentlySelected.getId(), updated -> Platform.runLater(() -> {
-                    updateFoodDetails(updated);
-                    for (int i = 0; i < allFoodItems.size(); i++) {
-                        if (allFoodItems.get(i).getId().equals(updated.getId())) {
-                            allFoodItems.set(i, updated);
-                            break;
+        foodItemSubscription = webSocketService.subscribeToFoodItem(foodItem.getId(), updated ->
+                Platform.runLater(() -> {
+                    if (currentlySelected != null && currentlySelected.getId().
+                            equals(updated.getId())) {
+                        currentlySelected = updated;
+                        updateFoodDetails(updated);
+
+                        for (int i = 0; i < allFoodItems.size(); i++) {
+                            if (allFoodItems.get(i).getId().equals(updated.getId())) {
+                                allFoodItems.set(i, updated);
+                                break;
+                            }
                         }
                     }
-                }));
-        lastSubscribedID = currentlySelected.getId();
+                })
+        );
+
     }
 
     /**
@@ -282,18 +287,26 @@ public class FoodItemMainCtrl {
      * Updates the List of FoodItems, listening to the server pushing any changes
      */
     public void updateListView () {
-
-        // Updates the recipe with all of its parameters
         if (currentlySelected != null) {
+            boolean stillExists = allFoodItems.stream()
+                    .anyMatch(f -> f.getId().equals(currentlySelected.getId()));
+
+            if (!stillExists) {
+                currentlySelected = null;
+                unsubscribeFromFoodItem();
+                updateFoodDetails(null);
+                return;
+            }
+
             allFoodItems.stream()
                     .filter(f -> f.getId().equals(currentlySelected.getId()))
                     .findFirst()
                     .ifPresent(updated -> {
                         this.currentlySelected = updated;
-                        foodNameLabel.setText(updated.getName());
+                        updateFoodDetails(updated);
                     });
-        }
 
+        }
     }
 
     /**
@@ -398,9 +411,8 @@ public class FoodItemMainCtrl {
      */
     @FXML
     public void refreshFoodItems(){
-        List<FoodItem> allFoodItems = serverUtils.getAllFoodItems();
-        ObservableList<FoodItem> items = FXCollections.observableArrayList(allFoodItems);
-        foodItemListView.setItems(items);
+        List<FoodItem> serverFoodItems = serverUtils.getAllFoodItems();
+        allFoodItems.setAll(serverFoodItems);
     }
 
     /**

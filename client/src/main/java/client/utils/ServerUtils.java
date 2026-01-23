@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import client.configuration.ConfigManager;
+import client.service.WebSocketService;
+import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.MediaType;
 import org.glassfish.jersey.client.ClientConfig;
 
@@ -49,7 +51,10 @@ public class ServerUtils {
      */
     public void deleteRecipe (Long id) {
         ClientBuilder.newClient(new ClientConfig())
-                .target(getServerUrl() + "/api/recipes/" + id)
+                .target(getServerUrl())
+                .path("api")
+                .path("recipes")
+                .path(id.toString())
                 .request(APPLICATION_JSON)
                 .delete();
     }
@@ -60,7 +65,10 @@ public class ServerUtils {
      */
     public void updateRecipe(Recipe recipe) {
         ClientBuilder.newClient(new ClientConfig())
-                .target(getServerUrl() + "/api/recipes/" + recipe.getId())
+                .target(getServerUrl())
+                .path("api")
+                .path("recipes")
+                .path(recipe.getId().toString())
                 .request(APPLICATION_JSON)
                 .put(Entity.entity(recipe, APPLICATION_JSON), Recipe.class);
     }
@@ -72,8 +80,12 @@ public class ServerUtils {
      */
     public void updateIngredients (Recipe recipe, List <Ingredient> ingredients) {
         ClientBuilder.newClient(new ClientConfig())
-                .target(getServerUrl() + "/api/recipes/")
-                .path("/ingredients/set/" + recipe.getId())
+                .target(getServerUrl())
+                .path("api")
+                .path("recipes")
+                .path("ingredients")
+                .path("set")
+                .path(recipe.getId().toString())
                 .request(APPLICATION_JSON)
                 .put(Entity.entity(ingredients, APPLICATION_JSON), Recipe.class);
     }
@@ -86,7 +98,10 @@ public class ServerUtils {
      */
     public FoodItem getFoodItemByName (String foodType) {
         return ClientBuilder.newClient(new ClientConfig()).
-                target(getServerUrl()).path("/api/fooditems/search").
+                target(getServerUrl())
+                .path("api")
+                .path("fooditems")
+                .path("search").
                 queryParam("name", foodType).
                 request(APPLICATION_JSON).
                 get(FoodItem.class);
@@ -98,7 +113,9 @@ public class ServerUtils {
      */
     public List<Recipe> getAllRecipes() {
         return ClientBuilder.newClient(new ClientConfig()).
-                target(getServerUrl()).path("/api/recipes")
+                target(getServerUrl())
+                .path("api")
+                .path("recipes")
                 .request(MediaType.APPLICATION_JSON)
                 .get(new GenericType<>() {
                 });
@@ -111,7 +128,10 @@ public class ServerUtils {
      */
     public List<Recipe> searchRecipesByTerm(String term){
         return ClientBuilder.newClient(new ClientConfig())
-                .target(getServerUrl()).path("/api/recipes/searchByTerm")
+                .target(getServerUrl())
+                .path("api")
+                .path("recipes")
+                .path("searchByTerm")
                 .queryParam("keyword", term)
                 .request(APPLICATION_JSON)
                 .get(new GenericType<>() {
@@ -125,7 +145,9 @@ public class ServerUtils {
      */
     public FoodItem addFoodItem(FoodItem foodItem) {
         return ClientBuilder.newClient(new ClientConfig())
-                .target(getServerUrl()).path("/api/fooditems")
+                .target(getServerUrl())
+                .path("api")
+                .path("fooditems")
                 .request(APPLICATION_JSON)
                 .post(Entity.entity(foodItem, APPLICATION_JSON), FoodItem.class);
     }
@@ -137,7 +159,9 @@ public class ServerUtils {
     public List<FoodItem> getAllFoodItems() {
         try {
             return ClientBuilder.newClient(new ClientConfig())
-                    .target(getServerUrl()).path("/api/fooditems")
+                    .target(getServerUrl())
+                    .path("api")
+                    .path("fooditems")
                     .request(APPLICATION_JSON)
                     .get(new GenericType<>() {
                     });
@@ -153,7 +177,10 @@ public class ServerUtils {
      */
     public void deleteFoodItem(Long id) {
         ClientBuilder.newClient(new ClientConfig())
-                .target(getServerUrl()).path("/api/fooditems/" + id)
+                .target(getServerUrl())
+                .path("api")
+                .path("fooditems")
+                .path(id.toString())
                 .request(APPLICATION_JSON)
                 .delete();
     }
@@ -166,7 +193,10 @@ public class ServerUtils {
     public void updateFoodItem(Long id, FoodItem foodItem) {
         foodItem.setId(id);
         ClientBuilder.newClient(new ClientConfig())
-                .target(getServerUrl()).path("/api/fooditems/" + foodItem.getId())
+                .target(getServerUrl())
+                .path("api")
+                .path("fooditems")
+                .path(foodItem.getId().toString())
                 .request(APPLICATION_JSON)
                 .put(Entity.entity(foodItem, APPLICATION_JSON), FoodItem.class);
     }
@@ -178,7 +208,11 @@ public class ServerUtils {
      */
     public int getFoodItemRecipeUsage(FoodItem foodItem) {
         return ClientBuilder.newClient(new ClientConfig())
-                .target(getServerUrl()).path("/api/ingredients/usage/" + foodItem.getId())
+                .target(getServerUrl())
+                .path("api")
+                .path("ingredients")
+                .path("usage")
+                .path(foodItem.getId().toString())
                 .request(APPLICATION_JSON).get(Integer.class);
     }
 
@@ -187,8 +221,10 @@ public class ServerUtils {
      * @param recipe - the recipe to be sent to the server
      */
     public void sendRecipe(Recipe recipe) {
-        String recipeEndpointUrl = "http://localhost:8080/api/recipes";
-        ClientBuilder.newClient(new ClientConfig()).target(recipeEndpointUrl)
+        ClientBuilder.newClient(new ClientConfig())
+                .target(getServerUrl())
+                .path("api")
+                .path("recipes")
                 .request(MediaType.APPLICATION_JSON)
                 .post(Entity.entity(recipe, MediaType.APPLICATION_JSON));
     }
