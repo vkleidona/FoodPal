@@ -223,6 +223,7 @@ public class FoodItemMainCtrl {
         updateFoodDetails(foodItem);
 
         unsubscribeFromFoodItem();
+        lastSubscribedID = currentlySelected.getId();
 
         foodItemSubscription = webSocketService.subscribeToFoodItem(foodItem.getId(), updated ->
                 Platform.runLater(() -> {
@@ -241,7 +242,6 @@ public class FoodItemMainCtrl {
                 })
         );
 
-        lastSubscribedID = currentlySelected.getId();
     }
 
     /**

@@ -1,3 +1,0 @@
-2026-01-22 16:29:53.096145+01:00 jdbc[42]: exception
-org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "SELECT * [*]FROMINGREDIENT  NUTRITION"; SQL statement:
-SELECT * FROMINGREDIENT  NUTRITION [42000-232]

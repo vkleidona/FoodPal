@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import client.configuration.ConfigManager;
+import client.service.WebSocketService;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.MediaType;
 import org.glassfish.jersey.client.ClientConfig;
@@ -99,7 +100,7 @@ public class ServerUtils {
         return ClientBuilder.newClient(new ClientConfig()).
                 target(getServerUrl())
                 .path("api")
-                .path("recipes")
+                .path("fooditems")
                 .path("search").
                 queryParam("name", foodType).
                 request(APPLICATION_JSON).
