@@ -82,8 +82,7 @@ public class Recipe implements Serializable {
         List<Ingredient> old = other.getIngredients();
         if (old != null){
             for (Ingredient current : old) {
-                Ingredient copy = new Ingredient(current.getFoodType(), current.getQuantity(),
-                        current.getMeasurement());
+                Ingredient copy = new Ingredient(current);
                 copy.setRecipe(this);
                 this.ingredients.add(copy);
             }
@@ -237,6 +236,7 @@ public class Recipe implements Serializable {
     public void setPreparationDrafts(List<String> preparationDrafts) {
         this.preparationDrafts = preparationDrafts;
     }
+
 
 
 }
