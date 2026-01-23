@@ -54,6 +54,10 @@ public class ShoppingListMainCtrl {
     private final LanguageService languageService;
     private final ShoppingListService shoppingListService;
 
+    private boolean editing;
+
+    private int ogIndex;
+
     /**
      * A constructor which uses dependency injection
      * @param server - an instance of the ServerUtils class with useful methods for
@@ -100,28 +104,27 @@ public class ShoppingListMainCtrl {
                     Label nameLabel = new Label((getIndex() + 1) + ". " +
                             ingredientFormatter(ingredient));
 
-                    HBox container = getHBox(ingredient, nameLabel);
+                    Button editButton = new Button("Edit");
+                    Button deleteButton = new Button("Delete");
+
+                    // the edit button shows the dialog box for changing an ingredient
+                    editButton.setOnAction(_ -> {
+                        showDialog(ingredient);
+                        editing = true;
+                        ogIndex = indexProperty().get();
+                    });
+
+                    // the delete button deletes the ingredient
+                    deleteButton.setOnAction(_ -> deleteIngredient(ingredient));
+
+                    HBox container = new HBox(10, nameLabel, editButton, deleteButton);
+                    container.setAlignment(Pos.CENTER_LEFT);
 
                     setGraphic(container);
                 }
             }
         });
         setupLanguageMenu();
-    }
-
-    public HBox getHBox(Ingredient ingredient, Label nameLabel) {
-        Button editButton = new Button("Edit");
-        Button deleteButton = new Button("Delete");
-
-        // the edit button shows the dialog box for changing an ingredient
-        editButton.setOnAction(_ -> showDialog(ingredient, false));
-
-        // the delete button deletes the ingredient
-        deleteButton.setOnAction(_ -> deleteIngredient(ingredient));
-
-        HBox container = new HBox(10, nameLabel, editButton, deleteButton);
-        container.setAlignment(Pos.CENTER_LEFT);
-        return container;
     }
 
     /**
@@ -227,7 +230,7 @@ public class ShoppingListMainCtrl {
      */
     @FXML
     public void addIngredient () {
-        showDialog(null, false);
+        showDialog(null);
     }
 
     /**
@@ -255,32 +258,34 @@ public class ShoppingListMainCtrl {
     public void handleIngredientEdit (Ingredient ingredient) {
         ObservableList<Ingredient> list = shoppingListService.getIngredientsObservableList();
 
-        int index = list.indexOf(ingredient);
+        int index = ogIndex;
+
+        if (index == -1) {
+            index = ingredientsListView.getSelectionModel().getSelectedIndex();
+        }
 
         if (index != -1) {
-            list.set(index, ingredient);
+            shoppingListService.getIngredientsObservableList().set(index, ingredient);
         } else {
-            int selected = ingredientsListView.getSelectionModel().getSelectedIndex();
-            if (selected >= 0) {
-                list.set(selected, ingredient);
-            }
+            addIngredientToShoppingList(ingredient);
         }
         shoppingListService.saveShoppingList();
+        editing = false;
     }
 
     /**
      * Handles the functionality for adding / changing an ingredient
      * depending on the button clicked
      * @param ingredient - Ingredient to be edited
-     * @param addingFoodItem - a flag whether the user is adding a FoodItem
      */
-    public void showDialog(Ingredient ingredient, boolean addingFoodItem) {
-        boolean isEditing = (ingredient != null);
+    public void showDialog(Ingredient ingredient) {
+        boolean helperEditing = editing;
+        editing = (ingredient != null);
 
         Dialog<Ingredient> dialogBox = setupIngredientDialog(ingredient);
 
         dialogBox.showAndWait().ifPresent(result -> {
-            if (isEditing && !addingFoodItem) {
+            if (helperEditing) {
                 handleIngredientEdit(result);
             } else {
                 addIngredientToShoppingList(result);
@@ -308,7 +313,9 @@ public class ShoppingListMainCtrl {
         shoppingListService.loadItemsIntoChoiceBox(unitChoice);
 
         if (editing) {
-            foodItemField.setValue(ingredient.getFoodName());
+            if (ingredient.getFoodName() != null) {
+                foodItemField.setValue(ingredient.getFoodName());
+            }
             quantityField.setText(String.valueOf(ingredient.getQuantity()));
             unitChoice.setValue(ingredient.getMeasurement());
         }
@@ -403,9 +410,7 @@ public class ShoppingListMainCtrl {
         dialogBox.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
         Optional <ButtonType> buttonType = dialogBox.showAndWait();
         if (buttonType.isPresent() && buttonType.get() == ButtonType.OK) {
-            if (ingredient == null) {
-                mainCtrl.showAddFoodItemFromShoppingList(foodItemEntry);
-            }
+            mainCtrl.showAddFoodItemFromShoppingList(foodItemEntry);
         }else{
             mainCtrl.showShoppingList();
         }
@@ -421,6 +426,6 @@ public class ShoppingListMainCtrl {
                 shoppingListService.getMeasurement());
         currentIngredient.setFoodType(server.getFoodItemByName(ingredientName));
         mainCtrl.showShoppingList();
-        showDialog(currentIngredient, true);
+        showDialog(currentIngredient);
     }
 }

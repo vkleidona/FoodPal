@@ -150,7 +150,7 @@ public class AddFoodItemCtrl {
             fatsValue.clear();
 
             // Save to server
-            if (editingItem == null) {
+            if (editingItem == null || cameFromAddRecipeToShoppingList || cameFromShoppingList) {
                 saveAddFoodItem(newItem);
             } else {
                 saveEditFoodItem(newItem);
