@@ -411,6 +411,7 @@ public class ShoppingListMainCtrl {
         Optional <ButtonType> buttonType = dialogBox.showAndWait();
         if (buttonType.isPresent() && buttonType.get() == ButtonType.OK) {
             mainCtrl.showAddFoodItemFromShoppingList(foodItemEntry);
+            mainCtrl.setCameFromShoppingList(true);
         }else{
             mainCtrl.showShoppingList();
         }

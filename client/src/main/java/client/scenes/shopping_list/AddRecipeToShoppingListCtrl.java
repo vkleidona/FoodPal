@@ -386,6 +386,7 @@ public class AddRecipeToShoppingListCtrl {
         Optional<ButtonType> buttonType = dialogBox.showAndWait();
         if (buttonType.isPresent() && buttonType.get() == ButtonType.OK) {
             mainCtrl.showAddFoodItemFromAddRecipeToShoppingList(foodItemEntry);
+            mainCtrl.setCameFromAddRecipeToShoppingList(true);
         }else{
             mainCtrl.showAddRecipeToShoppingList();
         }

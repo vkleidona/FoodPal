@@ -92,6 +92,7 @@ public class MainCtrl {
     private boolean cameFromFoodItemMain;
     private boolean cameFromShoppingList;
     private boolean cameFromAddRecipeToShoppingList;
+    private boolean cameFromCreateRecipe;
 
     /**
      * A constructor for the MainCtrl class using Dependency Injection
@@ -559,11 +560,20 @@ public class MainCtrl {
         return cameFromAddRecipeToShoppingList;
     }
 
+    public void setCameFromCreateRecipe(boolean cameFromCreateRecipe) {
+        this.cameFromCreateRecipe = cameFromCreateRecipe;
+    }
+
+    public boolean isCameFromCreateRecipe() {
+        return cameFromCreateRecipe;
+    }
+
     public void resetOriginFlags(){
         cameFromAddRecipeToShoppingList = false;
         cameFromEditIngredients = false;
         cameFromFoodItemMain = false;
         cameFromShoppingList = false;
+        cameFromCreateRecipe = false;
         // setDraftRecipe(null);
     }
 

@@ -20,6 +20,7 @@ public class FilterService {
     private final ServerUtils server;
 
     private boolean favoritesSelected = false;
+    private boolean searchActive = false;
 
     /**
      * A dependency-injection using constructor for the Filtering Service
@@ -72,7 +73,7 @@ public class FilterService {
             if (favoritesSelected) {
                 matchesTab = favoritesService.getFavorites().contains(recipe.getId());
             }
-            boolean matchesSearch = searchedRecipeIds.isEmpty() ||
+            boolean matchesSearch = !searchActive ||
                     searchedRecipeIds.contains(recipe.getId());
 
             return matchesLanguage && matchesTab && matchesSearch;
@@ -87,9 +88,12 @@ public class FilterService {
 
         if (searchQuery.isEmpty()) {
             searchedRecipeIds.clear();
+            searchActive = false;
             updatePredicate();
             return;
         }
+
+        searchActive = true;
 
         String[] recipeTerms = searchQuery.split(",");
         List<String> trimmedRecipeTerms = new ArrayList<>();

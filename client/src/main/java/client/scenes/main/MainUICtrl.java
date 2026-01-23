@@ -240,7 +240,7 @@ public class MainUICtrl {
         recipeSearchBar.setOnKeyPressed(keyEvent -> {
             if (keyEvent.getCode() == KeyCode.ESCAPE) {
                 recipeSearchBar.clear();
-                initialRecipeFetch();
+                filterService.searchForRecipe("");
             }
         });
 
