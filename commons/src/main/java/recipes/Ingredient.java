@@ -12,6 +12,22 @@ import java.util.Objects;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Entity
 public class Ingredient implements Serializable {
+
+
+
+    /**
+     * Copy constructor for cloning – preserves quantityInGrams!
+     * @param other the actual ingredient
+     */
+    public Ingredient(Ingredient other) {
+        this.foodType = other.foodType;
+        this.quantity = other.quantity;
+        this.measurement = other.measurement;
+        this.quantityInGrams = other.quantityInGrams;
+        this.recipe = other.recipe;  // Or null for clone
+        this.recipeName = other.recipeName;
+    }
+
     @Id
     @GeneratedValue (strategy = GenerationType.AUTO)
     private Long ingredientID;
